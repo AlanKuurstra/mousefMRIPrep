@@ -6,18 +6,22 @@ from niworkflows.interfaces.ants import ThresholdImage
 import nipype.interfaces.brainsuite as bs
 from nipype.interfaces.fsl import ImageMaths, CopyGeom, ApplyMask
 from enum import Enum
+from nipype.interfaces.base.traits_extension import isdefined
 
 class BrainExtractMethod(Enum):
     BRAINSUITE = 1
-    REGISTRATION_WITH_MASK = 2
-    REGISTRATION_NO_MASK = 3
-    NO_BRAIN_EXTRACTION = 4
+    REGISTRATION_WITH_INITIAL_MASK = 2
+    REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK = 3
+    REGISTRATION_NO_INITIAL_MASK = 4
+    USER_PROVIDED_MASK = 5
+    NO_BRAIN_EXTRACTION = 6
 
 def init_ants_brain_extraction_wf(
         name='ants_brain_extraction_wf',
+        n4_bspline_fitting_distance=20,
         omp_nthreads=None,
         mem_gb=3.0,
-        n4_bspline_fitting_distance=20
+        use_initial_masks=False,
 ):
     wf = pe.Workflow(name)
 
@@ -36,9 +40,9 @@ def init_ants_brain_extraction_wf(
             dimension=3, save_bias=False, copy_header=True,
             n_iterations=[50] * 4, convergence_threshold=1e-7, shrink_factor=4,
             bspline_fitting_distance=n4_bspline_fitting_distance),
-        n_procs=omp_nthreads, name='inu_n4', iterfield=['input_image'])
+        n_procs=omp_nthreads, name='inu_n4') #iterfield=['input_image']
 
-    ants_reg = pe.Node(interface=Registration(), name='antsRegistration')
+    ants_reg = pe.Node(interface=Registration(), name='antsRegistration',n_procs=omp_nthreads,mem_gb=mem_gb)
     ants_reg.inputs.output_transform_prefix = "output_"
     # ants_reg.inputs.initial_moving_transform = 'trans.mat'
     ants_reg.inputs.dimension = 3
@@ -85,11 +89,11 @@ def init_ants_brain_extraction_wf(
 
     thr_brainmask = pe.Node(ThresholdImage(
         dimension=3, th_low=0.5, th_high=1.0, inside_value=1,
-        outside_value=0), name='thr_brainmask')
+        outside_value=0), name='thr_brainmask',n_procs=omp_nthreads,mem_gb=mem_gb)
 
     # USE ATROPOS TO CLEAN UP??
 
-    apply_mask = pe.Node(ApplyMask(), iterfield=['in_file'], name='apply_mask')
+    apply_mask = pe.Node(ApplyMask(), name='apply_mask',n_procs=omp_nthreads,mem_gb=mem_gb) #iterfield=['in_file']
 
     # atropos doesn't do so well on T2w mouse data
     atropos = pe.Node(Atropos(
@@ -108,7 +112,6 @@ def init_ants_brain_extraction_wf(
         (inputnode, inu_n4, [('in_file', 'input_image')]),
 
         (inu_n4, ants_reg, [('output_image', 'fixed_image')]),
-        (inputnode, ants_reg, [('in_file_mask', 'fixed_image_mask')]),
         (inputnode, ants_reg, [('template', 'moving_image')]),
 
         (inputnode, apply_transform, [('template_probability_mask', 'input_image')]),
@@ -128,19 +131,35 @@ def init_ants_brain_extraction_wf(
         # (thr_brainmask, atropos, [('output_image', 'mask_image')]),
         # (apply_mask, atropos, [('out_file', 'intensity_images')]),
     ])
+
+    if use_initial_masks:
+        # per stage masks are possible with fixed_image_masks and moving_image_masks (note the s at the end of masks)
+        # we go with the simpler fixed_image_mask which is applied to all stages
+        # note: that moving_image_mask depends on the existence of fixed_image_mask, although I don't believe
+        # this is true for the per stage version moving_image_masks
+        # for this reason, we only connect the moving_image_mask if the fixed_image_mask is present
+        wf.connect([
+            (inputnode, ants_reg, [('in_file_mask', 'fixed_image_mask')]),
+            (inputnode, ants_reg, [('template_probability_mask', 'moving_image_mask')]),
+            ])
+
     return wf
 
 
 def init_brainsuite_brain_extraction_wf(
         name='brainsuite_brain_extraction_wf',
+        # for n4
+        n4_bspline_fitting_distance=20,
+        # for brainsuite
         diffusionConstant=30,
         diffusionIterations=3,
         edgeDetectionConstant=0.55,
         radius=2,
         dilateFinalMask=True,
+        # nipype node resources
         omp_nthreads=None,
         mem_gb=3.0,
-        n4_bspline_fitting_distance=20
+
 ):
     wf = pe.Workflow(name)
 
@@ -159,9 +178,9 @@ def init_brainsuite_brain_extraction_wf(
             dimension=3, save_bias=False, copy_header=True,
             n_iterations=[50] * 4, convergence_threshold=1e-7, shrink_factor=4,
             bspline_fitting_distance=n4_bspline_fitting_distance),
-        n_procs=omp_nthreads, name='inu_n4', iterfield=['input_image'])
+        n_procs=omp_nthreads, name='inu_n4') #iterfield=['input_image']
 
-    bse = pe.Node(interface=bs.Bse(), name='BSE')
+    bse = pe.Node(interface=bs.Bse(), name='BSE',n_procs=omp_nthreads,mem_gb=mem_gb)
     bse.inputs.diffusionConstant = diffusionConstant
     bse.inputs.diffusionIterations = diffusionIterations
     bse.inputs.edgeDetectionConstant = edgeDetectionConstant
@@ -173,13 +192,13 @@ def init_brainsuite_brain_extraction_wf(
     # default behaviour of brainsuite is to rotate to LPI orientation
     # this can be overridden by using the noRotate option, however this option will create a nifti with inconsistent
     # qform and sform values.  To fix this, copy the header information from the original image to the mask using fsl.
-    fix_bse_orientation = pe.Node(interface=CopyGeom(), name='fixBSEOrientation')
+    fix_bse_orientation = pe.Node(interface=CopyGeom(), name='fixBSEOrientation',n_procs=omp_nthreads,mem_gb=mem_gb)
 
     # brainsuite outputs mask value as 255
-    fix_bse_value = pe.Node(interface=ImageMaths(), name='fixBSEValue')
+    fix_bse_value = pe.Node(interface=ImageMaths(), name='fixBSEValue',n_procs=omp_nthreads,mem_gb=mem_gb)
     fix_bse_value.inputs.op_string = '-div 255'
 
-    apply_mask = pe.Node(ApplyMask(), iterfield=['in_file'], name='apply_mask')
+    apply_mask = pe.Node(ApplyMask(), name='apply_mask',n_procs=omp_nthreads,mem_gb=mem_gb) #iterfield=['in_file']
 
     wf.connect([
         (inputnode, inu_n4, [('in_file', 'input_image')]),
@@ -202,14 +221,17 @@ def init_brainsuite_brain_extraction_wf(
 def init_n4_bias_and_brain_extraction_wf(
         brain_extraction_method,
         name='n4_bias_and_brain_extraction_wf',
-        omp_nthreads=None,
-        mem_gb=3.0,
+        brainsuite_for_registration_initial_mask = False,
+        # if using brainsuite
         n4_bspline_fitting_distance=20,
         diffusionConstant=30,
         diffusionIterations=3,
         edgeDetectionConstant=0.55,
         radius=2,
         dilateFinalMask=True,
+        # nipype node resources
+        omp_nthreads=None,
+        mem_gb=3.0,
 ):
     wf = pe.Workflow(name)
 
@@ -241,38 +263,69 @@ def init_n4_bias_and_brain_extraction_wf(
             (brain_extraction, outputnode, [('outputnode.out_file_mask', 'out_file_mask')]),
         ])
 
-    elif brain_extraction_method == BrainExtractMethod.REGISTRATION_WITH_MASK:
+    elif brain_extraction_method in (BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK,BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK, BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK):
         brain_extraction = init_ants_brain_extraction_wf(
             omp_nthreads=omp_nthreads,
             mem_gb=mem_gb,
             n4_bspline_fitting_distance=n4_bspline_fitting_distance,
+            use_initial_masks=(brain_extraction_method in(BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK,BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK))
         )
         wf.connect([
             (inputnode, brain_extraction, [('in_file', 'inputnode.in_file')]),
-            (inputnode, brain_extraction, [('in_file_mask', 'inputnode.in_file_mask')]),
+            #(inputnode, brain_extraction, [('in_file_mask', 'inputnode.in_file_mask')]),
             (inputnode, brain_extraction, [('template', 'inputnode.template')]),
             (inputnode, brain_extraction, [('template_probability_mask', 'inputnode.template_probability_mask')]),
             (brain_extraction, outputnode, [('outputnode.out_file_n4_corrected_brain_extracted', 'out_file_n4_corrected_brain_extracted')]),
             (brain_extraction, outputnode, [('outputnode.out_file_n4_corrected', 'out_file_n4_corrected')]),
             (brain_extraction, outputnode, [('outputnode.out_file_mask', 'out_file_mask')]),
         ])
-    elif brain_extraction_method == BrainExtractMethod.NO_BRAIN_EXTRACTION:
+        if brain_extraction_method == BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK:
+            wf.connect([
+                (inputnode, brain_extraction, [('in_file_mask', 'inputnode.in_file_mask')]),
+            ])
+        elif brain_extraction_method == BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK:
+            brainsuite_initial = init_brainsuite_brain_extraction_wf(
+                omp_nthreads=omp_nthreads,
+                mem_gb=mem_gb,
+                n4_bspline_fitting_distance=n4_bspline_fitting_distance,
+                diffusionConstant=diffusionConstant,
+                diffusionIterations=diffusionIterations,
+                edgeDetectionConstant=edgeDetectionConstant,
+                radius=radius,
+                dilateFinalMask=dilateFinalMask,
+            )
+            wf.connect([
+                (inputnode, brainsuite_initial, [('in_file', 'inputnode.in_file')]),
+                (brainsuite_initial, brain_extraction, [('outputnode.out_file_mask', 'inputnode.in_file_mask')]),
+            ])
+
+
+    elif brain_extraction_method in(BrainExtractMethod.NO_BRAIN_EXTRACTION,BrainExtractMethod.USER_PROVIDED_MASK):
         inu_n4 = pe.Node(
             N4BiasFieldCorrection(
                 dimension=3, save_bias=False, copy_header=True,
                 n_iterations=[50] * 4, convergence_threshold=1e-7, shrink_factor=4,
                 bspline_fitting_distance=n4_bspline_fitting_distance),
-            n_procs=omp_nthreads, name='inu_n4', iterfield=['input_image'])
+            n_procs=omp_nthreads, name='inu_n4')
         wf.connect([
             (inputnode, inu_n4, [('in_file', 'input_image')]),
             (inu_n4, outputnode, [('output_image', 'out_file_n4_corrected')]),
 
         ])
+        if brain_extraction_method == BrainExtractMethod.USER_PROVIDED_MASK:
+            apply_mask = pe.Node(ApplyMask(), name='apply_mask', n_procs=omp_nthreads, mem_gb=mem_gb)
+            wf.connect([
+                (inputnode, apply_mask, [('in_file_mask', 'mask_file')]),
+                (inu_n4, apply_mask, [('output_image', 'in_file')]),
+                (apply_mask, outputnode, [('out_file', 'out_file_n4_corrected_brain_extracted')]),
+                (inputnode, outputnode, [('in_file_mask', 'out_file_mask')]),
+            ])
+
     return wf
 
 if __name__ == '__main__':
     in_file = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/anat/sub-NL311F9_ses-2020021001_acq-TurboRARE_run-01_T2w.nii.gz'
-    in_mask = 'doesnotexist'
+    in_mask = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/MousefMRIPrep/sub-NL311F9/ses-2020021001/mask_test.nii'
     template = '/softdev/akuurstr/python/modules/mouse_resting_state/mouse_model/commontemplate0_orientation_corrected.nii.gz'
     mask_probability = '/softdev/akuurstr/python/modules/mouse_resting_state/mouse_model/model_mask.nii.gz'
 
@@ -281,7 +334,7 @@ if __name__ == '__main__':
     brainsuite_method = init_n4_bias_and_brain_extraction_wf(BrainExtractMethod.BRAINSUITE)
     brainsuite_method.inputs.inputnode.in_file = str(in_file)
 
-    template_method = init_n4_bias_and_brain_extraction_wf(BrainExtractMethod.REGISTRATION_WITH_MASK, name='template_method')
+    template_method = init_n4_bias_and_brain_extraction_wf(BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK, name='template_method')
     template_method.inputs.inputnode.in_file = str(in_file)
     template_method.inputs.inputnode.template = str(template)
     template_method.inputs.inputnode.template_probability_mask = str(mask_probability)
@@ -292,7 +345,5 @@ if __name__ == '__main__':
     both_workflows.base_dir = 'brain_extraction_wf'
     both_workflows.config['execution']['remove_unnecessary_outputs'] = False
     both_workflows.run()
-
-    # what if no input mask for structural??
 
 

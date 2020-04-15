@@ -32,10 +32,13 @@ def get_atlas_smallest_dim_spacing(atlas_file_location):
     import nibabel as nib
     return np.array(nib.load(atlas_file_location).header['pixdim'][1:4]).min()
     
-def init_structural_to_atlas_registration(
+def init_anat_to_atlas_registration(
+        name = 'register_anat_to_atlas',
+        mask = True,
+        reduce_to_float_precision=False,
+        interpolation='Linear',
         omp_nthreads = None,
-        name = 'StructuralToAtlasRegistration',
-        mask = True
+        mem_gb = 3.0,
 ):
 
     wf = pe.Workflow(name)
@@ -43,9 +46,9 @@ def init_structural_to_atlas_registration(
     if omp_nthreads is None or omp_nthreads < 1:
         omp_nthreads = cpu_count()
 
-    inputnode = pe.Node(niu.IdentityInterface(fields=['structural', 'structural_mask', 'atlas', 'atlas_mask']), name='inputnode')
+    inputnode = pe.Node(niu.IdentityInterface(fields=['anat', 'anat_mask', 'atlas', 'atlas_mask']), name='inputnode')
 
-    outputnode = pe.Node(niu.IdentityInterface(fields=['structural_to_atlas_composite_transform']),name='outputnode')
+    outputnode = pe.Node(niu.IdentityInterface(fields=['anat_to_atlas','anat_to_atlas_composite_transform']),name='outputnode')
 
     atlas_smallest_dim = pe.Node(
         Function(input_names=["atlas_file_location"], output_names=["smallest_dim_size"], function=get_atlas_smallest_dim_spacing),
@@ -59,10 +62,12 @@ def init_structural_to_atlas_registration(
     calc_shrink_factors = pe.Node(Function(input_names=["smoothing_sigmas","smallest_dim_size"], output_names=["shrink_factors"], function=get_shrink_factors), name="shrink_factors")
 
     ants_method = 'Mix'  # 'Mix', 'MI', 'CC'
-    ants_reg = pe.Node(interface=Registration(), name='antsRegistration')
+    ants_reg = pe.Node(interface=Registration(), name='antsRegistration',n_procs=omp_nthreads,mem_gb=mem_gb)
     ants_reg.inputs.output_transform_prefix = "output_"
     ants_reg.inputs.initial_moving_transform_com = 1  # seems to be necessary. initial translation alignment by geometric center of the images (=0), the image intensities (=1), or the origin of the images (=2)
     ants_reg.inputs.dimension = 3
+    ants_reg.inputs.float = reduce_to_float_precision
+    ants_reg.inputs.interpolation = interpolation
     ants_reg.inputs.transforms = ['Translation', 'Rigid', 'Affine', 'SyN']
     ants_reg.inputs.transform_parameters = [(0.1,)] * 3 + [(0.1, 3.0, 0.0)]
     # gradient step
@@ -102,7 +107,7 @@ def init_structural_to_atlas_registration(
 
     wf.connect([
         (inputnode, ants_reg, [('atlas', 'fixed_image')]),
-        (inputnode, ants_reg, [('structural', 'moving_image')]),
+        (inputnode, ants_reg, [('anat', 'moving_image')]),
         (inputnode, atlas_smallest_dim, [('atlas', 'atlas_file_location')]),
 
         (atlas_smallest_dim, correct_smooth_factors, [('smallest_dim_size', 'smallest_dim_size')]),
@@ -113,19 +118,20 @@ def init_structural_to_atlas_registration(
         (correct_smooth_factors, ants_reg, [('corrected_smoothing_sigmas', 'smoothing_sigmas')]),
         (calc_shrink_factors, ants_reg, [('shrink_factors', 'shrink_factors')]),
         
-        (ants_reg, outputnode, [('composite_transform', 'structural_to_atlas_composite_transform')]),
+        (ants_reg, outputnode, [('composite_transform', 'anat_to_atlas_composite_transform')]),
+        (ants_reg, outputnode, [('warped_image', 'anat_to_atlas')]),
     ])
     if mask:
         wf.connect([
             (inputnode, ants_reg, [('atlas_mask', 'fixed_image_mask')]),
-            (inputnode, ants_reg, [('structural_mask', 'moving_image_mask')]),
+            (inputnode, ants_reg, [('anat_mask', 'moving_image_mask')]),
         ])
 
     return wf
 
 if __name__=='__main__':
-    wf = init_structural_to_atlas_registration()
-    wf.inputs.inputnode.structural = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/anat/sub-NL311F9_ses-2020021001_acq-TurboRARE_run-01_T2w.nii.gz'
+    wf = init_anat_to_atlas_registration()
+    wf.inputs.inputnode.anat = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/anat/sub-NL311F9_ses-2020021001_acq-TurboRARE_run-01_T2w.nii.gz'
     wf.inputs.inputnode.atlas = '/home/akuurstr/Desktop/Esmin_mouse_registration/test/AMBMC_model.nii.gz'
     wf.inputs.inputnode.atlas_mask = '/home/akuurstr/Desktop/Esmin_mouse_registration/test/AMBMC_model_mask.nii.gz'
     wf.base_dir = 'atlas_registration_wf'

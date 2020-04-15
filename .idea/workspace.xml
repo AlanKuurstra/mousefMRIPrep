@@ -1,7 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="" />
+    <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/nipype_interfaces/DerivativesDatasink.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/create_template_probability_mask.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/initial_masks_for_template_probability_mask.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/FuncReference.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/RegistrationFuncToAtlas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bold_truncated_avg.nii.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/docker" beforeDir="false" afterPath="$PROJECT_DIR$/docker_ideas" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/motcorrInverseWarp.nii.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/motcorrMOCOparams.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/motcorrWarp.nii.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nipype_interfaces/SplitDisplacement.py" beforeDir="false" afterPath="$PROJECT_DIR$/nipype_interfaces/DisplacementManip.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nipype_interfaces/ants_preprocess.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nipype_interfaces/ants_utils.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nipype_interfaces/fixheader.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/nipype_interfaces/imagemanip.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output_average.nii.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/test_nl_mc.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/FixBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/FixBIDS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/create_model_probability_mask.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/initial_masks_for_model_probability_mask.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tools/tar2bids.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/tar2bids.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/warped.nii.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/BoldReference_wf.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/BoldToAtlasRegistration_wf.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/BoldToStructuralRegistration_wf.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/RegistrationFuncToAnat.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/BrainExtractionWorkflows.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/BrainExtraction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/StructuralToAtlasRegistration_wf.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/RegistrationAnatToAtlas.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -14,15 +43,19 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
   <component name="ProjectId" id="1Z26tvc95fXY1I2i89fjqdhj6Ar" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
-    <option name="showExcludedFiles" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -38,19 +71,25 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/old" />
       <recent name="$PROJECT_DIR$/nipype_interfaces" />
     </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/workflows" />
+    </key>
   </component>
-  <component name="RunManager" selected="Python.BoldToAtlasRegistration_wf">
-    <configuration name="BoldToAtlasRegistration_wf" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.RegistrationFuncToAtlas">
+    <configuration name="BrainExtraction" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
         <env name="PYTHONUNBUFFERED" value="1" />
-        <env name="PATH" value="$PATH:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin" />
         <env name="ANTSPATH" value="/usr/lib/ants/" />
         <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
+        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
+        <env name="PATH" value="$PATH:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
       </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/workflows" />
@@ -58,98 +97,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/BoldToAtlasRegistration_wf.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="SplitDisplacement" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="mousersfMRIPrep" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/nipype_interfaces/SplitDisplacement.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="create_model_probability_mask" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="mousersfMRIPrep" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tools" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/create_model_probability_mask.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="initial_masks_for_model_probability_mask" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="mousersfMRIPrep" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-        <env name="PATH" value="$PATH:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin" />
-        <env name="ANTSPATH" value="/usr/lib/ants/" />
-        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tools" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/initial_masks_for_model_probability_mask.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="test_nl_mc" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="mousersfMRIPrep" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/test_nl_mc.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/BrainExtraction.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -158,20 +106,112 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="CorrelationMatrix" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/nipype_interfaces/CorrelationMatrix.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="RegistrationFuncToAtlas" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="ANTSPATH" value="/usr/lib/ants/" />
+        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
+        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
+        <env name="PATH" value="$PATH:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/workflows" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/RegistrationFuncToAtlas.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="correlation_test" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/old/correlation_test.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="create_template_probability_mask" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tools" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tools/create_template_probability_mask.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <list>
-      <item itemvalue="Python.BoldToAtlasRegistration_wf" />
-      <item itemvalue="Python.SplitDisplacement" />
-      <item itemvalue="Python.initial_masks_for_model_probability_mask" />
-      <item itemvalue="Python.create_model_probability_mask" />
-      <item itemvalue="Python.test_nl_mc" />
+      <item itemvalue="Python.correlation_test" />
+      <item itemvalue="Python.RegistrationFuncToAtlas" />
+      <item itemvalue="Python.create_template_probability_mask" />
+      <item itemvalue="Python.CorrelationMatrix" />
+      <item itemvalue="Python.BrainExtraction" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.BoldToAtlasRegistration_wf" />
-        <item itemvalue="Python.test_nl_mc" />
-        <item itemvalue="Python.create_model_probability_mask" />
-        <item itemvalue="Python.initial_masks_for_model_probability_mask" />
-        <item itemvalue="Python.SplitDisplacement" />
+        <item itemvalue="Python.RegistrationFuncToAtlas" />
+        <item itemvalue="Python.BrainExtraction" />
+        <item itemvalue="Python.CorrelationMatrix" />
+        <item itemvalue="Python.correlation_test" />
+        <item itemvalue="Python.create_template_probability_mask" />
       </list>
     </recent_temporary>
   </component>
@@ -199,120 +239,136 @@
       <workItem from="1585138729002" duration="29754000" />
       <workItem from="1585233480144" duration="9914000" />
       <workItem from="1585307750668" duration="599000" />
+      <workItem from="1585316141675" duration="612000" />
+      <workItem from="1585330659298" duration="20792000" />
+      <workItem from="1585481194260" duration="2461000" />
+      <workItem from="1585570828106" duration="25575000" />
+      <workItem from="1585652156857" duration="26022000" />
+      <workItem from="1585736343286" duration="47884000" />
+      <workItem from="1585915362310" duration="7332000" />
+      <workItem from="1586179176613" duration="23799000" />
+      <workItem from="1586259496107" duration="42064000" />
+      <workItem from="1586435179490" duration="18625000" />
+      <workItem from="1586785045708" duration="48624000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="1" />
+    <option name="version" value="2" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="2668" y="566" width="2001" height="1429" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1585075776314">
+    <state x="2668" y="566" width="2001" height="1429" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1586885812096">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state x="1152" y="377" width="2257" height="904" key="#com.intellij.execution.impl.EditConfigurationsDialog/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584115171245" />
-    <state x="2668" y="566" width="2001" height="1429" key="#com.intellij.execution.impl.EditConfigurationsDialog/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585075776314" />
-    <state x="2066" y="524" width="577" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1584129607433">
-      <screen x="1080" y="0" width="2560" height="1440" />
+    <state x="2668" y="566" width="2001" height="1429" key="#com.intellij.execution.impl.EditConfigurationsDialog/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1586885812096" />
+    <state x="4039" y="786" width="577" height="390" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1585601376716">
+      <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state x="2066" y="524" width="577" height="390" key="#com.intellij.fileTypes.FileTypeChooser/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584129607433" />
-    <state x="4155" y="716" width="1154" height="726" key="FileChooserDialogImpl" timestamp="1585235318989">
+    <state x="4039" y="786" key="#com.intellij.fileTypes.FileTypeChooser/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585601376716" />
+    <state x="3406" y="1058" width="515" height="444" key="EnvironmentVariablesDialog" timestamp="1585391900103">
+      <screen x="2560" y="0" width="3840" height="2160" />
+    </state>
+    <state x="3406" y="1058" width="515" height="444" key="EnvironmentVariablesDialog/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585391900103" />
+    <state x="4155" y="716" width="1154" height="726" key="FileChooserDialogImpl" timestamp="1586192117237">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state x="2143" y="477" width="424" height="484" key="FileChooserDialogImpl/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584132745128" />
-    <state x="4155" y="716" width="1154" height="726" key="FileChooserDialogImpl/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585235318989" />
-    <state width="3794" height="654" key="GridCell.Tab.0.bottom" timestamp="1585239959808">
+    <state x="4155" y="716" width="1154" height="726" key="FileChooserDialogImpl/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1586192117237" />
+    <state width="3794" height="654" key="GridCell.Tab.0.bottom" timestamp="1586891055488">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state width="2514" height="413" key="GridCell.Tab.0.bottom/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584310911518" />
-    <state width="3794" height="654" key="GridCell.Tab.0.bottom/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585239959808" />
-    <state width="3794" height="654" key="GridCell.Tab.0.center" timestamp="1585239959808">
+    <state width="3794" height="654" key="GridCell.Tab.0.bottom/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1586891055488" />
+    <state width="3794" height="654" key="GridCell.Tab.0.center" timestamp="1586891055488">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state width="2514" height="413" key="GridCell.Tab.0.center/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584310911518" />
-    <state width="3794" height="654" key="GridCell.Tab.0.center/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585239959808" />
-    <state width="3794" height="654" key="GridCell.Tab.0.left" timestamp="1585239959808">
+    <state width="3794" height="654" key="GridCell.Tab.0.center/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1586891055488" />
+    <state width="3794" height="654" key="GridCell.Tab.0.left" timestamp="1586891055488">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state width="2514" height="413" key="GridCell.Tab.0.left/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584310911518" />
-    <state width="3794" height="654" key="GridCell.Tab.0.left/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585239959808" />
-    <state width="3794" height="654" key="GridCell.Tab.0.right" timestamp="1585239959808">
+    <state width="3794" height="654" key="GridCell.Tab.0.left/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1586891055488" />
+    <state width="3794" height="654" key="GridCell.Tab.0.right" timestamp="1586891055488">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state width="2514" height="413" key="GridCell.Tab.0.right/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584310911518" />
-    <state width="3794" height="654" key="GridCell.Tab.0.right/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585239959808" />
-    <state width="3794" height="989" key="GridCell.Tab.1.bottom" timestamp="1585197298650">
+    <state width="3794" height="654" key="GridCell.Tab.0.right/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1586891055488" />
+    <state width="3794" height="989" key="GridCell.Tab.1.bottom" timestamp="1585748738946">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state width="2514" height="630" key="GridCell.Tab.1.bottom/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584134830598" />
-    <state width="3794" height="989" key="GridCell.Tab.1.bottom/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585197298650" />
-    <state width="3794" height="989" key="GridCell.Tab.1.center" timestamp="1585197298649">
+    <state width="3794" height="989" key="GridCell.Tab.1.bottom/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585748738946" />
+    <state width="3794" height="989" key="GridCell.Tab.1.center" timestamp="1585748738946">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state width="2514" height="630" key="GridCell.Tab.1.center/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584134830598" />
-    <state width="3794" height="989" key="GridCell.Tab.1.center/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585197298649" />
-    <state width="3794" height="989" key="GridCell.Tab.1.left" timestamp="1585197298649">
+    <state width="3794" height="989" key="GridCell.Tab.1.center/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585748738946" />
+    <state width="3794" height="989" key="GridCell.Tab.1.left" timestamp="1585748738946">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state width="2514" height="630" key="GridCell.Tab.1.left/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584134830598" />
-    <state width="3794" height="989" key="GridCell.Tab.1.left/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585197298649" />
-    <state width="3794" height="989" key="GridCell.Tab.1.right" timestamp="1585197298650">
+    <state width="3794" height="989" key="GridCell.Tab.1.left/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585748738946" />
+    <state width="3794" height="989" key="GridCell.Tab.1.right" timestamp="1585748738946">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state width="2514" height="630" key="GridCell.Tab.1.right/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584134830598" />
-    <state width="3794" height="989" key="GridCell.Tab.1.right/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585197298650" />
-    <state x="3714" y="531" key="SettingsEditor" timestamp="1585250279882">
+    <state width="3794" height="989" key="GridCell.Tab.1.right/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585748738946" />
+    <state x="2987" y="261" width="1122" height="730" key="SettingsEditor" timestamp="1586356135971">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state x="1849" y="354" key="SettingsEditor/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584128779411" />
-    <state x="3714" y="531" key="SettingsEditor/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585250279882" />
+    <state x="2987" y="261" width="1749" height="1000" key="SettingsEditor/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1586356135971" />
+    <state x="351" y="198" width="1122" height="730" key="SettingsEditor/75.27.2485.1413/2560.0.3840.2160@75.27.2485.1413" timestamp="1585687287049" />
     <state width="1920" height="1081" key="XDebugger.FullValuePopup" timestamp="1585144636529">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state width="1920" height="1081" key="XDebugger.FullValuePopup/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585144636529" />
-    <state x="4136" y="906" key="com.intellij.ide.util.TipDialog" timestamp="1585307770541">
+    <state x="3373" y="853" key="com.intellij.ide.util.TipDialog" timestamp="1586259505223">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
-    <state x="4136" y="906" key="com.intellij.ide.util.TipDialog/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585307770541" />
-    <state x="3975" y="491" width="670" height="676" key="search.everywhere.popup" timestamp="1585165830709">
+    <state x="3373" y="853" key="com.intellij.ide.util.TipDialog/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1586259505223" />
+    <state x="3975" y="491" width="672" height="676" key="search.everywhere.popup" timestamp="1586364760238">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state x="2023" y="327" key="search.everywhere.popup/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584025063128" />
-    <state x="3975" y="491" width="670" height="676" key="search.everywhere.popup/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585165830709" />
+    <state x="3975" y="491" width="672" height="676" key="search.everywhere.popup/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1586364760238" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
-        <line-breakpoint enabled="true" suspend="NONE" type="python-line">
-          <url>file://$PROJECT_DIR$/workflows/BoldToAtlasRegistration_wf.py</url>
-          <line>292</line>
-          <log-expression expression="f.inputs.inputnode.bold_file = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/func/sub-NL311F9_ses-2020021001_task-rs_run-01_bold.nii.gz'&#10;wf.inputs.inputnode.structural = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/anat/sub-NL311F9_ses-2020021001_acq-TurboRARE_run-01_T2w.nii.gz'&#10;wf.inputs.inputnode.atlas = '/home/akuurstr/Desktop/Esmin_mouse_registration/test/AMBMC_model.nii.gz'&#10;wf.inputs.inputnode.atlas_mask = '/home/akuurstr/Desktop/Esmin_mouse_registration/test/AMBMC_model_mask.nii.gz'&#10;&#10;wf.base_dir = 'bold_to_atlas_wf'&#10;wf.config['execution']['remove_unnecessary_outputs'] = False&#10;wf.run()" language="Python" />
-          <option name="timeStamp" value="1" />
-        </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/nipype_interfaces/ants_preprocess.py</url>
-          <line>101</line>
-          <option name="timeStamp" value="8" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/tools/initial_masks_for_model_probability_mask.py</url>
-          <line>61</line>
+          <url>file://$PROJECT_DIR$/tools/initial_masks_for_template_probability_mask.py</url>
+          <line>73</line>
           <option name="timeStamp" value="32" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/tools/create_model_probability_mask.py</url>
-          <line>46</line>
-          <option name="timeStamp" value="36" />
+          <url>file://$PROJECT_DIR$/old/correlation_test.py</url>
+          <line>45</line>
+          <option name="timeStamp" value="33" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/mousersfMRIPrep$BoldToAtlasRegistration_wf.coverage" NAME="BoldToAtlasRegistration_wf Coverage Results" MODIFIED="1584373579375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
-    <SUITE FILE_PATH="coverage/mousersfMRIPrep$BrainExtractionWorkflows.coverage" NAME="BrainExtractionWorkflows Coverage Results" MODIFIED="1584040963173" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
-    <SUITE FILE_PATH="coverage/mousersfMRIPrep$wip_split_displacement.coverage" NAME="wip_split_displacement Coverage Results" MODIFIED="1584884239939" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/mousersfMRIPrep$tar2bids.coverage" NAME="tar2bids Coverage Results" MODIFIED="1584628704748" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
-    <SUITE FILE_PATH="coverage/mousersfMRIPrep$initial_masks_for_model_probability_mask.coverage" NAME="initial_masks_for_model_probability_mask Coverage Results" MODIFIED="1585148720129" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$BoldToAtlasRegistration_wf.coverage" NAME="BoldToAtlasRegistration_wf Coverage Results" MODIFIED="1585748601771" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$test_merge.coverage" NAME="test_merge Coverage Results" MODIFIED="1585667446184" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$test_nl_mc.coverage" NAME="test_nl_mc Coverage Results" MODIFIED="1585237680545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$tar2bids.coverage" NAME="tar2bids Coverage Results" MODIFIED="1584628704748" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$initial_masks_for_model_probability_mask.coverage" NAME="initial_masks_for_model_probability_mask Coverage Results" MODIFIED="1585793896799" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$test_nl_mc.coverage" NAME="test_nl_mc Coverage Results" MODIFIED="1585577041303" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$test_merge__1_.coverage" NAME="test_merge (1) Coverage Results" MODIFIED="1585755693732" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/old" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$correlation_test.coverage" NAME="correlation_test Coverage Results" MODIFIED="1586180030817" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$create_model_probability_mask.coverage" NAME="create_model_probability_mask Coverage Results" MODIFIED="1585171826751" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$correlation_test2.coverage" NAME="correlation_test2 Coverage Results" MODIFIED="1586350854857" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$create_model_probability_mask.coverage" NAME="create_model_probability_mask Coverage Results" MODIFIED="1585798449589" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$initial_masks_for_model_probability_mask.coverage" NAME="initial_masks_for_model_probability_mask Coverage Results" MODIFIED="1585148720129" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$BoldToAtlasRegistration_wf.coverage" NAME="BoldToAtlasRegistration_wf Coverage Results" MODIFIED="1584373579375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$scratch_14.coverage" NAME="scratch_14 Coverage Results" MODIFIED="1585674051607" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$wip_split_displacement.coverage" NAME="wip_split_displacement Coverage Results" MODIFIED="1584884239939" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$BrainExtraction.coverage" NAME="BrainExtraction Coverage Results" MODIFIED="1586886075581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$BrainExtractionWorkflows.coverage" NAME="BrainExtractionWorkflows Coverage Results" MODIFIED="1584040963173" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
   </component>
 </project>

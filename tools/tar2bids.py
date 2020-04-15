@@ -4,6 +4,8 @@ import tarfile
 import pydicom
 from glob import glob
 
+import re
+
 
 def extract_dicoms(tar_folder, extract_root):
     tar_files = glob(os.path.join(tar_folder, "*.tar"))
@@ -13,7 +15,14 @@ def extract_dicoms(tar_folder, extract_root):
 
 
 def bidsify_string(string_to_bidsify):
-    return string_to_bidsify.replace('_', '')
+    # split by illegal characters
+    return_string = re.split(' |_|-', string_to_bidsify)
+    # convert to camel case
+    return_string = [str(x).capitalize() for x in return_string]
+    return_string = ''.join(return_string)
+    # replace deicamls with p
+    return_string = return_string.replace('.','p')
+    return return_string
 
 
 tar_folder = '/softdev/akuurstr/python/modules/frequency_estimation/scanner_data/tar'

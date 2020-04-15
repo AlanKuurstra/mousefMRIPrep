@@ -4,10 +4,13 @@ from multiprocessing import cpu_count
 from nipype.interfaces.ants import Registration
 
 
-def init_bold_to_structural_registration(
-        omp_nthreads = None,
-        name = 'BoldToStructuralRegistration',
-        mask = True
+def init_func_to_anat_registration(
+        name = 'register_func_to_anat',
+        mask = True,
+        reduce_to_float_precision=False,
+        interpolation='Linear',
+        omp_nthreads=None,
+        mem_gb=3.0,
 ):
     #not enough detail to use BBR, so we just use ants
     wf = pe.Workflow(name)
@@ -15,16 +18,18 @@ def init_bold_to_structural_registration(
     if omp_nthreads is None or omp_nthreads < 1:
         omp_nthreads = cpu_count()
 
-    inputnode = pe.Node(niu.IdentityInterface(fields=['bold_reference', 'bold_reference_mask', 'structural', 'structural_mask']), name='inputnode')
+    inputnode = pe.Node(niu.IdentityInterface(fields=['func_reference', 'func_reference_mask', 'anat', 'anat_mask']), name='inputnode')
 
-    outputnode = pe.Node(niu.IdentityInterface(fields=['bold_to_structural_composite_transform']), name='outputnode')
+    outputnode = pe.Node(niu.IdentityInterface(fields=['func_to_anat','func_to_anat_composite_transform']), name='outputnode')
 
     ants_method = 'Mix'
 
-    ants_reg = pe.Node(interface=Registration(), name='antsRegistration')
+    ants_reg = pe.Node(interface=Registration(), name='antsRegistration',n_procs=omp_nthreads,mem_gb=mem_gb)
     ants_reg.inputs.output_transform_prefix = "output_"
     #ants_reg.inputs.initial_moving_transform_com =  1 #the initial translation isn't needed, these scans are right on top of each other
     ants_reg.inputs.dimension = 3
+    ants_reg.inputs.float = reduce_to_float_precision
+    ants_reg.inputs.interpolation = interpolation
     # due to distortion should we be including affine??
     ants_reg.inputs.transforms = ['Affine', 'SyN']
     ants_reg.inputs.transform_parameters = []
@@ -83,26 +88,26 @@ def init_bold_to_structural_registration(
     ants_reg.inputs.use_estimate_learning_rate_once = [True] * 2  # estimate the learning rate step size only at the beginning of each level. Does this override the value chosen in transform_parameters?
 
     ants_reg.inputs.output_warped_image = 'output_warped_image.nii.gz'
-    ants_reg.n_procs = omp_nthreads
     ants_reg.inputs.verbose = True
 
     wf.connect([
-        (inputnode, ants_reg, [('structural', 'fixed_image')]),
-        (inputnode, ants_reg, [('bold_reference', 'moving_image')]),
-        (ants_reg, outputnode, [('composite_transform', 'bold_to_structural_composite_transform')]),
+        (inputnode, ants_reg, [('anat', 'fixed_image')]),
+        (inputnode, ants_reg, [('func_reference', 'moving_image')]),
+        (ants_reg, outputnode, [('composite_transform', 'func_to_anat_composite_transform')]),
+        (ants_reg, outputnode, [('warped_image', 'func_to_anat')]),
     ])
     if mask:
         wf.connect([
-            (inputnode, ants_reg, [('structural_mask', 'fixed_image_mask')]),
-            (inputnode, ants_reg, [('bold_reference_mask', 'moving_image_mask')]),
+            (inputnode, ants_reg, [('anat_mask', 'fixed_image_mask')]),
+            (inputnode, ants_reg, [('func_reference_mask', 'moving_image_mask')]),
         ])
     return wf
 
 if __name__=="__main__":
-    wf = init_bold_to_structural_registration()
-    wf.inputs.inputnode.bold = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/func/sub-NL311F9_ses-2020021001_task-rs_run-01_bold.nii.gz'
+    wf = init_func_to_anat_registration()
+    wf.inputs.inputnode.func = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/func/sub-NL311F9_ses-2020021001_task-rs_run-01_bold.nii.gz'
     wf.inputs.inputnode.anat = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/anat/sub-NL311F9_ses-2020021001_acq-TurboRARE_run-01_T2w.nii.gz'
     wf.inputs.inputnode.anat_mask = 'None'
-    wf.base_dir = 'bold2anat_wf'
+    wf.base_dir = 'func2anat_wf'
     wf.config['execution']['remove_unnecessary_outputs'] = False
     wf.run()
