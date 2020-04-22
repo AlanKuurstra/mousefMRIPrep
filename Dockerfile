@@ -61,7 +61,14 @@ ENV PATH=/opt/BrainSuite18a/bin/:/opt/BrainSuite18a/svreg/bin/:/opt/BrainSuite18
 #RUN echo "America/New_York" | sudo tee /etc/timezone && sudo dpkg-reconfigure --frontend noninteractive tzdata
 #RUN wget -O- http://neuro.debian.net/lists/$( lsb_release -c | cut -f2 ).us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
 RUN curl -sSL "http://neuro.debian.net/lists/$( lsb_release -c | cut -f2 ).us-ca.full" >> /etc/apt/sources.list.d/neurodebian.sources.list && \
-apt-key adv --recv-keys --keyserver hkp://ha.pool.sks-keyservers.net 0xA5D32F012649A5A9
+#apt-key adv --recv-keys --keyserver hkp://ha.pool.sks-keyservers.net 0xA5D32F012649A5A9
+set -ex; \
+key='A5D32F012649A5A9'; \
+export GNUPGHOME="$(mktemp -d)"; \
+gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
+gpg --export "$key" > /etc/apt/trusted.gpg.d/neurodebian.gpg; \
+rm -r "$GNUPGHOME"; \
+apt-key list > /dev/null
 #RUN apt-get update
 #=============================================
 
