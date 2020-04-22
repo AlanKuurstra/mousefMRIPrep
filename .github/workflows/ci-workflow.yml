@@ -11,9 +11,8 @@ env:
   # images.
   REGISTRY: docker.pkg.github.com
 
-
-  DOCKER_IMAGE_TESTING_BRANCH: ${{ github.repository }}/testing:${{ github.ref }}
-  DOCKER_IMAGE_TESTING_LAST: ${{ github.repository }}/testing:last
+  DOCKER_IMAGE_TESTING_BRANCH: ${{ github.repository }}/mousefmriprep_testing:${{ github.ref }}
+  DOCKER_IMAGE_TESTING_LAST: ${{ github.repository }}/mousefmriprep_testing:last
   # the following three variables are unused
   DOCKER_IMAGE_LATEST: ${{ github.repository }}/mousefmriprep:latest
   DOCKER_IMAGE_TAG:  ${{ github.repository }}/mousefmriprep:${{ github.ref }}
