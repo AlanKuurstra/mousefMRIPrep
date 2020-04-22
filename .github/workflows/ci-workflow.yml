@@ -91,7 +91,7 @@ jobs:
           -t ${DOCKER_IMAGE_TESTING_BRANCH} \
           -f Dockerfile .
           # export a docker image for caching (should probably name them based on branch)
-          docker save -o previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING}
+          # docker save -o previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING}
 
       - name: push testing image to github
         run: |
