@@ -49,7 +49,7 @@ layout.add_derivatives(derivatives_dir)
 valid_desc = individual_mask_description.split('_')[0]
 mouse_masks = layout.get(datatype=bids_datatype,suffix=bids_suffix,extension=['.nii','.nii.gz'],desc=valid_desc)
 img_to_mask_mapping = {}
-
+stop
 for mouse_mask in mouse_masks:
     mouse_img_entities = mouse_mask.get_entities()
     if bids_datatype == 'anat':

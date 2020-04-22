@@ -1,7 +1,10 @@
+#https://bids-specification.readthedocs.io/en/derivatives/05-derivatives/01-introduction.html
+
 import nipype.pipeline.engine as pe
 import nipype.interfaces.io as nio
 from nipype.interfaces.utility import Function
 from nipype.interfaces import utility as niu
+from tools.write_derivatives_description import write_derivative_description
 
 def get_bids_derivative_details(original_bids_file,datatype_tag,derivative_description_tag,derivative_root_dir_name):
     from bids.layout.layout import parse_file_entities
@@ -52,6 +55,11 @@ def init_derivatives_datasink(name='derivatives_datasink', bids_datatype=None, b
         Function(input_names=["original_bids_file", "datatype_tag", "derivative_description_tag", 'derivative_root_dir_name'], output_names=["derivatives_dir","derivatives_filename"], function=get_bids_derivative_details),
         name="bids_derivative_details")
 
+    write_deriv_desc = pe.Node(
+        Function(#input_names=["bids_dir", "deriv_dir", "derivatives_pipeline_name"],
+                 input_names=["deriv_dir", "derivatives_pipeline_name"],
+                 function=write_derivative_description), name="write_deriv_desc")
+
 
     #we could roll the rename utility and datasink node into our custom derivative node using shutil
     rename = pe.Node(niu.Rename(format_string="%(new_name)s", keep_ext=True), "rename")
@@ -66,6 +74,11 @@ def init_derivatives_datasink(name='derivatives_datasink', bids_datatype=None, b
         (inputnode, bids_derivative_details, [('bids_description', 'derivative_description_tag')]),
         (inputnode, bids_derivative_details, [('derivatives_pipeline_name', 'derivative_root_dir_name')]),
 
+        #(, write_deriv_desc, [('', 'bids_dir')]),
+        (inputnode, write_deriv_desc, [('derivatives_root_dir', 'deriv_dir')]),
+        (inputnode, write_deriv_desc, [('derivatives_pipeline_name', 'derivatives_pipeline_name')]),
+
+
         (bids_derivative_details, rename, [('derivatives_filename', 'new_name')]),
         (inputnode, rename, [('file_to_rename', 'in_file')]),
 
@@ -73,6 +86,5 @@ def init_derivatives_datasink(name='derivatives_datasink', bids_datatype=None, b
         (bids_derivative_details, datasink, [('derivatives_dir', 'container')]),
         (rename, datasink, [('out_file', '@')]),
     ])
-
     return wf
 

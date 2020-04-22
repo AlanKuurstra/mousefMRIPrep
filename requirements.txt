@@ -1,0 +1,10 @@
+nipype
+scipy
+numpy
+seaborn
+matplotlib
+nibabel
+fmriprep
+niworkflows
+pybids
+pydicom

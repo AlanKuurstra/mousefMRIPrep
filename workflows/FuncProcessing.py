@@ -47,11 +47,10 @@ def get_node_transform_concat_list(name='transform_concat_list', mapnode_iterfie
     return node
 
 
-def init_func_to_atlas_registration(
+def init_func_processing(
         # pipeline input parameters
-        name='register_func_to_atlas',
+        name='func_processing',
         input_func_file=None,
-        input_anat_file=None,
         atlas=None,
         atlas_mask=None,
         label_mapping=None,
@@ -75,17 +74,6 @@ def init_func_to_atlas_registration(
         perform_func_to_anat_registration=False,
         # use extracted masks in func to anat registration?
         use_masks_func_to_anat_registration=False,
-
-        # anat brain extraction (only necessary if using masks in anat to atlas registration)
-        anat_brain_extract_method=BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK,
-        # if using REGISTRATION_WITH_INITIAL_MASK or USER_PROVIDED_MASK
-        anat_file_mask=None,
-        # if using registration brain extraction
-        anat_brain_extract_template=None,
-        anat_brain_extract_template_probability_mask=None,
-
-        # use extracted masks in anat to atlas registration?
-        use_masks_anat_to_atlas_registration=True,
 
         # node resources
         omp_nthreads=None,
@@ -134,11 +122,9 @@ def init_func_to_atlas_registration(
         print(
             "Warning: Motion Correction Transform switched to DOUBLE_INTERPOLATION due to enabling of slice timing correction")
         mc_transform_method = MotionCorrectionTransform.DOUBLE_INTERPOLATION
-    if use_masks_anat_to_atlas_registration and anat_brain_extract_method == BrainExtractMethod.NO_BRAIN_EXTRACTION:
-        print("Warning: Not using masks in anat to atlas registration since anat_brain_extract_method = BrainExtractMethod.NO_BRAIN_EXTRACTION")
-        use_masks_anat_to_atlas_registration = False
-    if use_masks_func_to_anat_registration and ((func_brain_extract_method == BrainExtractMethod.NO_BRAIN_EXTRACTION) or (anat_brain_extract_method == BrainExtractMethod.NO_BRAIN_EXTRACTION)):
-        print("Warning: Not using masks in func to anat registration since either func_brain_extract_method == BrainExtractMethod.NO_BRAIN_EXTRACTION or anat_brain_extract_method = BrainExtractMethod.NO_BRAIN_EXTRACTION")
+
+    if use_masks_func_to_anat_registration and (func_brain_extract_method == BrainExtractMethod.NO_BRAIN_EXTRACTION):
+        print("Warning: Not using masks in func to anat registration since func_brain_extract_method == BrainExtractMethod.NO_BRAIN_EXTRACTION")
         use_masks_func_to_anat_registration = False
 
 
@@ -166,8 +152,7 @@ def init_func_to_atlas_registration(
         'func_template_probability_mask',
         'anat_file',
         'anat_file_mask',
-        'anat_template',
-        'anat_template_probability_mask',
+        'anat_to_atlas_composite_transform',
         'atlas',
         'atlas_mask',
         'label_mapping',
@@ -187,10 +172,6 @@ def init_func_to_atlas_registration(
         inputnode.inputs.func_file = input_func_file
     if func_file_mask is not None:
         inputnode.inputs.func_file_mask = func_file_mask
-    if input_anat_file is not None:
-        inputnode.inputs.anat_file = input_anat_file
-    if anat_file_mask is not None:
-        inputnode.inputs.anat_file_mask = anat_file_mask
     if atlas is not None:
         inputnode.inputs.atlas = atlas
     if atlas_mask is not None:
@@ -198,10 +179,6 @@ def init_func_to_atlas_registration(
     if label_mapping is not None:
         inputnode.inputs.label_mapping = label_mapping
 
-    if anat_brain_extract_template is not None:
-        inputnode.inputs.anat_template = anat_brain_extract_template
-    if anat_brain_extract_template_probability_mask is not None:
-        inputnode.inputs.anat_template_probability_mask = anat_brain_extract_template_probability_mask
     if func_brain_extract_template is not None:
         inputnode.inputs.func_template = func_brain_extract_template
     if func_brain_extract_probability_mask is not None:
@@ -228,33 +205,8 @@ def init_func_to_atlas_registration(
         mem_gb=mem_gb,
     )
 
-    preprocess_anat_wf = init_n4_bias_and_brain_extraction_wf(anat_brain_extract_method,
-                                                              name='preprocess_anat',
-                                                              n4_bspline_fitting_distance=n4_bspline_fitting_distance,
-                                                              diffusionConstant=diffusionConstant,
-                                                              diffusionIterations=diffusionIterations,
-                                                              edgeDetectionConstant=edgeDetectionConstant,
-                                                              radius=radius,
-                                                              dilateFinalMask=dilateFinalMask,
-                                                              omp_nthreads=omp_nthreads,
-                                                              mem_gb=mem_gb,
-                                                              )
-
-    anat_to_atlas = init_anat_to_atlas_registration(
-        mask=use_masks_anat_to_atlas_registration,
-        reduce_to_float_precision=reduce_to_float_precision,
-        interpolation=interpolation,
-        omp_nthreads=omp_nthreads,
-        mem_gb=mem_gb,
-    )
-
     wf.connect([
         (inputnode, preprocess_func_wf, [('func_file', 'inputnode.func_file')]),
-        (inputnode, preprocess_anat_wf, [('anat_file', 'inputnode.in_file')]),
-        # (func_reference_wf, func_to_anat, [('outputnode.func_avg_n4_corrected', 'inputnode.func_reference_wf')]),
-        # (anat_brain_extraction_wf, func_to_anat, [('outputnode.out_file_n4_corrected', 'inputnode.anat')]),
-        (inputnode, anat_to_atlas, [('atlas', 'inputnode.atlas')]),
-        (preprocess_anat_wf, anat_to_atlas, [('outputnode.out_file_n4_corrected', 'inputnode.anat')]),
     ])
 
     if func_brain_extract_method in (
@@ -269,19 +221,6 @@ def init_func_to_atlas_registration(
             (inputnode, preprocess_func_wf, [('func_file_mask', 'inputnode.func_avg_mask')]),
         ])
 
-    if anat_brain_extract_method in (
-    BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK, BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK, BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK):
-        wf.connect([
-            (inputnode, preprocess_anat_wf, [('anat_template', 'inputnode.template')]),
-            (inputnode, preprocess_anat_wf,
-             [('anat_template_probability_mask', 'inputnode.template_probability_mask')]),
-        ])
-    if anat_brain_extract_method in (BrainExtractMethod.USER_PROVIDED_MASK,BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK):
-        wf.connect([
-            (inputnode, preprocess_anat_wf, [('anat_file_mask', 'inputnode.in_file_mask')]),
-        ])
-
-
     concat_list_func_to_atlas = get_node_transform_concat_list(name='concat_list_func_to_atlas')
 
     if perform_func_to_anat_registration:
@@ -295,22 +234,16 @@ def init_func_to_atlas_registration(
         wf.connect([
             (preprocess_func_wf, func_to_anat, [('outputnode.func_avg_n4_corrected', 'inputnode.func_reference')]),
             (
-                preprocess_anat_wf, func_to_anat, [('outputnode.out_file_n4_corrected', 'inputnode.anat')]),
+                inputnode, func_to_anat, [('anat_file', 'inputnode.anat')]),
             (func_to_anat, concat_list_func_to_atlas,
              [('outputnode.func_to_anat_composite_transform', 'apply_first')]),
         ])
         if use_masks_func_to_anat_registration:
             wf.connect([
-                (preprocess_anat_wf, func_to_anat,
-                 [('outputnode.out_file_mask', 'inputnode.anat_mask')]),
+                (inputnode, func_to_anat,
+                 [('anat_file_mask', 'inputnode.anat_mask')]),
                 (preprocess_func_wf, func_to_anat, [('outputnode.func_avg_mask', 'inputnode.func_reference_mask')]),
             ])
-
-    if use_masks_anat_to_atlas_registration:
-        wf.connect([
-            (inputnode, anat_to_atlas, [('atlas_mask', 'inputnode.atlas_mask')]),
-            (preprocess_anat_wf, anat_to_atlas, [('outputnode.out_file_mask', 'inputnode.anat_mask')]),
-        ])
 
     concat_transforms_func_to_atlas = pe.Node(interface=ApplyTransforms(), name='concat_transforms_func_to_atlas',
                                               n_procs=omp_nthreads, mem_gb=mem_gb)
@@ -325,7 +258,7 @@ def init_func_to_atlas_registration(
 
     wf.connect([
         # (func_to_anat, concat_list_func_to_atlas, [('outputnode.func_to_anat_composite_transform', 'apply_first')]),
-        (anat_to_atlas, concat_list_func_to_atlas, [('outputnode.anat_to_atlas_composite_transform', 'apply_second')]),
+        (inputnode, concat_list_func_to_atlas, [('anat_to_atlas_composite_transform', 'apply_second')]),
         (concat_list_func_to_atlas, concat_transforms_func_to_atlas, [('transforms', 'transforms')]),
         (inputnode, concat_transforms_func_to_atlas, [('atlas', 'reference_image')]),
         (preprocess_func_wf, concat_transforms_func_to_atlas, [('outputnode.func_avg', 'input_image')]),
@@ -486,19 +419,6 @@ def init_func_to_atlas_registration(
                                                                   bids_description='FuncAvgN4Corrected',
                                                                   derivatives_collection_dir=derivatives_collection_dir,
                                                                   derivatives_pipeline_name=derivatives_pipeline_name)
-    derivatives_anat_n4_corrected = init_derivatives_datasink('derivatives_anat_n4_corrected', bids_datatype='anat',
-                                                              bids_description='n4Corrected',
-                                                              derivatives_collection_dir=derivatives_collection_dir,
-                                                              derivatives_pipeline_name=derivatives_pipeline_name)
-    derivatives_anat_to_atlas = init_derivatives_datasink('derivatives_anat_to_atlas', bids_datatype='anat',
-                                                          bids_description='AnatToAtlas',
-                                                          derivatives_collection_dir=derivatives_collection_dir,
-                                                          derivatives_pipeline_name=derivatives_pipeline_name)
-    derivatives_anat_to_atlas_transform = init_derivatives_datasink('derivatives_anat_to_atlas_transform',
-                                                                    bids_datatype='anat',
-                                                                    bids_description='AnatToAtlasTransform',
-                                                                    derivatives_collection_dir=derivatives_collection_dir,
-                                                                    derivatives_pipeline_name=derivatives_pipeline_name)
 
     derivatives_func_to_atlas_transform = init_derivatives_datasink('derivatives_func_to_atlas_transform',
                                                                     bids_datatype='func',
@@ -511,14 +431,6 @@ def init_func_to_atlas_registration(
         (preprocess_func_wf, derivatives_func_avg_n4_corrected,
          [('outputnode.func_avg_n4_corrected', 'inputnode.file_to_rename')]),
 
-        (inputnode, derivatives_anat_n4_corrected, [('anat_file', 'inputnode.original_bids_file')]),
-        (preprocess_anat_wf, derivatives_anat_n4_corrected,
-         [('outputnode.out_file_n4_corrected', 'inputnode.file_to_rename')]),
-        (inputnode, derivatives_anat_to_atlas, [('anat_file', 'inputnode.original_bids_file')]),
-        (anat_to_atlas, derivatives_anat_to_atlas, [('outputnode.anat_to_atlas', 'inputnode.file_to_rename')]),
-        (inputnode, derivatives_anat_to_atlas_transform, [('anat_file', 'inputnode.original_bids_file')]),
-        (anat_to_atlas, derivatives_anat_to_atlas_transform,
-         [('outputnode.anat_to_atlas_composite_transform', 'inputnode.file_to_rename')]),
         (inputnode, derivatives_func_to_atlas_transform, [('func_file', 'inputnode.original_bids_file')]),
         (concat_transforms_func_to_atlas, derivatives_func_to_atlas_transform,
          [('output_image', 'inputnode.file_to_rename')]),
@@ -554,24 +466,6 @@ def init_func_to_atlas_registration(
 
     ])
 
-    if anat_brain_extract_method != BrainExtractMethod.NO_BRAIN_EXTRACTION:
-        method = ''
-        if anat_brain_extract_method == BrainExtractMethod.BRAINSUITE:
-            method = 'Brainsuite'
-        elif anat_brain_extract_method in (
-        BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK, BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK, BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK):
-            method = 'TemplateExtracted'
-        derivatives_anat_brain_mask = init_derivatives_datasink('derivatives_anat_brain_mask',
-                                                                bids_datatype='anat',
-                                                                bids_description=f'{method}BrainMask',
-                                                                derivatives_collection_dir=derivatives_collection_dir,
-                                                                derivatives_pipeline_name=derivatives_pipeline_name)
-
-        wf.connect([
-            (inputnode, derivatives_anat_brain_mask, [('anat_file', 'inputnode.original_bids_file')]),
-            (preprocess_anat_wf, derivatives_anat_brain_mask,
-             [('outputnode.out_file_mask', 'inputnode.file_to_rename')]),
-        ])
     if func_brain_extract_method != BrainExtractMethod.NO_BRAIN_EXTRACTION:
         method = ''
         if func_brain_extract_method == BrainExtractMethod.BRAINSUITE:
@@ -683,18 +577,15 @@ def init_func_to_atlas_registration(
 if __name__ == "__main__":
     SPLIT_FUNC_INTO_SEPARATE_VOLUMES = True
 
-    wf = init_func_to_atlas_registration(
-        input_func_file='/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/func/sub-NL311F9_ses-2020021001_task-rs_run-01_boldtruncated.nii.gz',
-        # input_func_file = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/func/sub-NL311F9_ses-2020021001_task-rs_run-01_bold.nii.gz',
-        input_anat_file='/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/anat/sub-NL311F9_ses-2020021001_acq-TurboRARE_run-01_T2w.nii.gz',
+    wf = init_func_processing(
+        input_func_file='/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/func/sub-NL311F9_ses-2020021001_task-rs_run-01_bold.nii.gz',
+        # input_func_file = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/sub-NL311F9/ses-2020021001/func/sub-NL311F9_ses-2020021001_task-rs_run-01_bold_ORIGINAL.nii.gz',
         atlas='/home/akuurstr/Desktop/Esmin_mouse_registration/test/AMBMC_model.nii.gz',
         atlas_mask='/home/akuurstr/Desktop/Esmin_mouse_registration/test/AMBMC_model_mask.nii.gz',
         label_mapping='/softdev/akuurstr/python/modules/mousefMRIPrep/label_mapping.txt',
 
         derivatives_collection_dir='/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives',
         derivatives_pipeline_name='MousefMRIPrep',
-        anat_brain_extract_template='/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200402_T2w.nii.gz',
-        anat_brain_extract_template_probability_mask='/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200402_T2w.nii.gz',
 
         gzip_large_images=False,
 
@@ -711,6 +602,11 @@ if __name__ == "__main__":
     # #let's do the easy template for now
     # #wf.inputs.inputnode.atlas = '/softdev/akuurstr/python/modules/mouse_resting_state/mouse_model/commontemplate0_orientation_corrected.nii.gz'
     # #wf.inputs.inputnode.atlas_mask = '/softdev/akuurstr/python/modules/mouse_resting_state/mouse_model/model_mask.nii.gz'
+
+    wf.inputs.inputnode.anat_file = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/MousefMRIPrep/sub-NL311F9/ses-2020021001/anat/sub-NL311F9_ses-2020021001_acq-TurboRARE_run-1_desc-n4Corrected_T2w.nii.gz'
+    wf.inputs.inputnode.anat_file_mask = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/MousefMRIPrep/sub-NL311F9/ses-2020021001/anat/sub-NL311F9_ses-2020021001_acq-TurboRARE_run-1_desc-TemplateExtractedBrainMask_T2w.nii'
+    wf.inputs.inputnode.anat_to_atlas_composite_transform = '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/MousefMRIPrep/sub-NL311F9/ses-2020021001/anat/sub-NL311F9_ses-2020021001_acq-TurboRARE_run-1_desc-AnatToAtlasTransform_T2w.h5'
+
 
     wf.base_dir = '/storage/akuurstr/mouse_pipepline_output'
     wf.config['execution']['remove_unnecessary_outputs'] = False

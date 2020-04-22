@@ -88,7 +88,10 @@ def init_func_to_anat_registration(
     ants_reg.inputs.use_estimate_learning_rate_once = [True] * 2  # estimate the learning rate step size only at the beginning of each level. Does this override the value chosen in transform_parameters?
 
     ants_reg.inputs.output_warped_image = 'output_warped_image.nii.gz'
-    ants_reg.inputs.verbose = True
+
+    # note, in neurodocker's precompiled version of ants, the -v option gives version instead of making output verbose
+    # this is different than apt's ants version and nipype's presumed behaviour and causes failures
+    # ants_reg.inputs.verbose = True
 
     wf.connect([
         (inputnode, ants_reg, [('anat', 'fixed_image')]),

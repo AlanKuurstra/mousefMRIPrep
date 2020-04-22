@@ -46,7 +46,7 @@ class ExractLabelMeans(BaseInterface):
         output_file_mat =  self._list_outputs()['output_file_mat']
 
         atlas_and_labels_dict = {}
-        with open(label_file, 'r') as f:
+        with open(label_file, 'r', encoding='utf-8-sig') as f:
             csv_file = csv.reader(f, delimiter='\t')
             for line in csv_file:
                 if (len(line) % 3) != 0:
@@ -57,14 +57,6 @@ class ExractLabelMeans(BaseInterface):
                 atlas_string, _ = split_exts(os.path.basename(label_atlas))
                 full_label_name = atlas_string + '_' + label_name
                 atlas_and_labels_dict.setdefault(label_atlas, []).append((full_label_name, label_int))
-
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        # pair it down for testing
-        atlas_and_labels_dict = {k: v for k, v in list(atlas_and_labels_dict.items())[:1]}
-        atlas_and_labels_dict[next(iter(atlas_and_labels_dict))] = atlas_and_labels_dict[
-                                                                       next(iter(atlas_and_labels_dict))][1:3]
-        split_volumes_list = split_volumes_list[:5]
-        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         atlas_cache_dict = {}
         for atlas_loc in atlas_and_labels_dict.keys():
@@ -109,8 +101,8 @@ class ExractLabelMeans(BaseInterface):
         outputs = self.output_spec().get()
 
         output_name_without_extension = self.inputs.output_name_without_extension
-        outputs['output_file_pkl'] = output_name_without_extension + '.pkl'
-        outputs['output_file_mat'] = output_name_without_extension + '.mat'
+        outputs['output_file_pkl'] = os.path.abspath(output_name_without_extension + '.pkl')
+        outputs['output_file_mat'] = os.path.abspath(output_name_without_extension + '.mat')
         return outputs
 
 
@@ -264,10 +256,10 @@ class ComputeCorrelationMatrix(BaseInterface):
         outputs = self.output_spec().get()
 
         output_name_without_extension = self.inputs.output_name_without_extension
-        outputs['output_file_pkl'] = output_name_without_extension + '.pkl'
-        outputs['output_file_mat'] = output_name_without_extension + '.mat'
-        outputs['output_file_png'] = output_name_without_extension + '.png'
-        outputs['output_file_shift_png'] = output_name_without_extension + '_shift.png'
+        outputs['output_file_pkl'] = os.path.abspath(output_name_without_extension + '.pkl')
+        outputs['output_file_mat'] = os.path.abspath(output_name_without_extension + '.mat')
+        outputs['output_file_png'] = os.path.abspath(output_name_without_extension + '.png')
+        outputs['output_file_shift_png'] = os.path.abspath(output_name_without_extension + '_shift.png')
 
         return outputs
 
