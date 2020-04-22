@@ -62,7 +62,7 @@ ENV PATH=/opt/BrainSuite18a/bin/:/opt/BrainSuite18a/svreg/bin/:/opt/BrainSuite18
 #RUN wget -O- http://neuro.debian.net/lists/$( lsb_release -c | cut -f2 ).us-ca.full | sudo tee /etc/apt/sources.list.d/neurodebian.sources.list
 RUN curl -sSL "http://neuro.debian.net/lists/$( lsb_release -c | cut -f2 ).us-ca.full" >> /etc/apt/sources.list.d/neurodebian.sources.list && \
 mkdir ~/.gnupg && echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf && \
-apt-key adv --homedir ~/.gnupg --recv-keys --keyserver hkp://ha.pool.sks-keyservers.net 0xA5D32F012649A5A9
+apt-key adv --recv-keys --keyserver hkp://ha.pool.sks-keyservers.net 0xA5D32F012649A5A9
 
 #set -ex; \
 #key='A5D32F012649A5A9'; \
