@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from bids import BIDSLayout
 import os, subprocess
 import shutil

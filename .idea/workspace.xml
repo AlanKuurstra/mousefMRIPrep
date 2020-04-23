@@ -2,10 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/ci-workflow.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ci-workflow.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/create_initial_masks.py" beforeDir="false" afterPath="$PROJECT_DIR$/create_initial_masks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nipype_interfaces/CorrelationMatrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/nipype_interfaces/CorrelationMatrix.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/create_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/create_template.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tar2bids.py" beforeDir="false" afterPath="$PROJECT_DIR$/tar2bids.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -267,7 +268,7 @@
       <workItem from="1587494853310" duration="75433000" />
       <workItem from="1587620144367" duration="3395000" />
       <workItem from="1587623896929" duration="1592000" />
-      <workItem from="1587643479505" duration="5594000" />
+      <workItem from="1587643479505" duration="8138000" />
     </task>
     <servers />
   </component>

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import nipype.pipeline.engine as pe
 import nipype.interfaces.io as nio
 import os

@@ -159,6 +159,7 @@ if __name__ == "__main__":
                          bids_subject,
                          "-ss", bids_session, "--overwrite"])
                     completed_patient_sessions.append((bids_subject, bids_session))
-    os.makedirs(os.path.join(bids_output, 'derivatives'))
+    if not os.path.exists(os.path.join(bids_output, 'derivatives')):
+        os.makedirs(os.path.join(bids_output, 'derivatives'))
     if os.path.exists(os.path.join(bids_output, '.heudiconv')):
         shutil.rmtree(os.path.join(bids_output, '.heudiconv'))
