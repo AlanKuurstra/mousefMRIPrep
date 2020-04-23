@@ -233,10 +233,10 @@ jobs:
           echo ::set-env name=DOCKER_IMAGE_LATEST_DOCKERHUB::$(reformat ${REGISTRY}/${DOCKER_IMAGE_LATEST_DOCKERHUB})
           echo ::set-env name=DOCKER_IMAGE_TAG_DOCKERHUB::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TAG_DOCKERHUB})
 
-        - name: echo image name
-          shell: bash
-          run: |
-            echo ${DOCKER_IMAGE_LATEST_DOCKERHUB}
+      - name: echo image name
+        shell: bash
+        run: |
+          echo ${DOCKER_IMAGE_LATEST_DOCKERHUB}
 
       - name: login to github package registry
         run: |
