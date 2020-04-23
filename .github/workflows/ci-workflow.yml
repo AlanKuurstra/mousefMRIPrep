@@ -250,6 +250,7 @@ jobs:
 
       - name: release latest master image to dockerhub (because github registry requires authentication)
         run: |
+          echo {DOCKER_IMAGE_LATEST_DOCKERHUB}
           docker login  -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_TOKEN }}
           docker tag ${DOCKER_IMAGE_TESTING_BRANCH} ${DOCKER_IMAGE_LATEST_DOCKERHUB}
           docker push ${DOCKER_IMAGE_LATEST_DOCKERHUB}
