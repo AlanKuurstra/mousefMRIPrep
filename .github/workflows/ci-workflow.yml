@@ -238,7 +238,8 @@ jobs:
           if docker load -i previous_docker_image/prev_image.tar; then
             echo "Loaded docker image from cache."
           else
-            docker pull ${DOCKER_IMAGE_TESTING_BRANCH}
+            #docker pull ${DOCKER_IMAGE_TESTING_BRANCH}
+            docker pull busybox:latest
           fi
 
       - name: release testing image to github
@@ -253,5 +254,7 @@ jobs:
           echo ${DOCKER_IMAGE_LATEST_DOCKERHUB}
           docker login  -u ${{ secrets.DOCKERHUB_USER }} -p ${{ secrets.DOCKERHUB_TOKEN }}
           echo ${DOCKER_IMAGE_LATEST_DOCKERHUB}
-          docker tag ${DOCKER_IMAGE_TESTING_BRANCH} ${DOCKER_IMAGE_LATEST_DOCKERHUB}
+          #docker tag ${DOCKER_IMAGE_TESTING_BRANCH} ${DOCKER_IMAGE_LATEST_DOCKERHUB}
+          docker tag busybox:latest ${DOCKER_IMAGE_LATEST_DOCKERHUB}
+          docker images
           docker push ${DOCKER_IMAGE_LATEST_DOCKERHUB}
