@@ -17,8 +17,8 @@ env:
   DOCKER_IMAGE_LATEST: ${{ github.repository }}/mousefmriprep:latest
   DOCKER_IMAGE_TAG:  ${{ github.repository }}/mousefmriprep:${{ github.ref }}
   # use dockerhub for release images
-  DOCKER_IMAGE_LATEST_DOCKERHUB: akuurstr/mousefmriprep:latest
-  DOCKER_IMAGE_TAG_DOCKERHUB: akuurstr/mousefmriprep:${{ github.ref }}
+  DOCKER_IMAGE_LATEST_DOCKERHUB: akuurstr/mousefmriprep/latest
+  DOCKER_IMAGE_TAG_DOCKERHUB: akuurstr/mousefmriprep/${{ github.ref }}
 
 jobs:
   build:
