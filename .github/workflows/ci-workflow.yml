@@ -39,12 +39,12 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
 
-      - name: load cache
-        # note: docker image currently too large to save in cache?
-        uses: actions/cache@v1
-        with:
-          path: ~/previous_docker_image
-          key: mousefmriprep-previous-docker-image
+#      - name: load cache
+#        # note: docker image currently too large to save in cache?
+#        uses: actions/cache@v1
+#        with:
+#          path: ~/previous_docker_image
+#          key: mousefmriprep-previous-docker-image
 
       - name: reformat git-based container names for docker
         shell: bash
@@ -94,7 +94,8 @@ jobs:
           if [ ! -d ~/previous_docker_image ]; then
             mkdir ~/previous_docker_image
           fi
-          docker save -o ~/previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
+          #cache runs out of space
+          #docker save -o ~/previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
 
       - name: push testing image to github
         run: |
@@ -160,12 +161,12 @@ jobs:
     needs: [build, tests]
     runs-on: ubuntu-latest
     steps:
-      - name: load cache
-        # note: docker image currently too large to save in cache?
-        uses: actions/cache@v1
-        with:
-          path: ~/previous_docker_image
-          key: mousefmriprep-previous-docker-image
+#      - name: load cache
+#        # note: docker image currently too large to save in cache?
+#        uses: actions/cache@v1
+#        with:
+#          path: ~/previous_docker_image
+#          key: mousefmriprep-previous-docker-image
 
       - name: reformat git-based container names for docker
         shell: bash
@@ -206,12 +207,12 @@ jobs:
     needs: [build, tests]
     runs-on: ubuntu-latest
     steps:
-      - name: load cache
-        # note: docker image currently too large to save in cache?
-        uses: actions/cache@v1
-        with:
-          path: ~/previous_docker_image
-          key: mousefmriprep-previous-docker-image
+#      - name: load cache
+#        # note: docker image currently too large to save in cache?
+#        uses: actions/cache@v1
+#        with:
+#          path: ~/previous_docker_image
+#          key: mousefmriprep-previous-docker-image
 
       - name: reformat git-based container names for docker
         shell: bash
