@@ -34,74 +34,74 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
-      - name: Dump GitHub context
-        env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
-        run: echo "$GITHUB_CONTEXT"
-
-#      - name: load cache
-#        # note: docker image currently too large to save in cache?
-#        uses: actions/cache@v1
-#        with:
-#          path: ~/previous_docker_image
-#          key: mousefmriprep-previous-docker-image
-
-      - name: reformat git-based container names for docker
-        shell: bash
-        run: |
-          # include registry, convert to all lower case, remove /refs/heads/ from branch name
-          # this is pretty simple and there are probably other repository and branch names that would break docker
-          # also note the format to make env variables global to other steps: echo::set-env name={name}:{value}
-          reformat(){
-            echo "$1" | tr '[:upper:]' '[:lower:]' | sed -e "s/refs\/heads\///g" | sed -e "s/refs\/tags\///g"
-          }
-          echo ::set-env name=DOCKER_IMAGE_TESTING_BRANCH::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_BRANCH})
-          echo ::set-env name=DOCKER_IMAGE_TESTING_LAST::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_LAST})
-          echo ::set-env name=DOCKER_IMAGE_LATEST_DOCKERHUB::$(reformat ${REGISTRY}/${DOCKER_IMAGE_LATEST_DOCKERHUB})
-          echo ::set-env name=DOCKER_IMAGE_TAG_DOCKERHUB::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TAG_DOCKERHUB})
-
-      - name: login to github package registry
-        run: |
-          docker login $REGISTRY -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-
-      - name: load previous testing image from either cache or package registry
-        continue-on-error: true
-        shell: bash
-        run: |
-          if docker load -i ~/previous_docker_image/prev_image.tar; then
-            echo "Loaded docker image from cache."
-          else
-            if docker pull ${DOCKER_IMAGE_TESTING_BRANCH}; then
-              echo "Pulled ${DOCKER_IMAGE_TESTING_BRANCH}"
-            else
-              if docker pull ${DOCKER_IMAGE_TESTING_LAST}; then
-                echo "Pulled ${DOCKER_IMAGE_TESTING_LAST}"
-              else
-                echo "No docker images to pull, starting from scratch!"
-              fi
-            fi
-          fi
-
-      - name: build testing image
-        shell: bash
-        run: |
-          docker build \
-          --cache-from ${DOCKER_IMAGE_TESTING_BRANCH} \
-          --cache-from ${DOCKER_IMAGE_TESTING_LAST} \
-          -t ${DOCKER_IMAGE_TESTING_BRANCH} \
-          -f Dockerfile .
-          # export a docker image for caching (should probably name them based on branch)
-          if [ ! -d ~/previous_docker_image ]; then
-            mkdir ~/previous_docker_image
-          fi
-          #cache runs out of space
-          #docker save -o ~/previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
-
-      - name: push testing image to github
-        run: |
-          docker push ${DOCKER_IMAGE_TESTING_BRANCH}
-          docker tag ${DOCKER_IMAGE_TESTING_BRANCH} ${DOCKER_IMAGE_TESTING_LAST}
-          docker push ${DOCKER_IMAGE_TESTING_LAST}
+#      - name: Dump GitHub context
+#        env:
+#          GITHUB_CONTEXT: ${{ toJson(github) }}
+#        run: echo "$GITHUB_CONTEXT"
+#
+##      - name: load cache
+##        # note: docker image currently too large to save in cache?
+##        uses: actions/cache@v1
+##        with:
+##          path: ~/previous_docker_image
+##          key: mousefmriprep-previous-docker-image
+#
+#      - name: reformat git-based container names for docker
+#        shell: bash
+#        run: |
+#          # include registry, convert to all lower case, remove /refs/heads/ from branch name
+#          # this is pretty simple and there are probably other repository and branch names that would break docker
+#          # also note the format to make env variables global to other steps: echo::set-env name={name}:{value}
+#          reformat(){
+#            echo "$1" | tr '[:upper:]' '[:lower:]' | sed -e "s/refs\/heads\///g" | sed -e "s/refs\/tags\///g"
+#          }
+#          echo ::set-env name=DOCKER_IMAGE_TESTING_BRANCH::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_BRANCH})
+#          echo ::set-env name=DOCKER_IMAGE_TESTING_LAST::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_LAST})
+#          echo ::set-env name=DOCKER_IMAGE_LATEST_DOCKERHUB::$(reformat ${REGISTRY}/${DOCKER_IMAGE_LATEST_DOCKERHUB})
+#          echo ::set-env name=DOCKER_IMAGE_TAG_DOCKERHUB::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TAG_DOCKERHUB})
+#
+#      - name: login to github package registry
+#        run: |
+#          docker login $REGISTRY -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: load previous testing image from either cache or package registry
+#        continue-on-error: true
+#        shell: bash
+#        run: |
+#          if docker load -i ~/previous_docker_image/prev_image.tar; then
+#            echo "Loaded docker image from cache."
+#          else
+#            if docker pull ${DOCKER_IMAGE_TESTING_BRANCH}; then
+#              echo "Pulled ${DOCKER_IMAGE_TESTING_BRANCH}"
+#            else
+#              if docker pull ${DOCKER_IMAGE_TESTING_LAST}; then
+#                echo "Pulled ${DOCKER_IMAGE_TESTING_LAST}"
+#              else
+#                echo "No docker images to pull, starting from scratch!"
+#              fi
+#            fi
+#          fi
+#
+#      - name: build testing image
+#        shell: bash
+#        run: |
+#          docker build \
+#          --cache-from ${DOCKER_IMAGE_TESTING_BRANCH} \
+#          --cache-from ${DOCKER_IMAGE_TESTING_LAST} \
+#          -t ${DOCKER_IMAGE_TESTING_BRANCH} \
+#          -f Dockerfile .
+#          # export a docker image for caching (should probably name them based on branch)
+#          if [ ! -d ~/previous_docker_image ]; then
+#            mkdir ~/previous_docker_image
+#          fi
+#          #cache runs out of space
+#          #docker save -o ~/previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
+#
+#      - name: push testing image to github
+#        run: |
+#          docker push ${DOCKER_IMAGE_TESTING_BRANCH}
+#          docker tag ${DOCKER_IMAGE_TESTING_BRANCH} ${DOCKER_IMAGE_TESTING_LAST}
+#          docker push ${DOCKER_IMAGE_TESTING_LAST}
 
   tests:
     name: test pipeline
