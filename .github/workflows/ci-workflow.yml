@@ -39,11 +39,6 @@ jobs:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
 
-      - name: echo image name
-        shell: bash
-        run: |
-          echo ${DOCKER_IMAGE_LATEST_DOCKERHUB}
-
 ##      - name: load cache
 ##        # note: docker image currently too large to save in cache?
 ##        uses: actions/cache@v1
@@ -219,6 +214,11 @@ jobs:
 #          path: ~/previous_docker_image
 #          key: mousefmriprep-previous-docker-image
 
+      - name: echo image name
+        shell: bash
+        run: |
+          echo ${DOCKER_IMAGE_LATEST_DOCKERHUB}
+
       - name: reformat git-based container names for docker
         shell: bash
         run: |
@@ -233,9 +233,19 @@ jobs:
           echo ::set-env name=DOCKER_IMAGE_LATEST_DOCKERHUB::$(reformat ${REGISTRY}/${DOCKER_IMAGE_LATEST_DOCKERHUB})
           echo ::set-env name=DOCKER_IMAGE_TAG_DOCKERHUB::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TAG_DOCKERHUB})
 
+        - name: echo image name
+          shell: bash
+          run: |
+            echo ${DOCKER_IMAGE_LATEST_DOCKERHUB}
+
       - name: login to github package registry
         run: |
           docker login $REGISTRY -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+
+      - name: echo image name
+        shell: bash
+        run: |
+          echo ${DOCKER_IMAGE_LATEST_DOCKERHUB}
 
       - name: load previous testing image from either cache or package registry
         shell: bash
