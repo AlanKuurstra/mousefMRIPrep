@@ -141,6 +141,8 @@ RUN python3 -m pip install -r /code/requirements.txt
 COPY . /code/
 RUN chmod +x /code/tar2bids.py
 RUN chmod +x /code/fix_mouse_bids.py
+RUN chmod +x /code/create_initial_masks.py
+RUN chmod +x /code/create_template.py
 ENV PATH=/code:$PATH
 
 WORKDIR /code
