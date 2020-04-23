@@ -43,8 +43,8 @@ jobs:
         # note: docker image currently too large to save in cache?
         uses: actions/cache@v1
         with:
-          path: ~/previous_docker_image
-          key: previous-docker-image
+          path: previous_docker_image
+          key: mousefmriprep-previous-docker-image
 
       - name: reformat git-based container names for docker
         shell: bash
@@ -90,11 +90,7 @@ jobs:
           -t ${DOCKER_IMAGE_TESTING_BRANCH} \
           -f Dockerfile .
           # export a docker image for caching (should probably name them based on branch)
-          if [ ! -d ~/previous_docker_images]; then
-            mkdir -p ~/previous_docker_images;
-          fi
-          ls ~/
-          docker save -o ~/previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
+          docker save -o previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
 
       - name: push testing image to github
         run: |
@@ -114,7 +110,7 @@ jobs:
 #        uses: actions/cache@v1
 #        with:
 #          path: previous_docker_image
-#          key: previous-docker-image
+#          key: mousefmriprep-previous-docker-image
 #
 #      - name: reformat git-based container names for docker
 #        shell: bash
@@ -165,7 +161,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: previous_docker_image
-          key: previous-docker-image
+          key: mousefmriprep-previous-docker-image
 
       - name: reformat git-based container names for docker
         shell: bash
@@ -211,7 +207,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: previous_docker_image
-          key: previous-docker-image
+          key: mousefmriprep-previous-docker-image
 
       - name: reformat git-based container names for docker
         shell: bash
