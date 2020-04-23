@@ -38,7 +38,7 @@ if __name__=="__main__":
                   '--bids_suffix','bold',
                   ]
 
-    args = parser.parse_args(parameters)
+    args = parser.parse_args()
 
     bids_dir = args.bids_dir
     derivatives_dir = args.derivatives_dir

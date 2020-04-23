@@ -49,7 +49,9 @@ class ExractLabelMeans(BaseInterface):
         with open(label_file, 'r', encoding='utf-8-sig') as f:
             csv_file = csv.reader(f, delimiter='\t')
             for line in csv_file:
-                if (len(line) % 3) != 0:
+                if (len(line) == 0):
+                    continue
+                elif (len(line) % 3) != 0:
                     assert "incorrect line"
                 label_atlas = line[0]
                 label_name = line[1]

@@ -224,12 +224,12 @@ if __name__ == "__main__":
                         help="Keep all nipype node outputs, even if unused")
 
     if debugging:
-        BidsDir = os.path.abspath('/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids')
-        derivatives_dir = os.path.abspath('/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives')
+        BidsDir = os.path.abspath('/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids')
+        derivatives_dir = os.path.abspath('/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives')
         nipype_dir = os.path.abspath('/storage/akuurstr/mouse_pipepline_output')
 
         parameters = [BidsDir, derivatives_dir, 'participant',
-                      '--participant_label', 'NL311F9',
+                      '--participant_label', 'Nl311f9',
                       '--func_session_labels', '2020021001',
                       '--func_run_labels', '01',
 
@@ -237,15 +237,17 @@ if __name__ == "__main__":
                       #'--write_config_file','config2.json',
                       '--perform_func_to_anat_registration',
 
-                      '--atlas', '/home/akuurstr/Desktop/Esmin_mouse_registration/test/AMBMC_model.nii.gz',
-                      '--atlas_mask', '/home/akuurstr/Desktop/Esmin_mouse_registration/test/AMBMC_model_mask.nii.gz',
-                      '--label_mapping', '/softdev/akuurstr/python/modules/mousefMRIPrep/label_mapping.txt',
+                      '--atlas', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model.nii.gz',
+                      '--atlas_mask', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_mask.nii.gz',
+                      '--label_mapping', '/softdev/akuurstr/python/modules/mousefMRIPrep/examples/label_mapping.txt',
 
-                      '--anat_template', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200402_T2w.nii.gz',
-                      '--anat_template_probability_mask', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200402_T2w.nii.gz',
-
-                      '--func_template', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/FuncTemplate_task-rs_desc-avg0p3x0p3x0p55mm20200402_bold.nii.gz',
-                      '--func_template_probability_mask', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/FuncTemplateProbabilityMask_task-rs_desc-avg0p3x0p3x0p55mm20200402_bold.nii.gz',
+                      '--func_brain_extract_method', 'BRAINSUITE',
+                      '--anat_brain_extract_method', 'BRAINSUITE',
+ \
+                      #'--anat_template', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200402_T2w.nii.gz',
+                      #'--anat_template_probability_mask', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200402_T2w.nii.gz',
+                      #'--func_template', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/FuncTemplate_task-rs_desc-avg0p3x0p3x0p55mm20200402_bold.nii.gz',
+                      #'--func_template_probability_mask', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/FuncTemplateProbabilityMask_task-rs_desc-avg0p3x0p3x0p55mm20200402_bold.nii.gz',
 
                       '--nipype_processing_dir', nipype_dir,
                       '--keep_unnecessary_outputs',
