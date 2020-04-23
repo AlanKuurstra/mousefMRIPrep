@@ -93,6 +93,7 @@ jobs:
           if [ ! -d ~/previous_docker_images]; then
             mkdir -p ~/previous_docker_images;
           fi
+          ls ~/
           docker save -o ~/previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
 
       - name: push testing image to github
