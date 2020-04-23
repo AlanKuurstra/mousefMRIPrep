@@ -34,11 +34,16 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
-#      - name: Dump GitHub context
-#        env:
-#          GITHUB_CONTEXT: ${{ toJson(github) }}
-#        run: echo "$GITHUB_CONTEXT"
-#
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - name: echo image name
+        shell: bash
+        run: |
+          echo ${DOCKER_IMAGE_LATEST_DOCKERHUB}
+
 ##      - name: load cache
 ##        # note: docker image currently too large to save in cache?
 ##        uses: actions/cache@v1
