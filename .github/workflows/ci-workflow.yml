@@ -90,7 +90,7 @@ jobs:
           -t ${DOCKER_IMAGE_TESTING_BRANCH} \
           -f Dockerfile .
           # export a docker image for caching (should probably name them based on branch)
-          # docker save -o previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
+          docker save -o previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
 
       - name: push testing image to github
         run: |
@@ -198,7 +198,7 @@ jobs:
 
   release_latest:
     name: push latest docker images
-    if: github.ref == 'refs/heads/master'
+    #if: github.ref == 'refs/heads/master'
     needs: [build, tests]
     runs-on: ubuntu-latest
     steps:
