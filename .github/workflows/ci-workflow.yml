@@ -230,8 +230,8 @@ jobs:
           }
           echo ::set-env name=DOCKER_IMAGE_TESTING_BRANCH::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_BRANCH})
           echo ::set-env name=DOCKER_IMAGE_TESTING_LAST::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_LAST})
-          echo ::set-env name=DOCKER_IMAGE_LATEST_DOCKERHUB::$(reformat ${REGISTRY}/${DOCKER_IMAGE_LATEST_DOCKERHUB})
-          echo ::set-env name=DOCKER_IMAGE_TAG_DOCKERHUB::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TAG_DOCKERHUB})
+          echo ::set-env name=DOCKER_IMAGE_LATEST_DOCKERHUB::$(reformat ${DOCKER_IMAGE_LATEST_DOCKERHUB})
+          echo ::set-env name=DOCKER_IMAGE_TAG_DOCKERHUB::$(reformat ${DOCKER_IMAGE_TAG_DOCKERHUB})
 
       - name: echo image name
         shell: bash
