@@ -43,7 +43,7 @@ jobs:
         # note: docker image currently too large to save in cache?
         uses: actions/cache@v1
         with:
-          path: previous_docker_image
+          path: ~/previous_docker_image
           key: mousefmriprep-previous-docker-image
 
       - name: reformat git-based container names for docker
@@ -90,10 +90,12 @@ jobs:
           -t ${DOCKER_IMAGE_TESTING_BRANCH} \
           -f Dockerfile .
           # export a docker image for caching (should probably name them based on branch)
-          pwd
-          ls
-          ls /
-          docker save -o previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
+          ls ~/
+          echo "make dir"
+          mkdir ~/previous_docker_image
+          echo "done"
+          ls ~/
+          docker save -o ~/previous_docker_image/prev_image.tar ${DOCKER_IMAGE_TESTING_BRANCH}
 
       - name: push testing image to github
         run: |
