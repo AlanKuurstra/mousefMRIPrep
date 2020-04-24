@@ -548,6 +548,8 @@ if __name__ == "__main__":
             execGraph_SS_TV = wf_anat_processing.run(args.plugin, plugin_args=eval(args.plugin_args))
         else:
             execGraph_SS_TV = wf_anat_processing.run(args.plugin)
+        #reload layout so that the anat files are present
+        layout = BIDSLayout(bids_dir)
         layout.add_derivatives(derivatives_dir)
         anat_to_atlas_composite_transform, anat_n4_corrected, anat_mask = get_anat_derivatives(anat,anat_brain_extract_method)
     else:
