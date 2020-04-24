@@ -13,7 +13,8 @@ import sys
 from bids import BIDSLayout
 from bids.layout.layout import parse_file_entities
 import tempfile
-debugging=False
+
+debugging = False
 pipeline_name = 'MousefMRIPrep'
 
 def str2bool(v):
@@ -239,7 +240,7 @@ if __name__ == "__main__":
 
                       '--atlas', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model.nii.gz',
                       '--atlas_mask', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_mask.nii.gz',
-                      '--label_mapping', '/softdev/akuurstr/python/modules/mousefMRIPrep/examples/label_mapping.txt',
+                      '--label_mapping', '/softdev/akuurstr/python/modules/mousefMRIPrep/examples/label_mapping_host_short.txt',
 
                       '--func_brain_extract_method', 'BRAINSUITE',
                       '--anat_brain_extract_method', 'BRAINSUITE',
@@ -488,6 +489,7 @@ if __name__ == "__main__":
     perform_func_to_anat_registration = arg_dict['perform_func_to_anat_registration']
     anat_brain_extract_method = BrainExtractMethod[arg_dict['anat_brain_extract_method']]
     use_masks_anat_to_atlas_registration = (not arg_dict['no_masks_anat_to_atlas_registration'])
+    use_masks_func_to_anat_registration = (not arg_dict['no_masks_func_to_anat_registration'])
     search_anat_to_atlas_composite_transform, search_anat_n4_corrected, search_anat_mask = get_anat_derivatives(anat,anat_brain_extract_method)
     perform_anat_processing= arg_dict['force_anat_processing']
     if search_anat_to_atlas_composite_transform == []:
@@ -495,8 +497,9 @@ if __name__ == "__main__":
     if perform_func_to_anat_registration:
         if search_anat_n4_corrected == []:
             perform_anat_processing = True
-        if use_masks_anat_to_atlas_registration and (search_anat_mask==[]):
+        if use_masks_func_to_anat_registration and (search_anat_mask == [] and (anat_brain_extract_method != BrainExtractMethod.USER_PROVIDED_MASK)):
             perform_anat_processing = True
+
 
 
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -551,11 +554,14 @@ if __name__ == "__main__":
         #reload layout so that the anat files are present
         layout = BIDSLayout(bids_dir)
         layout.add_derivatives(derivatives_dir)
-        anat_to_atlas_composite_transform, anat_n4_corrected, anat_mask = get_anat_derivatives(anat,anat_brain_extract_method)
-    else:
-        anat_to_atlas_composite_transform = search_anat_to_atlas_composite_transform[0].path
-        anat_n4_corrected = search_anat_n4_corrected[0].path if search_anat_n4_corrected!=[] else None
-        anat_mask = search_anat_mask[0].path if anat_mask!=[] else None
+        search_anat_to_atlas_composite_transform, search_anat_n4_corrected, search_anat_mask = get_anat_derivatives(anat,anat_brain_extract_method)
+
+    anat_to_atlas_composite_transform = search_anat_to_atlas_composite_transform[0].path
+    anat_n4_corrected = search_anat_n4_corrected[0].path if search_anat_n4_corrected != [] else None
+    #if perform_func_to_anat_registration and use_masks_func_to_anat_registration and (anat_brain_extract_method != BrainExtractMethod.USER_PROVIDED_MASK):
+    #    anat_mask = search_anat_mask[0].path
+    if anat_brain_extract_method != BrainExtractMethod.USER_PROVIDED_MASK:
+        anat_mask = search_anat_mask[0].path if search_anat_mask != [] else None
 
     wf_func_processing = init_func_processing(
         # pipeline input parameters

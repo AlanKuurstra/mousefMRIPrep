@@ -4,9 +4,8 @@
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.github/workflows/ci-workflow.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ci-workflow.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/create_initial_masks.py" beforeDir="false" afterPath="$PROJECT_DIR$/create_initial_masks.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/create_template.py" beforeDir="false" afterPath="$PROJECT_DIR$/create_template.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tar2bids.py" beforeDir="false" afterPath="$PROJECT_DIR$/tar2bids.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nipype_interfaces/CorrelationMatrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/nipype_interfaces/CorrelationMatrix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -33,7 +32,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/examples" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../qsm_sstv/run.py" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
@@ -268,7 +267,9 @@
       <workItem from="1587494853310" duration="75433000" />
       <workItem from="1587620144367" duration="3395000" />
       <workItem from="1587623896929" duration="1592000" />
-      <workItem from="1587643479505" duration="8138000" />
+      <workItem from="1587643479505" duration="11111000" />
+      <workItem from="1587688453132" duration="1117000" />
+      <workItem from="1587729275237" duration="5950000" />
     </task>
     <servers />
   </component>
@@ -290,11 +291,11 @@
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state x="3406" y="1058" width="515" height="444" key="EnvironmentVariablesDialog/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1585391900103" />
-    <state x="4155" y="716" width="1154" height="726" key="FileChooserDialogImpl" timestamp="1587625224335">
+    <state x="4155" y="716" width="1154" height="726" key="FileChooserDialogImpl" timestamp="1587732167725">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state x="2143" y="477" width="424" height="484" key="FileChooserDialogImpl/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584132745128" />
-    <state x="4155" y="716" width="1154" height="726" key="FileChooserDialogImpl/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1587625224335" />
+    <state x="4155" y="716" width="1154" height="726" key="FileChooserDialogImpl/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1587732167725" />
     <state width="3794" height="653" key="GridCell.Tab.0.bottom" timestamp="1587644964081">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>

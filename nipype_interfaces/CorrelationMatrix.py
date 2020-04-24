@@ -2,6 +2,7 @@ import numpy as np
 import nibabel as nib
 import xml.etree.ElementTree as ET
 import csv
+import re
 import seaborn as sns
 import matplotlib.pyplot as plt
 import pickle
@@ -47,17 +48,21 @@ class ExractLabelMeans(BaseInterface):
 
         atlas_and_labels_dict = {}
         with open(label_file, 'r', encoding='utf-8-sig') as f:
-            csv_file = csv.reader(f, delimiter='\t')
-            for line in csv_file:
+            #csv_file = csv.reader(f, delimiter='\t')
+            #for line in csv_file:
+            for line in f.readlines():
+                line=re.split('[ \t,;]+',line.rstrip())
                 if (len(line) == 0):
                     continue
                 elif (len(line) % 3) != 0:
                     assert "incorrect line"
-                label_atlas = line[0]
-                label_name = line[1]
+                label_name = line[0]
+                label_atlas = line[1]
                 label_int = line[2]
+                #instead of making the name unique, maybe we should take the union of labels with the same name
                 atlas_string, _ = split_exts(os.path.basename(label_atlas))
                 full_label_name = atlas_string + '_' + label_name
+                #this would need to change to be { label_name: [list of (label_img,label_int) tuples] }
                 atlas_and_labels_dict.setdefault(label_atlas, []).append((full_label_name, label_int))
 
         atlas_cache_dict = {}
@@ -269,17 +274,19 @@ class ComputeCorrelationMatrix(BaseInterface):
 
 if __name__ == "__main__":
     if 0:
+        host_atlas_location = '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases'
+        guest_atlas_location = '/atlases'
         label_list = {
-            '/home/akuurstr/Desktop/Esmin_mouse_registration/test/labels/AMBMC-c57bl6-basalganglia-labels-15um.nii.gz': '/home/akuurstr/Desktop/Esmin_mouse_registration/test/labels/AMBMC_basalganglia_labels.xml',
-            '/home/akuurstr/Desktop/Esmin_mouse_registration/test/labels/AMBMC-c57bl6-cerebellum-labels-15um.nii.gz': '/home/akuurstr/Desktop/Esmin_mouse_registration/test/labels/AMBMC_cerebellum_labels.xml',
-            '/home/akuurstr/Desktop/Esmin_mouse_registration/test/labels/AMBMC-c57bl6-cortex-labels-15um.nii.gz': '/home/akuurstr/Desktop/Esmin_mouse_registration/test/labels/AMBMC_cortex_labels.xml',
-            '/home/akuurstr/Desktop/Esmin_mouse_registration/test/labels/AMBMC-c57bl6-hippocampus-labels-15um.nii.gz': '/home/akuurstr/Desktop/Esmin_mouse_registration/test/labels/AMBMC_hippocampus_labels.xml'
+            host_atlas_location+'/labels/AMBMC-c57bl6-basalganglia-labels-15um.nii.gz': host_atlas_location+'/labels/AMBMC_basalganglia_labels.xml',
+            host_atlas_location+'/labels/AMBMC-c57bl6-cerebellum-labels-15um.nii.gz': host_atlas_location+'/labels/AMBMC_cerebellum_labels.xml',
+            host_atlas_location+'/labels/AMBMC-c57bl6-cortex-labels-15um.nii.gz': host_atlas_location+'/labels/AMBMC_cortex_labels.xml',
+            host_atlas_location+'/labels/AMBMC-c57bl6-hippocampus-labels-15um.nii.gz': host_atlas_location+'/labels/AMBMC_hippocampus_labels.xml'
         }
 
         # create label text file
         # label_img_loc / name / label_int
 
-        with open('label_mapping.txt','w') as f:
+        with open('label_mapping_host.txt','w') as f:
             for label_img,label_int_to_name_mapping in list(label_list.items()):
 
                 map_root = ET.parse(label_int_to_name_mapping).getroot()
@@ -289,8 +296,25 @@ if __name__ == "__main__":
                 for label in map_root.findall('data/'):
                     label_text = label.text
                     label_int = label.get('index')
-                    print('\t'.join((label_img,label_text,label_int)))
-                    f.write('\t'.join((label_img,label_text,label_int))+'\n')
+                    #write_line = '\t'.join((label_text, label_img, label_int)) + '\n'
+                    write_line = "{:<20} {:<120} {:<5}\n".format(label_text, label_img,label_int)
+                    print(write_line)
+                    f.write(write_line)
+        with open('label_mapping_guest.txt','w') as f:
+            for label_img,label_int_to_name_mapping in list(label_list.items()):
+
+                map_root = ET.parse(label_int_to_name_mapping).getroot()
+                #print(map_root.getchildren())
+                # print(map_root.findall('data/'))
+
+                for label in map_root.findall('data/'):
+                    label_text = label.text
+                    label_int = label.get('index')
+                    label_img_guest = label_img.replace(host_atlas_location,guest_atlas_location)
+                    #write_line = '\t'.join((label_text, label_img_guest, label_int)) + '\n'
+                    write_line = "{:<20} {:<65} {:<5}\n".format(label_text, label_img_guest,label_int)
+                    print(write_line)
+                    f.write(write_line)
 
     if 0:
         tmp = ExractLabelMeans()
