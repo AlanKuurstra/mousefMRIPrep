@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/ci-workflow.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ci-workflow.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/fix_mouse_bids.py" beforeDir="false" afterPath="$PROJECT_DIR$/fix_mouse_bids.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tar2bids.py" beforeDir="false" afterPath="$PROJECT_DIR$/tar2bids.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,7 +57,7 @@
       <recent name="$PROJECT_DIR$/workflows" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.run">
+  <component name="RunManager" selected="Python.fix_mouse_bids">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -139,9 +140,6 @@
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tools" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -186,9 +184,6 @@
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tools" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -213,11 +208,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.fix_mouse_bids" />
+        <item itemvalue="Python.tar2bids" />
         <item itemvalue="Python.run" />
         <item itemvalue="Python.create_template" />
         <item itemvalue="Python.create_initial_masks" />
-        <item itemvalue="Python.fix_mouse_bids" />
-        <item itemvalue="Python.tar2bids" />
       </list>
     </recent_temporary>
   </component>
@@ -267,7 +262,7 @@
       <workItem from="1587623896929" duration="1592000" />
       <workItem from="1587643479505" duration="11111000" />
       <workItem from="1587688453132" duration="1117000" />
-      <workItem from="1587729275237" duration="6676000" />
+      <workItem from="1587729275237" duration="20998000" />
     </task>
     <servers />
   </component>
@@ -356,11 +351,11 @@
       <screen x="75" y="27" width="2485" height="1413" />
     </state>
     <state x="1091" y="56" width="1214" height="1378" key="dock-window-1/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1587152512588" />
-    <state x="3975" y="491" width="672" height="676" key="search.everywhere.popup" timestamp="1587500637511">
+    <state x="3975" y="491" width="672" height="676" key="search.everywhere.popup" timestamp="1587752751627">
       <screen x="2560" y="0" width="3840" height="2160" />
     </state>
     <state x="2023" y="327" key="search.everywhere.popup/75.27.1005.1893/1080.0.2560.1440@1080.0.2560.1440" timestamp="1584025063128" />
-    <state x="3975" y="491" width="672" height="676" key="search.everywhere.popup/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1587500637511" />
+    <state x="3975" y="491" width="672" height="676" key="search.everywhere.popup/75.27.2485.1413/2560.0.3840.2160@2560.0.3840.2160" timestamp="1587752751627" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

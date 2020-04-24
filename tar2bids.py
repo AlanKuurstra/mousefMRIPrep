@@ -123,8 +123,8 @@ if __name__ == "__main__":
 
     parameters = ['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/cfmm2tar_output',
                   # '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/dicom',
-                  '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids3',
-                  '--itermediate_dicom_dir',
+                  '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids',
+                  '--intermediate_dicom_dir',
                   '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/intermediate_dicoms'
                   ]
     args = parser.parse_args()

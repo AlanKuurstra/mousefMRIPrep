@@ -99,7 +99,8 @@ if __name__=="__main__":
                         help="")
 
     parameters = ['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/intermediate_dicoms',
-                  '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids3',
+                  '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids',
+                  '--skip_orientation_fix'
                   ]
     args = parser.parse_args()
 
@@ -144,6 +145,7 @@ if __name__=="__main__":
     # fix functional json files to include sliceTiming
     if not skip_slice_timing:
         mouse_funcs = layout.get(datatype='func', suffix=func_suffix, extension=['.nii', '.nii.gz'])
+        used_dicoms = set()
         for mouse_func in mouse_funcs:
             bids_entities = mouse_func.get_entities()
             bids_subject = bids_entities['subject']
@@ -157,11 +159,25 @@ if __name__=="__main__":
                 print('skipping sliceTiming for {}'.format(os.path.basename(mouse_func)))
                 continue
 
-            dcm_file = glob(dcm_dir_template.format(subject=bids_subject, session=bids_session))[0]
-            dcm_obj = pydicom.dcmread(dcm_file, stop_before_pixels=True)
+            series_no=json_dict['SeriesNumber']
+            dcm_files = glob(dcm_dir_template.format(subject=bids_subject, session=bids_session))
+            # the sort and set operation are to reduce the number of dicoms opened while searching for series no
+            dcm_files.sort()
+            dcm_files = list(set(dcm_files) - used_dicoms)
+            dcm_file = None
+            for candidate_dcm_file in dcm_files:
+                candidate_dcm_obj = pydicom.dcmread(candidate_dcm_file, stop_before_pixels=True)
+                if (int(candidate_dcm_obj.SeriesNumber)==series_no):
+                    dcm_file = candidate_dcm_file
+                    dcm_obj = candidate_dcm_obj
+                    used_dicoms.add(dcm_file)
+                    break
+            if dcm_file is None:
+                print('Could not find match based on dicom series number for {}'.format(os.path.basename(bids_file)))
+                continue
 
             # could also match by json's AcquisitionTime tag to dcm header if SeriesNumber folder structure changes
-            print('adding SliceTiming for {}'.format(os.path.basename(bids_file)))
+            print('adding SliceTiming for {} from {}'.format(os.path.basename(bids_file),os.path.basename(dcm_file)))
             # json_dict['SliceTiming'] = np.array2string(get_slice_timing_in_seconds(dcm_obj),separator=',', max_line_width=np.inf)
             json_dict['SliceTiming'] = get_slice_timing_in_seconds(dcm_obj)
             # print(json_dict['SliceTiming'])
