@@ -137,18 +137,18 @@ if __name__ == "__main__":
                         action='store_true',
                         help="")
 
+    parser.add_argument("--no_masks_anat_to_atlas_registration",
+                        action='store_true',
+                        help="")
+
     parser.add_argument("--func_brain_extract_method",
                         choices=BrainExtractMethod.__members__,
-                        default=BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK.name,
+                        default=BrainExtractMethod.NO_BRAIN_EXTRACTION.name,
                         help="")
 
     parser.add_argument("--anat_brain_extract_method",
                         choices=BrainExtractMethod.__members__,
                         default=BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK.name,
-                        help="")
-
-    parser.add_argument("--no_masks_anat_to_atlas_registration",
-                        action='store_true',
                         help="")
 
     parser.add_argument("--interpolation",
