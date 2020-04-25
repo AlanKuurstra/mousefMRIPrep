@@ -15,7 +15,7 @@ from bids.layout.layout import parse_file_entities
 import tempfile
 
 debugging = False
-pipeline_name = 'MousefMRIPrep'
+pipeline_name = 'mousefMRIPrep'
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -189,11 +189,11 @@ if __name__ == "__main__":
                         help="Don't dilate final mask in BrainSuite brain extraction.")
 
     parser.add_argument("--correlation_shift_interval_s",
-                        default=1.5,
+                        default=0.375,
                         type=float,
                         help="")
     parser.add_argument("--correlation_max_shift_s",
-                        default=0.375,
+                        default=1.5,
                         type=float,
                         help="")
     parser.add_argument("--correlation_search_for_neg_corr",

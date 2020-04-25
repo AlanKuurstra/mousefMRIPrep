@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.github/workflows/ci-workflow.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ci-workflow.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/fix_mouse_bids.py" beforeDir="false" afterPath="$PROJECT_DIR$/fix_mouse_bids.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tar2bids.py" beforeDir="false" afterPath="$PROJECT_DIR$/tar2bids.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -57,7 +58,7 @@
       <recent name="$PROJECT_DIR$/workflows" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.fix_mouse_bids">
+  <component name="RunManager" selected="Python.run">
     <configuration default="true" type="PythonConfigurationType" factoryName="Python">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -76,32 +77,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="create_initial_masks" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="mousersfMRIPrep" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-        <env name="ANTSPATH" value="/usr/lib/ants/" />
-        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
-        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
-        <env name="PATH" value="$PATH:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/create_initial_masks.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -140,6 +115,9 @@
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tools" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -160,6 +138,7 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
         <env name="ANTSPATH" value="/usr/lib/ants/" />
         <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
         <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
@@ -180,10 +159,39 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="scratch_16" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="ANTSPATH" value="/usr/lib/ants/" />
+        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
+        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
+        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/scratch_16.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="tar2bids" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
       <option name="SDK_HOME" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tools" />
       <option name="IS_MODULE_SDK" value="true" />
@@ -202,17 +210,17 @@
     <list>
       <item itemvalue="Python.tar2bids" />
       <item itemvalue="Python.fix_mouse_bids" />
-      <item itemvalue="Python.create_initial_masks" />
       <item itemvalue="Python.create_template" />
       <item itemvalue="Python.run" />
+      <item itemvalue="Python.scratch_16" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.run" />
+        <item itemvalue="Python.scratch_16" />
         <item itemvalue="Python.fix_mouse_bids" />
         <item itemvalue="Python.tar2bids" />
-        <item itemvalue="Python.run" />
         <item itemvalue="Python.create_template" />
-        <item itemvalue="Python.create_initial_masks" />
       </list>
     </recent_temporary>
   </component>
@@ -262,7 +270,10 @@
       <workItem from="1587623896929" duration="1592000" />
       <workItem from="1587643479505" duration="11111000" />
       <workItem from="1587688453132" duration="1117000" />
-      <workItem from="1587729275237" duration="20998000" />
+      <workItem from="1587729275237" duration="22336000" />
+      <workItem from="1587761657822" duration="116000" />
+      <workItem from="1587813894040" duration="2423000" />
+      <workItem from="1587816391344" duration="3000" />
     </task>
     <servers />
   </component>
