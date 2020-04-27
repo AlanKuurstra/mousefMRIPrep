@@ -1,6 +1,7 @@
 #def write_derivative_description(bids_dir, deriv_dir,derivatives_pipeline_name):
 def write_derivative_description(deriv_dir,derivatives_pipeline_name):
     from pathlib import Path
+    import os
     import json
 
 
@@ -33,6 +34,8 @@ def write_derivative_description(deriv_dir,derivatives_pipeline_name):
     # if 'License' in orig_desc:
     #     desc['License'] = orig_desc['License']
 
-    deriv_dir = Path(deriv_dir)
-    with (deriv_dir / derivatives_pipeline_name / 'dataset_description.json').open('w') as fobj:
+
+    deriv_path_with_pipeline = Path(deriv_dir) / derivatives_pipeline_name
+    os.makedirs(deriv_path_with_pipeline, exist_ok=True)
+    with (deriv_path_with_pipeline / 'dataset_description.json').open('w') as fobj:
         json.dump(desc, fobj, indent=4)
