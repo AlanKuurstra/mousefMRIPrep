@@ -76,8 +76,10 @@ def init_func_processing(
         use_masks_func_to_anat_registration=False,
 
         # node resources
-        omp_nthreads=None,
-        mem_gb=50,
+        nthreads_node=None,
+        mem_gb_node=3,
+        nthreads_mapnode=None,
+        mem_gb_mapnode=3,
 
         # registration processing time
         interpolation="Linear",
@@ -128,8 +130,8 @@ def init_func_processing(
         use_masks_func_to_anat_registration = False
 
 
-    if omp_nthreads is None or omp_nthreads < 1:
-        omp_nthreads = cpu_count()
+    if nthreads_node is None or nthreads_node < 1:
+        nthreads_node = cpu_count()
 
     perform_motion_correction = (mc_transform_method != MotionCorrectionTransform.NO_MC)
 
@@ -201,8 +203,10 @@ def init_func_processing(
         reduce_to_float_precision=reduce_to_float_precision,
         interpolation=interpolation,
 
-        omp_nthreads=omp_nthreads,
-        mem_gb=mem_gb,
+        nthreads_node=nthreads_node,
+        mem_gb_node=mem_gb_node,
+        nthreads_mapnode=nthreads_mapnode,
+        mem_gb_mapnode=mem_gb_mapnode,
     )
 
     wf.connect([
@@ -228,8 +232,8 @@ def init_func_processing(
             mask=use_masks_func_to_anat_registration,
             reduce_to_float_precision=reduce_to_float_precision,
             interpolation=interpolation,
-            omp_nthreads=omp_nthreads,
-            mem_gb=mem_gb,
+            nthreads_node=nthreads_node,
+            mem_gb_node=mem_gb_node,
         )
         wf.connect([
             (preprocess_func_wf, func_to_anat, [('outputnode.func_avg_n4_corrected', 'inputnode.func_reference')]),
@@ -246,7 +250,7 @@ def init_func_processing(
             ])
 
     concat_transforms_func_to_atlas = pe.Node(interface=ApplyTransforms(), name='concat_transforms_func_to_atlas',
-                                              n_procs=omp_nthreads, mem_gb=mem_gb)
+                                              n_procs=nthreads_node, mem_gb=mem_gb_node)
     concat_transforms_func_to_atlas.inputs.dimension = 3
     concat_transforms_func_to_atlas.inputs.float = reduce_to_float_precision
     # concat_transforms_func_to_atlas.inputs.output_image = 'func_to_atlas_transform.h5'
@@ -282,7 +286,7 @@ def init_func_processing(
                              [('outputnode.func_motion_corrected', 'func_file')]), ])
     elif perform_stc:
         func_stc_wf = init_bold_stc_wf(name='preprocess_func_stc', metadata=metadata)
-        split_stc = pe.Node(interface=Split(), name='preprocess_func_stc_split', n_procs=omp_nthreads, mem_gb=mem_gb)
+        split_stc = pe.Node(interface=Split(), name='preprocess_func_stc_split', n_procs=nthreads_node, mem_gb=mem_gb_node)
         split_stc.inputs.dimension = 't'
         if mc_transform_method == MotionCorrectionTransform.NO_MC:
             if SPLIT_FUNC_INTO_SEPARATE_VOLUMES:
@@ -313,7 +317,7 @@ def init_func_processing(
 
     if not SPLIT_FUNC_INTO_SEPARATE_VOLUMES:
         register_func_to_atlas = pe.Node(interface=ApplyTransforms(), name='register_func_to_atlas',
-                                         n_procs=omp_nthreads, mem_gb=mem_gb)
+                                         n_procs=nthreads_node, mem_gb=mem_gb_node)
         if gzip_large_images:
             register_func_to_atlas.inputs.output_image = 'warped.nii.gz'
         else:
@@ -336,13 +340,13 @@ def init_func_processing(
             concat_list_mc_to_func_to_atlas = get_node_transform_concat_list(name='concat_list_mc_to_func_to_atlas')
 
             # if atlas is low res, there's enough memory to do use ReplicateImage and ReplicateDisplacement
-            replicate_atlas = pe.Node(interface=ReplicateImage(), name='replicate_atlas', n_procs=omp_nthreads,
-                                      mem_gb=mem_gb)
+            replicate_atlas = pe.Node(interface=ReplicateImage(), name='replicate_atlas', n_procs=nthreads_node,
+                                      mem_gb=mem_gb_node)
             replicate_atlas.inputs.tr = tr
             replicate_atlas.inputs.reps = nvolumes
 
             replicate_displacement = pe.Node(interface=ReplicateDisplacement(), name='replicate_displacement',
-                                             n_procs=omp_nthreads, mem_gb=mem_gb)
+                                             n_procs=nthreads_node, mem_gb=mem_gb_node)
             replicate_displacement.inputs.tr = tr
             replicate_displacement.inputs.reps = nvolumes
 
@@ -364,9 +368,13 @@ def init_func_processing(
         concat_list_mc_to_func_to_atlas = get_node_transform_concat_list(name='concat_list_mc_to_func_to_atlas',
                                                                          mapnode_iterfield=['apply_first'])
 
+        # n_procs is not set by omp_nthreads because ANTs uses ITK and Nipype doesn't seem to set
+        # ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS. No sense in limiting mapnode based on omp_nthreads when it has
+        # no real effect on the node.
         register_func_to_atlas = pe.MapNode(interface=ApplyTransforms(), name='register_func_to_atlas',
-                                            iterfield=['input_image', 'transforms'], n_procs=omp_nthreads,
-                                            mem_gb=mem_gb)
+                                            iterfield=['input_image', 'transforms'], n_procs=nthreads_mapnode,
+                                            mem_gb=mem_gb_mapnode)
+
         register_func_to_atlas.inputs.dimension = 3
 
         if gzip_large_images:
@@ -376,7 +384,7 @@ def init_func_processing(
         register_func_to_atlas.inputs.float = reduce_to_float_precision
         register_func_to_atlas.inputs.interpolation = interpolation
 
-        create_4d_image = pe.Node(interface=Merge(), name='create_4d_image', n_procs=omp_nthreads, mem_gb=mem_gb)
+        create_4d_image = pe.Node(interface=Merge(), name='create_4d_image', n_procs=nthreads_node, mem_gb=mem_gb_node)
         create_4d_image.inputs.dimension = 't'
         create_4d_image.inputs.tr = tr
 
@@ -399,8 +407,9 @@ def init_func_processing(
             ])
 
         if isdefined(inputnode.inputs.label_mapping):
-            from nipype_interfaces.CorrelationMatrix import ExractLabelMeans, ComputeCorrelationMatrix
-            extract_label_means = pe.Node(interface=ExractLabelMeans(), name='extract_label_signal_means')
+            from nipype_interfaces.CorrelationMatrix import init_extract_label_means, ComputeCorrelationMatrix#, ExractLabelMeans
+            # extract_label_means = pe.Node(interface=ExractLabelMeans(), name='extract_label_signal_means')
+            extract_label_means = init_extract_label_means('extract_label_signal_means',mem_gb_mapnode=mem_gb_mapnode,nthreads_mapnode=nthreads_mapnode)
             compute_corr_mtx = pe.Node(interface=ComputeCorrelationMatrix(), name='compute_corr_mtx')
             compute_corr_mtx.inputs.shift_interval_s = correlation_shift_interval_s
             compute_corr_mtx.inputs.max_shift_s = correlation_max_shift_s
@@ -408,9 +417,9 @@ def init_func_processing(
             compute_corr_mtx.inputs.search_for_neg_corr = correlation_search_for_neg_corr
 
             wf.connect([
-                (inputnode, extract_label_means, [('label_mapping', 'label_file')]),
-                (register_func_to_atlas, extract_label_means, [('output_image', 'split_volumes_list')]),
-                (extract_label_means, compute_corr_mtx, [('output_file_pkl', 'label_signals_pkl')]),
+                (inputnode, extract_label_means, [('label_mapping', 'inputnode.label_file')]),
+                (register_func_to_atlas, extract_label_means, [('output_image', 'inputnode.split_volumes_list')]),
+                (extract_label_means, compute_corr_mtx, [('outputnode.output_file_pkl', 'label_signals_pkl')]),
             ])
 
     # datasinks
@@ -438,8 +447,8 @@ def init_func_processing(
 
     # show user how well the functional registered to the atlas
     register_func_avg_to_atlas = pe.Node(interface=ApplyTransforms(), name='register_func_avg_to_atlas',
-                                         n_procs=omp_nthreads,
-                                         mem_gb=mem_gb)
+                                         n_procs=nthreads_node,
+                                         mem_gb=mem_gb_node)
     register_func_avg_to_atlas.inputs.dimension = 3
     register_func_avg_to_atlas.inputs.float = reduce_to_float_precision
     register_func_avg_to_atlas.inputs.interpolation = interpolation
@@ -557,10 +566,10 @@ def init_func_processing(
             wf.connect([
                 (inputnode, derivatives_label_signal_means_pkl, [('func_file', 'inputnode.original_bids_file')]),
                 (extract_label_means, derivatives_label_signal_means_pkl,
-                 [('output_file_pkl', 'inputnode.file_to_rename')]),
+                 [('outputnode.output_file_pkl', 'inputnode.file_to_rename')]),
                 (inputnode, derivatives_label_signal_means_mat, [('func_file', 'inputnode.original_bids_file')]),
                 (extract_label_means, derivatives_label_signal_means_mat,
-                 [('output_file_mat', 'inputnode.file_to_rename')]),
+                 [('outputnode.output_file_mat', 'inputnode.file_to_rename')]),
                 (inputnode, derivatives_corr_mtx_png, [('func_file', 'inputnode.original_bids_file')]),
                 (compute_corr_mtx, derivatives_corr_mtx_png, [('output_file_png', 'inputnode.file_to_rename')]),
                 (inputnode, derivatives_corr_mtx_pkl, [('func_file', 'inputnode.original_bids_file')]),

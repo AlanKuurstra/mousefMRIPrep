@@ -64,13 +64,15 @@ def init_func_reference(
         # for nipype nodes
         reduce_to_float_precision=False,
         interpolation='Linear',
-        omp_nthreads=None,
-        mem_gb=3.0,
+        nthreads_node=None,
+        mem_gb_node=3.0,
+        nthreads_mapnode=None,
+        mem_gb_mapnode=3,
 ):
     wf = pe.Workflow(name)
 
-    if omp_nthreads is None or omp_nthreads < 1:
-        omp_nthreads = cpu_count()
+    if nthreads_node is None or nthreads_node < 1:
+        nthreads_node = cpu_count()
 
     tr=None
     if func_metadata is not None:
@@ -96,17 +98,17 @@ def init_func_reference(
 
     # custom inteface to antsMotionCorr does not work with non-linear registration
     # do our own motion correction with a mapnode and antsRegistration
-    split_func = pe.Node(interface=Split(), name='split_func',n_procs=omp_nthreads,mem_gb=mem_gb)
+    split_func = pe.Node(interface=Split(), name='split_func', n_procs=nthreads_node, mem_gb=mem_gb_node)
     split_func.inputs.dimension = 't'
 
-    initial_avg = get_average_image_wf(name='initial_avg',images_slice=slice(0,50),omp_nthreads=omp_nthreads,mem_gb=mem_gb)
+    initial_avg = get_average_image_wf(name='initial_avg', images_slice=slice(0,50), omp_nthreads=nthreads_node, mem_gb=mem_gb_node)
     initial_avg.inputs.inputnode.normalize = False
 
     # if we wanted to average the single 4d func file instead of the split 3d volumes we could use:
     # fslroi input output tmin tmax
     # fslmaths input -Tmean output
 
-    mc_register_func_to_avg = pe.MapNode(interface=Registration(), name='mc_register_func_to_avg',iterfield=['moving_image',],n_procs=omp_nthreads,mem_gb=mem_gb)
+    mc_register_func_to_avg = pe.MapNode(interface=Registration(), name='mc_register_func_to_avg', iterfield=['moving_image',], n_procs=nthreads_mapnode, mem_gb=mem_gb_mapnode)
     mc_register_func_to_avg.inputs.dimension = 3
     mc_register_func_to_avg.inputs.float = reduce_to_float_precision
     mc_register_func_to_avg.inputs.interpolation = interpolation
@@ -130,10 +132,10 @@ def init_func_reference(
     mc_register_func_to_avg.inputs.sigma_units = ['mm'] * 2  # we use mm instead of vox because we don't have isotropic voxels
     mc_register_func_to_avg.inputs.use_estimate_learning_rate_once = [False] * 2  # estimate the learning rate step size only at the beginning of each level. Does this override the value chosen in transform_parameters?
     mc_register_func_to_avg.inputs.output_warped_image = 'motion_corrected.nii.gz'
-    mc_register_func_to_avg.n_procs = omp_nthreads
+    mc_register_func_to_avg.n_procs = nthreads_node
     mc_register_func_to_avg.inputs.verbose = True
 
-    refined_avg = get_average_image_wf(name='refined_avg', images_slice=slice(None, None),omp_nthreads=omp_nthreads,mem_gb=mem_gb)
+    refined_avg = get_average_image_wf(name='refined_avg', images_slice=slice(None, None), omp_nthreads=nthreads_node, mem_gb=mem_gb_node)
     refined_avg.inputs.inputnode.normalize = False
 
     from nipype.interfaces.utility import Function
@@ -145,31 +147,31 @@ def init_func_reference(
         Function(input_names=["forward_list"], output_names=["transforms_reversed"],
                  function=reverse_list),name='reverse_transform_list', iterfield=['forward_list'])
 
-    combine_mc_displacements=pe.MapNode(interface=ApplyTransforms(),name='combine_mc_displacements',iterfield=['transforms','reference_image','input_image'],n_procs=omp_nthreads,mem_gb=mem_gb)
+    combine_mc_displacements=pe.MapNode(interface=ApplyTransforms(), name='combine_mc_displacements', iterfield=['transforms','reference_image','input_image'], n_procs=nthreads_mapnode, mem_gb=mem_gb_mapnode)
     combine_mc_displacements.inputs.dimension = 3
     combine_mc_displacements.inputs.output_image = 'motion_corr_transform.nii.gz'
     combine_mc_displacements.inputs.print_out_composite_warp_file = True
 
-    create_4d_mc_func = pe.Node(interface=Merge(), name='create_4d_mc_func',n_procs=omp_nthreads,mem_gb=mem_gb)
+    create_4d_mc_func = pe.Node(interface=Merge(), name='create_4d_mc_func', n_procs=nthreads_node, mem_gb=mem_gb_node)
     create_4d_mc_func.inputs.dimension = 't'
     create_4d_mc_func.inputs.tr = tr
 
 
-    create_4d_mc_displacement = pe.Node(interface=MergeDisplacement(), name='create_4d_mc_displacement',n_procs=omp_nthreads,mem_gb=mem_gb)
+    create_4d_mc_displacement = pe.Node(interface=MergeDisplacement(), name='create_4d_mc_displacement', n_procs=nthreads_node, mem_gb=mem_gb_node)
     create_4d_mc_displacement.inputs.tr = tr
 
 
     func_brain_extraction_wf = init_n4_bias_and_brain_extraction_wf(brain_extract_method,
-                                                                      name='func_brain_extraction_wf',
-                                                                      omp_nthreads=omp_nthreads,
-                                                                      mem_gb=mem_gb,
-                                                                      n4_bspline_fitting_distance=n4_bspline_fitting_distance,
-                                                                      diffusionConstant=diffusionConstant,
-                                                                      diffusionIterations=diffusionIterations,
-                                                                      edgeDetectionConstant=edgeDetectionConstant,
-                                                                      radius=radius,
-                                                                      dilateFinalMask=dilateFinalMask,
-                                                                      )
+                                                                    name='func_brain_extraction_wf',
+                                                                    omp_nthreads=nthreads_node,
+                                                                    mem_gb=mem_gb_node,
+                                                                    n4_bspline_fitting_distance=n4_bspline_fitting_distance,
+                                                                    diffusionConstant=diffusionConstant,
+                                                                    diffusionIterations=diffusionIterations,
+                                                                    edgeDetectionConstant=edgeDetectionConstant,
+                                                                    radius=radius,
+                                                                    dilateFinalMask=dilateFinalMask,
+                                                                    )
 
     wf.connect([
         (inputnode, split_func, [('func_file', 'in_file')]),

@@ -9,6 +9,7 @@ import pickle
 import scipy.io as sio
 from tools.split_exts import split_exts
 import os
+import json
 
 import nibabel as nib
 import os
@@ -24,76 +25,132 @@ from nipype.interfaces.base import (
 from tools.split_exts import split_exts
 import numpy as np
 import subprocess
+from nipype.pipeline import engine as pe
+from nipype.interfaces.utility import Function
+from nipype.interfaces import utility as niu
+
+
+
+def read_label_mapping_file(label_mapping_file):
+    import re
+    labels_dict = {}
+    with open(label_mapping_file, 'r', encoding='utf-8-sig') as f:
+        for line in f.readlines():
+            line=re.split('[ \t,;]+',line.rstrip())
+            if (len(line) == 0):
+                continue
+            elif (len(line) % 3) != 0:
+                assert "incorrect line"
+            label_name = line[0]
+            label_atlas = line[1]
+            label_int = int(line[2])
+
+            labels_dict.setdefault(label_name, []).append((label_atlas, label_int))
+
+    label_names = list(labels_dict.keys())
+    label_atlases = [[atlas_int_pair[0] for atlas_int_pair in value] for value in labels_dict.values()]
+    label_ints = [[atlas_int_pair[1] for atlas_int_pair in value] for value in labels_dict.values()]
+    return label_names,label_atlases,label_ints
+
+def get_read_label_mapping_file_node(name='read_label_mapping_file'):
+    node = pe.Node(
+        interface=Function(input_names=["label_mapping_file"], output_names=['label_names','label_atlases','label_ints'],
+                           function=read_label_mapping_file), name=name)
+    return node
+
+
+
 
 
 class ExractLabelMeansInputSpec(CommandLineInputSpec):
-    split_volumes_list = InputMultiPath(desc="List of volumes, typically an fmri split across time.", exists=True, mandatory=True)
-    label_file = File(desc='File with list of labels to extract.', exists=True,mandatory=True)
-    output_name_without_extension = File('label_signals', desc="File", mandatory=False, usedefault=True)
+    volume = File(desc="List of volumes, typically an fmri split across time.", exists=True,mandatory=True)
+    label_name_list = traits.List(traits.String, desc='xxx', exists=True,mandatory=True)
+    label_atlases_list =traits.List(InputMultiPath(desc="xxx"), exists=True, mandatory=True)
+    label_ints_list = traits.List(traits.List(traits.Int,desc='xxx'), exists=True,mandatory=True)
+    output_name = File('label_averages.json', desc="File", mandatory=False, usedefault=True)
 
 class ExractLabelMeansOutputSpec(TraitedSpec):
-    output_file_pkl = File(desc="Extracted mean label signals stored in Python pickle file", exists=True)
-    output_file_mat = File(desc="Extracted mean label signals stored in Matlab .mat file", exists=True)
-
+    output_file_json = File(desc="Extracted mean label signals stored in json file", exists=True)
 
 class ExractLabelMeans(BaseInterface):
     input_spec = ExractLabelMeansInputSpec
     output_spec = ExractLabelMeansOutputSpec
 
     def _run_interface(self, runtime):
-        split_volumes_list = self.inputs.split_volumes_list
-        label_file = self.inputs.label_file
+        volume_loc = self.inputs.volume
+        volume = nib.load(volume_loc).get_data()
+        label_name_list = self.inputs.label_name_list
+        label_atlases_list = self.inputs.label_atlases_list
+        label_ints_list = self.inputs.label_ints_list
+        output_file_json = self._list_outputs()['output_file_json']
+
+
+        print(f'processing {volume_loc}')
+        assert len(label_name_list)==len(label_atlases_list)==len(label_ints_list), "label_name_list, label_img_list and label_int_list must be the same length"
+
+        label_atlas_set = set()
+        for labels in label_atlases_list:
+            for label in labels:
+                label_atlas_set.add(label)
+
+        atlas_cache_dict = {}
+        for atlas_loc in label_atlas_set:
+            atlas_cache_dict[atlas_loc] = nib.load(atlas_loc).get_data()
+
+        label_average_dict = {}
+        #label_average_dict = {'volume':volume_loc}
+        for label_name,label_atlases,label_ints in zip(label_name_list,label_atlases_list,label_ints_list):
+            # in numpy masked arrays, True means invalid
+            mask = True
+            for label_atlas, label_int in zip(label_atlases, label_ints):
+                mask &= (atlas_cache_dict[label_atlas] != int(label_int))
+            volume_masked = np.ma.MaskedArray(data=volume, mask=mask)
+            label_average_dict[label_name] = volume_masked.mean()
+
+        with open(output_file_json, 'w') as f:
+            json.dump(label_average_dict, f, indent=4)
+        return runtime
+
+    def _list_outputs(self):
+        outputs = self.output_spec().get()
+        output_name = self.inputs.output_name
+        outputs['output_file_json'] = os.path.abspath(output_name)
+        return outputs
+
+class AssembleLabelSignalsInputSpec(CommandLineInputSpec):
+    label_mean_json_files =InputMultiPath(desc="xxx", exists=True, mandatory=True)
+    output_name_without_extension = File('label_signals', desc="File", mandatory=False, usedefault=True)
+
+class AssembleLabelSignalsOutputSpec(TraitedSpec):
+    output_file_pkl = File(desc="Assembled mean label signals stored in Python pickle file", exists=True)
+    output_file_mat = File(desc="Assembled mean label signals stored in Matlab .mat file", exists=True)
+
+class AssembleLabelSignals(BaseInterface):
+    input_spec = AssembleLabelSignalsInputSpec
+    output_spec = AssembleLabelSignalsOutputSpec
+
+    def _run_interface(self, runtime):
+        label_mean_json_files = self.inputs.label_mean_json_files
         output_file_pkl =  self._list_outputs()['output_file_pkl']
         output_file_mat =  self._list_outputs()['output_file_mat']
 
-        atlas_and_labels_dict = {}
-        with open(label_file, 'r', encoding='utf-8-sig') as f:
-            #csv_file = csv.reader(f, delimiter='\t')
-            #for line in csv_file:
-            for line in f.readlines():
-                line=re.split('[ \t,;]+',line.rstrip())
-                if (len(line) == 0):
-                    continue
-                elif (len(line) % 3) != 0:
-                    assert "incorrect line"
-                label_name = line[0]
-                label_atlas = line[1]
-                label_int = line[2]
-                #instead of making the name unique, maybe we should take the union of labels with the same name
-                atlas_string, _ = split_exts(os.path.basename(label_atlas))
-                full_label_name = atlas_string + '_' + label_name
-                #this would need to change to be { label_name: [list of (label_img,label_int) tuples] }
-                atlas_and_labels_dict.setdefault(label_atlas, []).append((full_label_name, label_int))
 
-        atlas_cache_dict = {}
-        for atlas_loc in atlas_and_labels_dict.keys():
-            atlas_cache_dict[atlas_loc] = nib.load(atlas_loc).get_data()
+        label_signal_dict = {}
+        for label_mean_json_file in label_mean_json_files:
+            with open(label_mean_json_file,'r') as f:
+                label_mean_dict = json.load(f)
+            for name,value in label_mean_dict.items():
+                label_signal_dict.setdefault(name, []).append(value)
 
-        # dictionary instead of structured array because some atlas labels have 0 pixels and we don't want to include
-        # 0 timeseries in the structured array. convert to structured array at the end for saving.
-        avg_signal_dict = {}
-        # multiprocess this over volumes yourself so that the labels can stay in a c shared array (rather than map node)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        for volume_loc in split_volumes_list:
-            print(volume_loc)
-            volume = nib.load(volume_loc).get_data()
-            for label_img_loc, labels in atlas_and_labels_dict.items():
-                # label_img = nib.load(label_img_loc).get_data()
-                label_img = atlas_cache_dict[label_img_loc]
-                for label_name, label_int in labels:
-                    print(label_name, label_int)
-                    mask = label_img == int(label_int)
-                    tmp = volume[mask]
-                    if tmp.shape[0] != 0:
-                        avg_signal_dict.setdefault(label_name, []).append(tmp.mean(axis=0))
+        #convert dict to structured array so that we can label the columns
 
-        for key in avg_signal_dict.keys():
-            avg_signal_dict[key] = np.array(avg_signal_dict[key])
+        for key in label_signal_dict.keys():
+            label_signal_dict[key] = np.array(label_signal_dict[key])
 
-        # convert dict to structured array so that we can label the columns
         names = ['label', 'avg_signal']
         formats = ['U50', np.ndarray]
         dtype = dict(names=names, formats=formats)
-        label_signals = np.array(list(avg_signal_dict.items()), dtype=dtype)
+        label_signals = np.array(list(label_signal_dict.items()), dtype=dtype)
 
         with open(output_file_pkl, 'wb') as f:
             pickle.dump([label_signals,], f)
@@ -111,6 +168,121 @@ class ExractLabelMeans(BaseInterface):
         outputs['output_file_pkl'] = os.path.abspath(output_name_without_extension + '.pkl')
         outputs['output_file_mat'] = os.path.abspath(output_name_without_extension + '.mat')
         return outputs
+
+def init_extract_label_means(name='extract_label_means',mem_gb_mapnode=3,nthreads_mapnode=1):
+    wf = pe.Workflow(name)
+
+    inputnode = pe.Node(niu.IdentityInterface(fields=[
+        'split_volumes_list',
+        'label_file',
+    ]), name='inputnode')
+
+    outputnode = pe.Node(niu.IdentityInterface(
+        fields=['output_file_pkl',
+                'output_file_mat',
+                ]), name='outputnode')
+
+    read_labels = get_read_label_mapping_file_node()
+    extract_label_means = pe.MapNode(interface=ExractLabelMeans(), iterfield=['volume'], mem_gb=mem_gb_mapnode,n_procs=nthreads_mapnode,name='extract_label_means')
+    assemble_signals = pe.Node(interface=AssembleLabelSignals(),name='assemble_signals')
+
+    wf.connect([
+        (inputnode, read_labels, [('label_file', 'label_mapping_file')]),
+        (inputnode, extract_label_means, [('split_volumes_list', 'volume')]),
+        (read_labels, extract_label_means, [('label_names', 'label_name_list')]),
+        (read_labels, extract_label_means, [('label_atlases', 'label_atlases_list')]),
+        (read_labels, extract_label_means, [('label_ints', 'label_ints_list')]),
+        (extract_label_means, assemble_signals, [('output_file_json', 'label_mean_json_files')]),
+        (assemble_signals, outputnode, [('output_file_pkl', 'output_file_pkl')]),
+        (assemble_signals, outputnode, [('output_file_mat', 'output_file_mat')]),
+    ])
+    return wf
+
+# class ExractLabelMeansInputSpec(CommandLineInputSpec):
+#     split_volumes_list = InputMultiPath(desc="List of volumes, typically an fmri split across time.", exists=True, mandatory=True)
+#     label_file = File(desc='File with list of labels to extract.', exists=True,mandatory=True)
+#     output_name_without_extension = File('label_signals', desc="File", mandatory=False, usedefault=True)
+#
+# class ExractLabelMeansOutputSpec(TraitedSpec):
+#     output_file_pkl = File(desc="Extracted mean label signals stored in Python pickle file", exists=True)
+#     output_file_mat = File(desc="Extracted mean label signals stored in Matlab .mat file", exists=True)
+#
+#
+# class ExractLabelMeans(BaseInterface):
+#     input_spec = ExractLabelMeansInputSpec
+#     output_spec = ExractLabelMeansOutputSpec
+#
+#     def _run_interface(self, runtime):
+#         split_volumes_list = self.inputs.split_volumes_list
+#         label_file = self.inputs.label_file
+#         output_file_pkl =  self._list_outputs()['output_file_pkl']
+#         output_file_mat =  self._list_outputs()['output_file_mat']
+#
+#         atlas_and_labels_dict = {}
+#         with open(label_file, 'r', encoding='utf-8-sig') as f:
+#             #csv_file = csv.reader(f, delimiter='\t')
+#             #for line in csv_file:
+#             for line in f.readlines():
+#                 line=re.split('[ \t,;]+',line.rstrip())
+#                 if (len(line) == 0):
+#                     continue
+#                 elif (len(line) % 3) != 0:
+#                     assert "incorrect line"
+#                 label_name = line[0]
+#                 label_atlas = line[1]
+#                 label_int = line[2]
+#                 #instead of making the name unique, maybe we should take the union of labels with the same name
+#                 atlas_string, _ = split_exts(os.path.basename(label_atlas))
+#                 full_label_name = atlas_string + '_' + label_name
+#                 #this would need to change to be { label_name: [list of (label_img,label_int) tuples] }
+#                 atlas_and_labels_dict.setdefault(label_atlas, []).append((full_label_name, label_int))
+#
+#         atlas_cache_dict = {}
+#         for atlas_loc in atlas_and_labels_dict.keys():
+#             atlas_cache_dict[atlas_loc] = nib.load(atlas_loc).get_data()
+#
+#         # dictionary instead of structured array because some atlas labels have 0 pixels and we don't want to include
+#         # 0 timeseries in the structured array. convert to structured array at the end for saving.
+#         avg_signal_dict = {}
+#         # multiprocess this over volumes yourself so that the labels can stay in a c shared array (rather than map node)!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#         for volume_loc in split_volumes_list:
+#             print(volume_loc)
+#             volume = nib.load(volume_loc).get_data()
+#             for label_img_loc, labels in atlas_and_labels_dict.items():
+#                 # label_img = nib.load(label_img_loc).get_data()
+#                 label_img = atlas_cache_dict[label_img_loc]
+#                 for label_name, label_int in labels:
+#                     print(label_name, label_int)
+#                     mask = label_img == int(label_int)
+#                     tmp = volume[mask]
+#                     if tmp.shape[0] != 0:
+#                         avg_signal_dict.setdefault(label_name, []).append(tmp.mean(axis=0))
+#
+#         for key in avg_signal_dict.keys():
+#             avg_signal_dict[key] = np.array(avg_signal_dict[key])
+#
+#         # convert dict to structured array so that we can label the columns
+#         names = ['label', 'avg_signal']
+#         formats = ['U50', np.ndarray]
+#         dtype = dict(names=names, formats=formats)
+#         label_signals = np.array(list(avg_signal_dict.items()), dtype=dtype)
+#
+#         with open(output_file_pkl, 'wb') as f:
+#             pickle.dump([label_signals,], f)
+#
+#         sio.savemat(output_file_mat,
+#                     {
+#                         'label_signals': label_signals,
+#                     })
+#         return runtime
+#
+#     def _list_outputs(self):
+#         outputs = self.output_spec().get()
+#
+#         output_name_without_extension = self.inputs.output_name_without_extension
+#         outputs['output_file_pkl'] = os.path.abspath(output_name_without_extension + '.pkl')
+#         outputs['output_file_mat'] = os.path.abspath(output_name_without_extension + '.mat')
+#         return outputs
 
 
 
@@ -338,6 +510,17 @@ if __name__ == "__main__":
     from pprint import pprint
     print(np.array2string(corr_mtx))
     print(np.array2string(shift_mtx))
+
+    if 0:
+        tmp = init_extract_label_means()
+        tmp.inputs.inputnode.volumes = [
+            '/storage/akuurstr/mouse_pipepline_output/mousefMRIPrep_scratch/func_processing/register_func_to_atlas/mapflow/_register_func_to_atlas5/warped.nii',
+            '/storage/akuurstr/mouse_pipepline_output/mousefMRIPrep_scratch/func_processing/register_func_to_atlas/mapflow/_register_func_to_atlas6/warped.nii']
+        tmp.inputs.inputnode.label_mapping_file = '/softdev/akuurstr/python/modules/mousefMRIPrep/examples/label_mapping_host.txt'
+        result = tmp.run()
+        with open(list(result.nodes)[-1].get_output('output_file_pkl'), 'rb') as f:
+            label_signals = pickle.load(f)
+        stop
 
 
 

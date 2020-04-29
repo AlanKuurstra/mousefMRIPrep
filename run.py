@@ -14,7 +14,7 @@ from bids import BIDSLayout
 from bids.layout.layout import parse_file_entities
 import tempfile
 
-debugging = False
+debugging = True
 pipeline_name = 'mousefMRIPrep'
 
 def str2bool(v):
@@ -200,11 +200,16 @@ if __name__ == "__main__":
                         action='store_true',
                         help="")
 
-    parser.add_argument("--omp_nthreads",
+    parser.add_argument("--nthreads_node",
                         type=int,
-                        help="True or False. If None, will use number of available cpus.")
-    parser.add_argument("--mem_gb",
-                        default=50,
+                        default=-1,
+                        help="Number of threads for a single node. The default, -1, is to have as many threads as available cpus.")
+    parser.add_argument("--nthreads_mapnode",
+                        type=int,
+                        default=-1,
+                        help="Number of threads in every node of a mapnode. The default, -1, is to divide the available cpus between the number of running mapnode nodes.")
+    parser.add_argument("--mem_gb_mapnode",
+                        default=10,
                         type=float,
                         help="")
 
@@ -250,13 +255,38 @@ if __name__ == "__main__":
                       #'--func_template', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/FuncTemplate_task-rs_desc-avg0p3x0p3x0p55mm20200402_bold.nii.gz',
                       #'--func_template_probability_mask', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/FuncTemplateProbabilityMask_task-rs_desc-avg0p3x0p3x0p55mm20200402_bold.nii.gz',
 
+                      "--mem_gb_mapnode",'6',
+
                       '--nipype_processing_dir', nipype_dir,
                       '--keep_unnecessary_outputs',
+                      '--plugin', 'MultiProc',
                       ]
         args = parser.parse_args(parameters)
     else:
         parameters = sys.argv
         args = parser.parse_args()
+
+    # resource management
+    # tools that use the Open MP library can have their threads limited with OMP_NUM_THREADS
+    # MKL often is compiled with Open MP, but it can override OMP_NUM_THREADS with a variable MKL_NUM_THREADS
+    # ITK has a variable called ITK_NUM_THREADS
+
+    # NSLOTS has the same behaviour as ITK_NUM_THREADS as long as ITK_NUM_THREADS is not set, otherwise
+    # ITK_NUM_THREADS takes precedence.  Nipype uses NSLOTS.
+
+    # Nipype Nodes have keywords n_procs and mem_gb.  mem_gb is an estimate of the memory that will be consumed by
+    # an instance of the node's command - it's useful for limiting the number of nodes run in parallel.
+    # A MapNode will use the interface's estimates and the total allowed resources indicated in plugin_args
+    # to determine how many nodes to run in parallel.
+    # n_procs can limit the number of cpus for omp and mkl programs, but not itk. For programs using ITK,
+    # n_procs is only an estimate and limiting must be done outside Nipype with ITK_NUM_THREADS.
+    # However, note that most ANTs interfaces have a num_threads keyword to do this for you.
+    # So instead of:
+    # Node(interface=ApplyTransforms(), n_procs=omp_nthreads, mem_gb=mem_gb)
+    # one can use:
+    # Node(interface=ApplyTransforms(num_threads=itk_nthreads), n_procs=itk_nthreads, mem_gb=mem_gb)
+
+
 
     # store arguments in a restricted dictionary
     unsaved_keys = ['help','bids_dir','output_derivatives_dir','analysis_level', 'participant_label', 'func_session_labels', 'func_run_labels', 'anat_session_label','anat_run_label','config_file', 'write_config_file', 'func_mask', 'anat_mask']
@@ -526,8 +556,8 @@ if __name__ == "__main__":
             use_masks_anat_to_atlas_registration=(not arg_dict['no_masks_anat_to_atlas_registration']),
 
             # node resources
-            omp_nthreads=arg_dict['omp_nthreads'],
-            mem_gb=arg_dict['mem_gb'],
+            nthreads_node=arg_dict['nthreads_node'],
+            mem_gb_node=arg_dict['mem_gb_mapnode'],
 
             # registration processing time
             interpolation=arg_dict['interpolation'],
@@ -592,8 +622,10 @@ if __name__ == "__main__":
         use_masks_func_to_anat_registration=(not arg_dict['no_masks_func_to_anat_registration']),
 
         # node resources
-        omp_nthreads=arg_dict['omp_nthreads'],
-        mem_gb=arg_dict['mem_gb'],
+        nthreads_node=arg_dict['nthreads_node'],
+        mem_gb_node=arg_dict['mem_gb_mapnode'],
+        nthreads_mapnode=arg_dict['nthreads_mapnode'],
+        mem_gb_mapnode=arg_dict['mem_gb_mapnode'],
 
         # registration processing time
         interpolation=arg_dict['interpolation'],

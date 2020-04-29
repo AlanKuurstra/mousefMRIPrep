@@ -19,14 +19,14 @@ class BrainExtractMethod(Enum):
 def init_ants_brain_extraction_wf(
         name='ants_brain_extraction_wf',
         n4_bspline_fitting_distance=20,
-        omp_nthreads=None,
-        mem_gb=3.0,
+        nthreads_node=None,
+        mem_gb_node=3.0,
         use_initial_masks=False,
 ):
     wf = pe.Workflow(name)
 
-    if omp_nthreads is None or omp_nthreads < 1:
-        omp_nthreads = cpu_count()
+    if nthreads_node is None or nthreads_node < 1:
+        nthreads_node = cpu_count()
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['in_file', 'in_file_mask', 'template', 'template_probability_mask']),
                         name='inputnode')
@@ -40,9 +40,9 @@ def init_ants_brain_extraction_wf(
             dimension=3, save_bias=False, copy_header=True,
             n_iterations=[50] * 4, convergence_threshold=1e-7, shrink_factor=4,
             bspline_fitting_distance=n4_bspline_fitting_distance),
-        n_procs=omp_nthreads, name='inu_n4') #iterfield=['input_image']
+        n_procs=nthreads_node, name='inu_n4') #iterfield=['input_image']
 
-    ants_reg = pe.Node(interface=Registration(), name='antsRegistration',n_procs=omp_nthreads,mem_gb=mem_gb)
+    ants_reg = pe.Node(interface=Registration(), name='antsRegistration', n_procs=nthreads_node, mem_gb=mem_gb_node)
     ants_reg.inputs.output_transform_prefix = "output_"
     # ants_reg.inputs.initial_moving_transform = 'trans.mat'
     ants_reg.inputs.dimension = 3
@@ -76,7 +76,7 @@ def init_ants_brain_extraction_wf(
                                                        True]  # estimate the learning rate step size only at the beginning of each level. Does this override the value chosen in transform_parameters?
     ants_reg.inputs.use_histogram_matching = [True, True]  # This is the default
     ants_reg.inputs.output_warped_image = 'output_warped_image.nii.gz'
-    ants_reg.n_procs = omp_nthreads
+    ants_reg.n_procs = nthreads_node
 
     apply_transform = pe.Node(interface=ApplyTransforms(), name='antsApplyTransforms')
     apply_transform.inputs.dimension = 3
@@ -89,11 +89,11 @@ def init_ants_brain_extraction_wf(
 
     thr_brainmask = pe.Node(ThresholdImage(
         dimension=3, th_low=0.5, th_high=1.0, inside_value=1,
-        outside_value=0), name='thr_brainmask',n_procs=omp_nthreads,mem_gb=mem_gb)
+        outside_value=0), name='thr_brainmask',n_procs=nthreads_node,mem_gb=mem_gb_node)
 
     # USE ATROPOS TO CLEAN UP??
 
-    apply_mask = pe.Node(ApplyMask(), name='apply_mask',n_procs=omp_nthreads,mem_gb=mem_gb) #iterfield=['in_file']
+    apply_mask = pe.Node(ApplyMask(), name='apply_mask', n_procs=nthreads_node, mem_gb=mem_gb_node) #iterfield=['in_file']
 
     # atropos doesn't do so well on T2w mouse data
     atropos = pe.Node(Atropos(
@@ -106,7 +106,7 @@ def init_ants_brain_extraction_wf(
         mrf_smoothing_factor=0.1,
         likelihood_model='Gaussian',
         use_random_seed=True),
-        name='01_atropos', n_procs=omp_nthreads, mem_gb=3)
+        name='01_atropos', n_procs=nthreads_node, mem_gb=3)
 
     wf.connect([
         (inputnode, inu_n4, [('in_file', 'input_image')]),
@@ -265,8 +265,8 @@ def init_n4_bias_and_brain_extraction_wf(
 
     elif brain_extraction_method in (BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK,BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK, BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK):
         brain_extraction = init_ants_brain_extraction_wf(
-            omp_nthreads=omp_nthreads,
-            mem_gb=mem_gb,
+            nthreads_node=omp_nthreads,
+            mem_gb_node=mem_gb,
             n4_bspline_fitting_distance=n4_bspline_fitting_distance,
             use_initial_masks=(brain_extraction_method in(BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK,BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK))
         )

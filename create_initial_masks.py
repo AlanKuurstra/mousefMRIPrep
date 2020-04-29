@@ -89,8 +89,8 @@ if __name__=="__main__":
             name='func_reference',
             perform_motion_correction=False,
             brain_extract_method=BrainExtractMethod.NO_BRAIN_EXTRACTION,
-            omp_nthreads=None,
-            mem_gb=3,
+            nthreads_node=None,
+            mem_gb_node=3,
         )
         wf.connect([
             (inputnode, func_reference, [('in_file', 'inputnode.func_file')]),

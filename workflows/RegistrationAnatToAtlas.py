@@ -37,14 +37,14 @@ def init_anat_to_atlas_registration(
         mask = True,
         reduce_to_float_precision=False,
         interpolation='Linear',
-        omp_nthreads = None,
-        mem_gb = 3.0,
+        nthreads_node = None,
+        mem_gb_node = 3.0,
 ):
 
     wf = pe.Workflow(name)
 
-    if omp_nthreads is None or omp_nthreads < 1:
-        omp_nthreads = cpu_count()
+    if nthreads_node is None or nthreads_node < 1:
+        nthreads_node = cpu_count()
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['anat', 'anat_mask', 'atlas', 'atlas_mask']), name='inputnode')
 
@@ -62,7 +62,7 @@ def init_anat_to_atlas_registration(
     calc_shrink_factors = pe.Node(Function(input_names=["smoothing_sigmas","smallest_dim_size"], output_names=["shrink_factors"], function=get_shrink_factors), name="shrink_factors")
 
     ants_method = 'Mix'  # 'Mix', 'MI', 'CC'
-    ants_reg = pe.Node(interface=Registration(), name='antsRegistration',n_procs=omp_nthreads,mem_gb=mem_gb)
+    ants_reg = pe.Node(interface=Registration(), name='antsRegistration', n_procs=nthreads_node, mem_gb=mem_gb_node)
     ants_reg.inputs.output_transform_prefix = "output_"
     ants_reg.inputs.initial_moving_transform_com = 1  # seems to be necessary. initial translation alignment by geometric center of the images (=0), the image intensities (=1), or the origin of the images (=2)
     ants_reg.inputs.dimension = 3
@@ -102,7 +102,7 @@ def init_anat_to_atlas_registration(
     ants_reg.inputs.sigma_units = ['mm'] * 4  # we use mm instead of vox because we don't have isotropic voxels
     ants_reg.inputs.use_estimate_learning_rate_once = [True] * 4  # estimate the learning rate step size only at the beginning of each level. Does this override the value chosen in transform_parameters?
     ants_reg.inputs.output_warped_image = 'output_warped_image.nii.gz'
-    ants_reg.n_procs = omp_nthreads
+    ants_reg.n_procs = nthreads_node
 
     # note, in neurodocker's precompiled version of ants, the -v option gives version instead of making output verbose
     # this is different than apt's ants version and nipype's presumed behaviour and causes failures

@@ -42,8 +42,8 @@ def init_anat_processing(
         use_masks_anat_to_atlas_registration=True,
 
         # node resources
-        omp_nthreads=None,
-        mem_gb=50,
+        nthreads_node=None,
+        mem_gb_node=3,
 
         # registration processing time
         interpolation="Linear",
@@ -66,8 +66,8 @@ def init_anat_processing(
         print("Warning: Not using masks in anat to atlas registration since anat_brain_extract_method = BrainExtractMethod.NO_BRAIN_EXTRACTION")
         use_masks_anat_to_atlas_registration = False
 
-    if omp_nthreads is None or omp_nthreads < 1:
-        omp_nthreads = cpu_count()
+    if nthreads_node is None or nthreads_node < 1:
+        nthreads_node = cpu_count()
 
 
     # create workflow
@@ -115,16 +115,16 @@ def init_anat_processing(
                                                               edgeDetectionConstant=edgeDetectionConstant,
                                                               radius=radius,
                                                               dilateFinalMask=dilateFinalMask,
-                                                              omp_nthreads=omp_nthreads,
-                                                              mem_gb=mem_gb,
+                                                              omp_nthreads=nthreads_node,
+                                                              mem_gb=mem_gb_node,
                                                               )
 
     anat_to_atlas = init_anat_to_atlas_registration(
         mask=use_masks_anat_to_atlas_registration,
         reduce_to_float_precision=reduce_to_float_precision,
         interpolation=interpolation,
-        omp_nthreads=omp_nthreads,
-        mem_gb=mem_gb,
+        nthreads_node=nthreads_node,
+        mem_gb_node=mem_gb_node,
     )
 
     wf.connect([

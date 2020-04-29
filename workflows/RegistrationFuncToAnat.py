@@ -9,14 +9,14 @@ def init_func_to_anat_registration(
         mask = True,
         reduce_to_float_precision=False,
         interpolation='Linear',
-        omp_nthreads=None,
-        mem_gb=3.0,
+        nthreads_node=None,
+        mem_gb_node=3.0,
 ):
     #not enough detail to use BBR, so we just use ants
     wf = pe.Workflow(name)
 
-    if omp_nthreads is None or omp_nthreads < 1:
-        omp_nthreads = cpu_count()
+    if nthreads_node is None or nthreads_node < 1:
+        nthreads_node = cpu_count()
 
     inputnode = pe.Node(niu.IdentityInterface(fields=['func_reference', 'func_reference_mask', 'anat', 'anat_mask']), name='inputnode')
 
@@ -24,7 +24,7 @@ def init_func_to_anat_registration(
 
     ants_method = 'Mix'
 
-    ants_reg = pe.Node(interface=Registration(), name='antsRegistration',n_procs=omp_nthreads,mem_gb=mem_gb)
+    ants_reg = pe.Node(interface=Registration(), name='antsRegistration', n_procs=nthreads_node, mem_gb=mem_gb_node)
     ants_reg.inputs.output_transform_prefix = "output_"
     #ants_reg.inputs.initial_moving_transform_com =  1 #the initial translation isn't needed, these scans are right on top of each other
     ants_reg.inputs.dimension = 3
