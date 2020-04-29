@@ -14,7 +14,7 @@ from bids import BIDSLayout
 from bids.layout.layout import parse_file_entities
 import tempfile
 
-debugging = True
+debugging = False
 pipeline_name = 'mousefMRIPrep'
 
 def str2bool(v):
