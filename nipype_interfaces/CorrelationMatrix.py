@@ -105,7 +105,12 @@ class ExractLabelMeans(BaseInterface):
             for label_atlas, label_int in zip(label_atlases, label_ints):
                 mask &= (atlas_cache_dict[label_atlas] != int(label_int))
             volume_masked = np.ma.MaskedArray(data=volume, mask=mask)
-            label_average_dict[label_name] = volume_masked.mean()
+            # specify dtype because volumes are often float32, but to avoid rounding errors we do calculations as float64
+            label_average_dict[label_name] = volume_masked.mean(dtype='float')
+            # if the mask has 0 voxels for some reason, then the mean is a masked array with data=0 mask=True
+            if label_average_dict[label_name] is np.ma.masked:
+                #label_average_dict[label_name] = float(label_average_dict[label_name].data)
+                label_average_dict[label_name] = np.NaN
 
         with open(output_file_json, 'w') as f:
             json.dump(label_average_dict, f, indent=4)
@@ -494,33 +499,48 @@ if __name__ == "__main__":
         tmp.inputs.label_file='label_mapping.txt'
         results = tmp.run()
 
-    tmp = ComputeCorrelationMatrix()
-    tmp.inputs.label_signals_pkl = '/softdev/akuurstr/python/modules/mousefMRIPrep/label_signals.pkl'
-    tmp.inputs.shift_interval_s = .1
-    tmp.inputs.max_shift_s = 3
-    tmp.inputs.tr = 1.5
-    tmp.inputs.search_for_neg_corr = True
+        tmp = ComputeCorrelationMatrix()
+        tmp.inputs.label_signals_pkl = '/softdev/akuurstr/python/modules/mousefMRIPrep/label_signals.pkl'
+        tmp.inputs.shift_interval_s = .1
+        tmp.inputs.max_shift_s = 3
+        tmp.inputs.tr = 1.5
+        tmp.inputs.search_for_neg_corr = True
 
-    results = tmp.run()
+        results = tmp.run()
 
-    with open(results.outputs.output_file_pkl,'rb') as f:
-        corr_mtx,shift_mtx = pickle.load(f)
+        with open(results.outputs.output_file_pkl,'rb') as f:
+            corr_mtx,shift_mtx = pickle.load(f)
 
-    np.set_printoptions(linewidth=300)
-    from pprint import pprint
-    print(np.array2string(corr_mtx))
-    print(np.array2string(shift_mtx))
+        np.set_printoptions(linewidth=300)
+        from pprint import pprint
+        print(np.array2string(corr_mtx))
+        print(np.array2string(shift_mtx))
 
-    if 0:
+    if 1:
         tmp = init_extract_label_means()
-        tmp.inputs.inputnode.volumes = [
+        tmp.inputs.inputnode.split_volumes_list = [
             '/storage/akuurstr/mouse_pipepline_output/mousefMRIPrep_scratch/func_processing/register_func_to_atlas/mapflow/_register_func_to_atlas5/warped.nii',
             '/storage/akuurstr/mouse_pipepline_output/mousefMRIPrep_scratch/func_processing/register_func_to_atlas/mapflow/_register_func_to_atlas6/warped.nii']
-        tmp.inputs.inputnode.label_mapping_file = '/softdev/akuurstr/python/modules/mousefMRIPrep/examples/label_mapping_host.txt'
+        tmp.inputs.inputnode.label_file = '/softdev/akuurstr/python/modules/mousefMRIPrep/examples/label_mapping_host.txt'
+        tmp.inputs.inputnode.label_file = '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/label_mapping_host.txt'
         result = tmp.run()
         with open(list(result.nodes)[-1].get_output('output_file_pkl'), 'rb') as f:
             label_signals = pickle.load(f)
-        stop
+
+        tmp2 = ComputeCorrelationMatrix()
+        tmp2.inputs.label_signals_pkl = list(result.nodes)[-1].get_output('output_file_pkl')
+        tmp2.inputs.shift_interval_s = 1
+        tmp2.inputs.max_shift_s = 0
+        tmp2.inputs.tr = 1.5
+        tmp2.inputs.search_for_neg_corr = True
+        result2 = tmp2.run()
+        
+        
+            
+        
+
+
+
 
 
 
