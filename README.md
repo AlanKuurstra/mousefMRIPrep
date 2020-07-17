@@ -18,8 +18,8 @@
 # set environment variables related to data storage folders
 
 # these two need to change for your system
-LARGE_SCRATCH_FOLDER=/scratch/akuurstr
-DATA_FOLDER=~/menon_mouse
+LARGE_SCRATCH_FOLDER=/srv/cfmm/data/akuurstra/scratch 
+DATA_FOLDER=/srv/cfmm/data/akuurstra/results
 
 # these can probably stay the same
 TMP_FOLDER=$LARGE_SCRATCH_FOLDER/tmp

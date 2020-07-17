@@ -82,7 +82,7 @@ def init_anat_processing(
         'atlas_mask',
     ]), name='inputnode')
 
-    # NOTE: best practice is to set these inputnode values using parameters in init_func_to_atlas_registration
+    # NOTE: best practice is to set these inputnode values using parameters in init_func_to_atlas_registration()
     # the isdefined() method is used during pipeline creation to determine which nodes to create and connect
     # if the inputnode is set after the pipeline is created, necessary nodes may not be created.
 
