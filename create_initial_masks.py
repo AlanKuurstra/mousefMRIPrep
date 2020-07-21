@@ -30,13 +30,12 @@ if __name__=="__main__":
                         default='CreateInitialMasksBrainsuiteBrainMask',
                         )
     parser.add_argument('--files',
-                        help='Overrides input_mask_description, bids_datatype, bids_suffix'
+                        help='File with line separated list of files to brain extract. Overrides BIDS search.'
                         )
 
-    parameters = ['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids',
-                  '--files','/softdev/akuurstr/python/modules/mousefMRIPrep/examples/subject_masks.txt',
-                  '--bids_datatype','func',
-                  '--bids_suffix','bold',
+    parameters = ['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids2',
+                  '--bids_datatype','anat',
+                  '--bids_suffix','T2w',
                   ]
 
     args = parser.parse_args()
