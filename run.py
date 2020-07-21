@@ -17,6 +17,10 @@ import tempfile
 debugging = False
 pipeline_name = 'mousefMRIPrep'
 
+# this function allows parser to accept multiple string matches for bool arguments
+# It also allows an argument to have None as default value, which can be useful.
+# Eg. perform_stc can default to None and the program will check
+# for slice timing info in the json file to determine whether stc should be True or False
 def str2bool(v):
     if isinstance(v, bool):
        return v
@@ -27,9 +31,32 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
+# function searches for pre-existing anatomic processing results in the derivatives directory
+def get_anat_derivatives(original_anat_file,anat_brain_extract_method):
+    anat_entities = parse_file_entities(original_anat_file)
+    anat_entities.pop('extension')
+
+    anat_entities['desc'] = 'AnatToAtlasTransform'
+    anat_to_atlas_composite_transform = layout.get(drop_invalid_filters=False, **anat_entities)
+    anat_entities['desc'] = 'n4Corrected'
+    anat_n4_corrected = layout.get(drop_invalid_filters=False, **anat_entities)
+    # mask desc depends on the proposed method.
+    method = None
+    if anat_brain_extract_method == BrainExtractMethod.BRAINSUITE:
+        method = 'Brainsuite'
+    elif anat_brain_extract_method == BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK:
+        method = 'NoInitTemplateExtracted'
+    elif anat_brain_extract_method == BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK:
+        method = 'BrainsuiteInitTemplateExtracted'
+    elif anat_brain_extract_method == BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK:
+        method = 'UserInitTemplateExtracted'
+    anat_entities['desc'] = f'{method}BrainMask'
+    anat_mask = layout.get(drop_invalid_filters=False, **anat_entities)
+    return anat_to_atlas_composite_transform, anat_n4_corrected, anat_mask
+
 if __name__ == "__main__":
     # followed format from BIDS-Apps/nipypelines
-    defstr = ' (default %(default)s)'
+    #defstr = ' (default %(default)s)'
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('bids_dir', help='Data directory formatted according to BIDS standard.')
     parser.add_argument('output_derivatives_dir', help='Directory where processed output files are to be stored in bids derivatives format.')
@@ -70,116 +97,116 @@ if __name__ == "__main__":
                         )
 
     parser.add_argument('--config_file',
-                        help='')
+                        help='Use a config file for argument default values. Command line arguments override config file.')
 
     parser.add_argument('--write_config_file',
                         const='config.json',
                         nargs='?',
-                        help='')
+                        help='Write a config file storing the current command line arguments and exit.')
 
     parser.add_argument('--func_entities',
                         default='task-rs_bold.nii.gz',
-                        help='')
+                        help='BIDS compliant string containing entities and labels used to search for functional images in the BIDS folder. The default has the task entity with label rs, a suffix of bold, and extension .nii.gz.')
     parser.add_argument('--anat_entities',
                         default='acq-TurboRARE_T2w.nii.gz',
-                        help='')
+                        help='BIDS compliant string containing entities and labels used to search for anatomical images in the BIDS folder. The default has the acq entity with label TurboRARE, a suffix of T2w, and extension .nii.gz.')
 
 
     parser.add_argument('--input_masks_description_label',
                         default='ManualBrainMask',
-                        help='mutually exclusive with func_mask and anat_mask')
+                        help='BIDS description tag for masks in your BIDS or derivatives directory. This option is overridden by func_mask and anat_mask.')
     parser.add_argument('--func_mask',
-                        help='mutually exclusive with input_masks_description_label')
+                        help='Explicitly specify location of the functional image mask. Overrides mask found with input_masks_description_label.')
     parser.add_argument('--anat_mask',
-                        help='mutually exclusive with input_masks_description_label')
+                        help='Explicitly specify location of the anatomical image mask. Overrides mask found with input_masks_description_label.')
 
 
 
     parser.add_argument('--func_template_desc',
-                        help='mutually exclusive with func_template and func_template_probability_mask. Overrides option in config file.')
+                        help='BIDS description tag for functional template and probability mask used in brain extraction. Only required if func_brain_extract_method is registration based. Overridden by func_template and func_template_probability_mask.')
     parser.add_argument('--func_template',
-                        help='mutually exclusive with func_template_desc. Overrides option in config file.')
+                        help='Explicitly specify location of the functional template used in registration based brain extraction. Only required if func_brain_extract_method is registration based. Overrides template found with func_template_desc.')
     parser.add_argument('--func_template_probability_mask',
-                        help='mutually exclusive with func_template_desc. Overrides option in config file.')
+                        help='Explicitly specify location of the functional probability mask used in registration based brain extraction. Only required if func_brain_extract_method is registration based. Overrides probability mask found with func_template_desc.')
 
     parser.add_argument('--anat_template_desc',
-                        help='mutually exclusive with anat_template and anat_template_probability_mask. Overrides option in config file.')
+                        help='BIDS description tag for anatomical template and probability mask used in brain extraction. Only required if anat_brain_extract_method is registration based. Overridden by anat_template and anat_template_probability_mask.')
     parser.add_argument('--anat_template',
-                        help='mutually exclusive with anat_template_desc. Overrides option in config file.')
+                        help='Explicitly specify location of the anatomical template used in registration based brain extraction. Only required if anat_brain_extract_method is registration based. Overrides template found with anat_template_desc.')
     parser.add_argument('--anat_template_probability_mask',
-                        help='mutually exclusive with anat_template_desc. Overrides option in config file.')
+                        help='Explicitly specify location of the anatomical probability mask used in registration based brain extraction. Only required if anat_brain_extract_method is registration based. Overrides probability mask found with anat_template_desc.')
     parser.add_argument("--force_anat_processing",
                         action='store_true',
-                        help="")
+                        help="Re-run the anatomical pipeline even if results exist in the bids derivatives folder. Previous results will be overwritten.")
 
     parser.add_argument('--atlas',
-                        help='Overrides option in config file.')
+                        help='Anatomical image of mouse atlas.')
     parser.add_argument('--atlas_mask',
-                        help='Overrides option in config file.')
+                        help='Anatomical image mask of mouse atlas.')
     parser.add_argument('--label_mapping',
-                        help='Overrides option in config file.')
+                        help='Location of text file mapping label names to integer value and label image.')
 
 
     parser.add_argument("--mc_transform_method",
                         choices=MotionCorrectionTransform.__members__,
                         default=MotionCorrectionTransform.NO_MC.name,
-                        help="")
+                        help="Type of motion correction to perform.")
 
     parser.add_argument("--perform_stc",
                         type=str2bool,
-                        help="True or False. If None, will look in .json.")
+                        help="If True, slice timing correction will be performed. If left blank, the program will look for slice timing information in the functional .json files and perform stc if present.")
 
     parser.add_argument("--perform_func_to_anat_registration",
                         action='store_true',
-                        help="")
+                        help="Register the functional to the anatomical and concatenate the resulting transform to the anatomical to atlas transform.")
 
     parser.add_argument("--no_masks_func_to_anat_registration",
                         action='store_true',
-                        help="")
+                        help="Don't use masks during functional to anatomical registration.")
 
     parser.add_argument("--no_masks_anat_to_atlas_registration",
                         action='store_true',
-                        help="")
+                        help="Don't use masks during the anatomical to atlas registration.")
 
     parser.add_argument("--func_brain_extract_method",
                         choices=BrainExtractMethod.__members__,
                         default=BrainExtractMethod.NO_BRAIN_EXTRACTION.name,
-                        help="")
+                        help="Brain extraction method for functional image.")
 
     parser.add_argument("--anat_brain_extract_method",
                         choices=BrainExtractMethod.__members__,
                         default=BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK.name,
-                        help="")
+                        help="Brain extraction method for anatomical image.")
 
     parser.add_argument("--interpolation",
                         default='Linear',
-                        help="antsRegistration and antsApplyTransforms interpolation method")
+                        help="Interpolation method in antsRegistration and antsApplyTransforms.")
 
     parser.add_argument("--high_precision",
                         action='store_true',
-                        help="antsRegistration antsApplyTransform float precision by default.")
+                        help="Use double precision instead of float in antsRegistration antsApplyTransform.")
 
     parser.add_argument("--gzip_large_images",
                         action='store_true',
-                        help="")
+                        help="If true, gzip large images. Gzip saves space but I/O operations take longer.")
 
     parser.add_argument("--n4_bspline_fitting_distance",
                         default=20,
                         type=float,
-                        help="n4 bspline fitting distance, for mouse smaller")
+                        help="N4 bspline fitting distance.")
 
     parser.add_argument("--diffusionConstant",
                         default=30,
                         type=float,
-                        help="Diffusion constant from BrainSuite brain extraction.")
+                        help="Diffusion constant for BrainSuite brain extraction.")
     parser.add_argument("--diffusionIterations",
                         default=3,
                         type=int,
-                        help="Diffusion iterations from BrainSuite brain extraction.")
+                        help="Diffusion iterations for BrainSuite brain extraction.")
     parser.add_argument("--edgeDetectionConstant",
                         default=0.55,
                         type=float,
-                        help="Edge detection constant from BrainSuite brain extraction.")
+                        help="Edge detection constant for BrainSuite brain extraction.")
     parser.add_argument("--radius",
                         default=2,
                         type=float,
@@ -191,14 +218,14 @@ if __name__ == "__main__":
     parser.add_argument("--correlation_shift_interval_s",
                         default=0.375,
                         type=float,
-                        help="")
+                        help="Multiple, in seconds, by which functional signals are offset when searching for maximum correlation.")
     parser.add_argument("--correlation_max_shift_s",
                         default=1.5,
                         type=float,
-                        help="")
-    parser.add_argument("--correlation_search_for_neg_corr",
+                        help="Maximum amount, in seconds, functional signals are offset when searching for maximum correlation.")
+    parser.add_argument("--correlation_search_for_neg_corr", #include neg corr
                         action='store_true',
-                        help="")
+                        help="to do")
 
     parser.add_argument("--nthreads_node",
                         type=int,
@@ -211,7 +238,7 @@ if __name__ == "__main__":
     parser.add_argument("--mem_gb_mapnode",
                         default=10,
                         type=float,
-                        help="")
+                        help="Maximum memory required by a mapnode.")
 
     parser.add_argument('--nipype_processing_dir',
                         help='Directory where intermediate images, logs, and crash files should be stored.')
@@ -227,11 +254,11 @@ if __name__ == "__main__":
                         help="Nipype run plugin arguments")
     parser.add_argument("--keep_unnecessary_outputs", dest="keep_unnecessary_outputs",
                         action='store_true', default=False,
-                        help="Keep all nipype node outputs, even if unused")
+                        help="Keep all nipype node outputs, even if unused by downstream nodes.")
 
     if debugging:
-        BidsDir = os.path.abspath('/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids')
-        derivatives_dir = os.path.abspath('/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives')
+        BidsDir = os.path.abspath('/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids2')
+        derivatives_dir = os.path.abspath('/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids2/derivatives')
         nipype_dir = os.path.abspath('/storage/akuurstr/mouse_pipepline_output')
 
         parameters = [BidsDir, derivatives_dir, 'participant',
@@ -245,17 +272,18 @@ if __name__ == "__main__":
 
                       '--atlas', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model.nii.gz',
                       '--atlas_mask', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_mask.nii.gz',
-                      '--label_mapping', '/softdev/akuurstr/python/modules/mousefMRIPrep/examples/label_mapping_host_short.txt',
+                      '--label_mapping', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/label_mapping_host.txt',
 
                       '--func_brain_extract_method', 'BRAINSUITE',
                       '--anat_brain_extract_method', 'BRAINSUITE',
- \
+
                       #'--anat_template', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200402_T2w.nii.gz',
                       #'--anat_template_probability_mask', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200402_T2w.nii.gz',
                       #'--func_template', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/FuncTemplate_task-rs_desc-avg0p3x0p3x0p55mm20200402_bold.nii.gz',
                       #'--func_template_probability_mask', '/home/akuurstr/Desktop/Esmin_mouse_registration/mouse_scans/bids/derivatives/BrainExtractionTemplatesAndProbabilityMasks/FuncTemplateProbabilityMask_task-rs_desc-avg0p3x0p3x0p55mm20200402_bold.nii.gz',
 
                       "--mem_gb_mapnode",'6',
+                      "--nthreads_mapnode", '12',
 
                       '--nipype_processing_dir', nipype_dir,
                       '--keep_unnecessary_outputs',
@@ -266,7 +294,7 @@ if __name__ == "__main__":
         parameters = sys.argv
         args = parser.parse_args()
 
-    # resource management
+    # notes on resource management using nipype arguments and system environment variables
     # tools that use the Open MP library can have their threads limited with OMP_NUM_THREADS
     # MKL often is compiled with Open MP, but it can override OMP_NUM_THREADS with a variable MKL_NUM_THREADS
     # ITK has a variable called ITK_NUM_THREADS
@@ -288,7 +316,7 @@ if __name__ == "__main__":
 
 
 
-    # store arguments in a restricted dictionary
+    # store comand line arguments in a restricted dictionary
     unsaved_keys = ['help','bids_dir','output_derivatives_dir','analysis_level', 'participant_label', 'func_session_labels', 'func_run_labels', 'anat_session_label','anat_run_label','config_file', 'write_config_file', 'func_mask', 'anat_mask']
     allowed_keys = [action.dest for action in parser._actions if action.dest not in unsaved_keys]
     arg_dict = RestrictedDict(allowed_keys)
@@ -323,30 +351,35 @@ if __name__ == "__main__":
         sys.exit()
 
     # initialize with parser default values
-    arg_dict.update(specified_and_default_args_dict,ignore_warnings=True)
+    arg_dict.update(specified_and_default_args_dict,ignore_warnings=True) # ignore_warnings: don't print warning when attempting invalid key
     # override default arguments with config file values
     arg_dict.update(config_args_dict)
     # override config file values with arguments explicitly specified on command line
     arg_dict.update(specified_optional_args_dict,ignore_warnings=True)
 
 
-    # set args not stored in arg_dict
+    # store arguments not stored in arg_dict
     bids_dir = args.bids_dir
     derivatives_dir = args.output_derivatives_dir
-
     subject = args.participant_label
     func_sessions = args.func_session_labels
     func_runs = args.func_run_labels
     anat_session = args.anat_session_label
     anat_run = args.anat_run_label
-
     func_mask = args.func_mask
     anat_mask = args.anat_mask
+    plugin = args.plugin
+    plugin_args = args.plugin_args
+    keep_unnecessary_outputs = args.keep_unnecessary_outputs
 
+
+
+    # Validation of command line arguments
     if arg_dict['input_masks_description_label'] is not None:
         if func_mask is not None:
             print(f"Warning: overriding input_masks_description_label={arg_dict['input_masks_description_label']} search with func_mask {func_mask}")
         else:
+            #find func_mask
             #func_mask =
             #NUMBER OF MASKS IN FUNC_MASK OR FOUND USING THE DESCRIPTION NEEDS TO MATCH THE NUMBER OF FUNCS FOUND USING SESSION&RUN KEYWORDS
             pass
@@ -422,40 +455,7 @@ if __name__ == "__main__":
         parser.error(
             f"{arg_dict['anat_brain_extract_method']} used for anat_brain_extract_method but anat_mask is not provided or input_masks_description_label did not find an anat mask")
 
-    layout = BIDSLayout(bids_dir)
-    layout.add_derivatives(derivatives_dir)
-
-    func_search_entities = parse_file_entities(os.path.sep+arg_dict['func_entities'])
-    func_search_entities['subject'] = subject
-    func_search_entities['desc'] = None
-    func_search_entities['datatype'] = 'func'
-    if func_sessions is not None:
-        func_search_entities['session'] = func_sessions
-    if func_runs is not None:
-        func_search_entities['run'] = func_runs
-
-    funcs = layout.get(**func_search_entities)
-
-    anat_search_entities = parse_file_entities(os.path.sep+arg_dict['anat_entities'])
-    anat_search_entities['subject'] = subject
-    anat_search_entities['desc'] = None
-    anat_search_entities['datatype'] = 'anat'
-    if anat_session is not None:
-        anat_search_entities['session'] = anat_session
-        if anat_run is not None:
-            anat_search_entities['run'] = anat_run
-    elif func_sessions is not None:
-        anat_search_entities['session'] = func_sessions
-        if layout.get(**anat_search_entities) == []:
-            if 'session' in anat_search_entities:
-                anat_search_entities.pop('session')
-
-    anat = layout.get(**anat_search_entities)
-
-    if len(anat)>1:
-        print(f"Warning: multiple anat files found, using {anat[0].path}")
-    anat = anat[0].path
-
+    # setup scratch, logging, crash dirs
     nipype_dir = arg_dict['nipype_processing_dir']
     if nipype_dir == None:
         nipype_dir = tempfile.TemporaryDirectory().name
@@ -476,6 +476,7 @@ if __name__ == "__main__":
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
 
+
     config.update_config({'logging': {
         'log_directory': log_dir,
         'log_to_file': True,
@@ -486,55 +487,58 @@ if __name__ == "__main__":
         }})
     logging.update_logging(config)
 
-    plugin = args.plugin
-    plugin_args = args.plugin_args
-    keep_unnecessary_outputs = args.keep_unnecessary_outputs
+    #search for functional images using bids entities
+    layout = BIDSLayout(bids_dir)
+    layout.add_derivatives(derivatives_dir)
+    func_search_entities = parse_file_entities(os.path.sep+arg_dict['func_entities'])
+    func_search_entities['subject'] = subject
+    func_search_entities['desc'] = None
+    func_search_entities['datatype'] = 'func'
+    if func_sessions is not None:
+        func_search_entities['session'] = func_sessions
+    if func_runs is not None:
+        func_search_entities['run'] = func_runs
 
-    def get_anat_derivatives(original_anat_file,anat_brain_extract_method):
-        anat_entities = parse_file_entities(original_anat_file)
-        anat_entities.pop('extension')
+    funcs = layout.get(**func_search_entities)
 
-        anat_entities['desc'] = 'AnatToAtlasTransform'
-        anat_to_atlas_composite_transform = layout.get(drop_invalid_filters=False, **anat_entities)
-        anat_entities['desc'] = 'n4Corrected'
-        anat_n4_corrected = layout.get(drop_invalid_filters=False, **anat_entities)
-        # mask desc depends on the proposed method.
-        method = None
-        if anat_brain_extract_method == BrainExtractMethod.BRAINSUITE:
-            method = 'Brainsuite'
-        elif anat_brain_extract_method == BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK:
-            method = 'NoInitTemplateExtracted'
-        elif anat_brain_extract_method == BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK:
-            method = 'BrainsuiteInitTemplateExtracted'
-        elif anat_brain_extract_method == BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK:
-            method = 'UserInitTemplateExtracted'
-        anat_entities['desc'] = f'{method}BrainMask'
-        anat_mask = layout.get(drop_invalid_filters=False, **anat_entities)
-        return anat_to_atlas_composite_transform, anat_n4_corrected, anat_mask
+    #search for anatomical image using bids entities
+    anat_search_entities = parse_file_entities(os.path.sep+arg_dict['anat_entities'])
+    anat_search_entities['subject'] = subject
+    anat_search_entities['desc'] = None
+    anat_search_entities['datatype'] = 'anat'
+    if anat_session is not None:
+        anat_search_entities['session'] = anat_session
+        if anat_run is not None:
+            anat_search_entities['run'] = anat_run
+    elif func_sessions is not None:
+        anat_search_entities['session'] = func_sessions
+        if layout.get(**anat_search_entities) == []:
+            if 'session' in anat_search_entities:
+                anat_search_entities.pop('session')
+
+    anat = layout.get(**anat_search_entities)
+
+    # can register multiple functionals, but should only have one anatomical
+    if len(anat)>1:
+        print(f"Warning: multiple anat files found, using {anat[0].path}")
+    anat = anat[0].path
 
 
-
-
-    # find the datasink outputs of the anat_processing pipeline
+    # find previous processed anatomical results - the datasink outputs of the anat_processing pipeline
     perform_func_to_anat_registration = arg_dict['perform_func_to_anat_registration']
     anat_brain_extract_method = BrainExtractMethod[arg_dict['anat_brain_extract_method']]
     use_masks_anat_to_atlas_registration = (not arg_dict['no_masks_anat_to_atlas_registration'])
     use_masks_func_to_anat_registration = (not arg_dict['no_masks_func_to_anat_registration'])
-    search_anat_to_atlas_composite_transform, search_anat_n4_corrected, search_anat_mask = get_anat_derivatives(anat,anat_brain_extract_method)
+    prev_anat_to_atlas_composite_transform, prev_anat_n4_corrected, prev_anat_mask = get_anat_derivatives(anat, anat_brain_extract_method)
     perform_anat_processing= arg_dict['force_anat_processing']
-    if search_anat_to_atlas_composite_transform == []:
+    # determine if the anatomic pipeline should be run
+    if prev_anat_to_atlas_composite_transform == []:
         perform_anat_processing = True
     if perform_func_to_anat_registration:
-        if search_anat_n4_corrected == []:
+        if prev_anat_n4_corrected == []:
             perform_anat_processing = True
-        if use_masks_func_to_anat_registration and (search_anat_mask == [] and (anat_brain_extract_method != BrainExtractMethod.USER_PROVIDED_MASK)):
+        if use_masks_func_to_anat_registration and (prev_anat_mask == [] and (anat_brain_extract_method != BrainExtractMethod.USER_PROVIDED_MASK)):
             perform_anat_processing = True
-
-
-
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    func = funcs[0].path
-    #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     if perform_anat_processing:
         wf_anat_processing = init_anat_processing(
@@ -576,22 +580,26 @@ if __name__ == "__main__":
             derivatives_pipeline_name=pipeline_name,
         )
         wf_anat_processing.base_dir = work_dir
+        wf_anat_processing.config['execution']['remove_unnecessary_outputs'] = not keep_unnecessary_outputs
 
-        if args.plugin_args:
-            execGraph_SS_TV = wf_anat_processing.run(args.plugin, plugin_args=eval(args.plugin_args))
+        if plugin_args:
+            execGraph_SS_TV = wf_anat_processing.run(plugin, plugin_args=eval(plugin_args))
         else:
-            execGraph_SS_TV = wf_anat_processing.run(args.plugin)
+            execGraph_SS_TV = wf_anat_processing.run(plugin)
         #reload layout so that the anat files are present
         layout = BIDSLayout(bids_dir)
         layout.add_derivatives(derivatives_dir)
-        search_anat_to_atlas_composite_transform, search_anat_n4_corrected, search_anat_mask = get_anat_derivatives(anat,anat_brain_extract_method)
+        prev_anat_to_atlas_composite_transform, prev_anat_n4_corrected, prev_anat_mask = get_anat_derivatives(anat, anat_brain_extract_method)
 
-    anat_to_atlas_composite_transform = search_anat_to_atlas_composite_transform[0].path
-    anat_n4_corrected = search_anat_n4_corrected[0].path if search_anat_n4_corrected != [] else None
-    #if perform_func_to_anat_registration and use_masks_func_to_anat_registration and (anat_brain_extract_method != BrainExtractMethod.USER_PROVIDED_MASK):
-    #    anat_mask = search_anat_mask[0].path
+    anat_to_atlas_composite_transform = prev_anat_to_atlas_composite_transform[0].path
+    anat_n4_corrected = prev_anat_n4_corrected[0].path if prev_anat_n4_corrected != [] else None
     if anat_brain_extract_method != BrainExtractMethod.USER_PROVIDED_MASK:
-        anat_mask = search_anat_mask[0].path if search_anat_mask != [] else None
+        anat_mask = prev_anat_mask[0].path if prev_anat_mask != [] else None
+
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    # should make this a for loop over all found functionals
+    func = funcs[0].path
+    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     wf_func_processing = init_func_processing(
         # pipeline input parameters
@@ -650,12 +658,14 @@ if __name__ == "__main__":
         derivatives_collection_dir=derivatives_dir,
         derivatives_pipeline_name=pipeline_name,
     )
+    # set the anatomic arguments for the functional piepline
     wf_func_processing.inputs.inputnode.anat_to_atlas_composite_transform = anat_to_atlas_composite_transform
     wf_func_processing.inputs.inputnode.anat_file = anat_n4_corrected
     wf_func_processing.inputs.inputnode.anat_file_mask = anat_mask
 
     wf_func_processing.base_dir = work_dir
-    if args.plugin_args:
-        execGraph_SS_TV = wf_func_processing.run(args.plugin, plugin_args=eval(args.plugin_args))
+    wf_func_processing.config['execution']['remove_unnecessary_outputs'] = not keep_unnecessary_outputs
+    if plugin_args:
+        execGraph_SS_TV = wf_func_processing.run(plugin, plugin_args=eval(plugin_args))
     else:
-        execGraph_SS_TV = wf_func_processing.run(args.plugin)
+        execGraph_SS_TV = wf_func_processing.run(plugin)

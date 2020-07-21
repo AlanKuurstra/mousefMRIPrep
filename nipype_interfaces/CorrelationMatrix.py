@@ -52,6 +52,25 @@ def read_label_mapping_file(label_mapping_file):
     label_ints = [[atlas_int_pair[1] for atlas_int_pair in value] for value in labels_dict.values()]
     return label_names,label_atlases,label_ints
 
+def label_list(label_mapping_file):
+    from nipype_interfaces.CorrelationMatrix import read_label_mapping_file
+    nested_label_list=read_label_mapping_file(label_mapping_file)[1]
+    label_list = set()
+    # flatten label_list
+    [label_list.add(item) for sublist in nested_label_list for item in sublist]
+    label_list=list(label_list)
+    label_list.sort()
+    return label_list
+
+def get_node_label_list(name='label_list'):
+    node = pe.Node(
+        Function(input_names=[
+            "label_mapping_file",
+        ],
+             output_names=["label_list",],
+             function=label_list), name = name)
+    return node
+
 def get_read_label_mapping_file_node(name='read_label_mapping_file'):
     node = pe.Node(
         interface=Function(input_names=["label_mapping_file"], output_names=['label_names','label_atlases','label_ints'],
@@ -59,14 +78,12 @@ def get_read_label_mapping_file_node(name='read_label_mapping_file'):
     return node
 
 
-
-
-
 class ExractLabelMeansInputSpec(CommandLineInputSpec):
     volume = File(desc="List of volumes, typically an fmri split across time.", exists=True,mandatory=True)
     label_name_list = traits.List(traits.String, desc='xxx', exists=True,mandatory=True)
     label_atlases_list =traits.List(InputMultiPath(desc="xxx"), exists=True, mandatory=True)
     label_ints_list = traits.List(traits.List(traits.Int,desc='xxx'), exists=True,mandatory=True)
+    high_to_low_res_atlas_mapping = traits.Dict(desc='xxx', exists=True, mandatory=True)
     output_name = File('label_averages.json', desc="File", mandatory=False, usedefault=True)
 
 class ExractLabelMeansOutputSpec(TraitedSpec):
@@ -82,6 +99,7 @@ class ExractLabelMeans(BaseInterface):
         label_name_list = self.inputs.label_name_list
         label_atlases_list = self.inputs.label_atlases_list
         label_ints_list = self.inputs.label_ints_list
+        high_to_low_res_atlas_mapping = self.inputs.high_to_low_res_atlas_mapping
         output_file_json = self._list_outputs()['output_file_json']
 
 
@@ -95,7 +113,8 @@ class ExractLabelMeans(BaseInterface):
 
         atlas_cache_dict = {}
         for atlas_loc in label_atlas_set:
-            atlas_cache_dict[atlas_loc] = nib.load(atlas_loc).get_data()
+            low_res_version = high_to_low_res_atlas_mapping[atlas_loc]
+            atlas_cache_dict[atlas_loc] = nib.load(low_res_version).get_data()
 
         label_average_dict = {}
         #label_average_dict = {'volume':volume_loc}
@@ -180,6 +199,7 @@ def init_extract_label_means(name='extract_label_means',mem_gb_mapnode=3,nthread
     inputnode = pe.Node(niu.IdentityInterface(fields=[
         'split_volumes_list',
         'label_file',
+        'high_to_low_res_atlas_mapping',
     ]), name='inputnode')
 
     outputnode = pe.Node(niu.IdentityInterface(
@@ -194,6 +214,7 @@ def init_extract_label_means(name='extract_label_means',mem_gb_mapnode=3,nthread
     wf.connect([
         (inputnode, read_labels, [('label_file', 'label_mapping_file')]),
         (inputnode, extract_label_means, [('split_volumes_list', 'volume')]),
+        (inputnode, extract_label_means, [('high_to_low_res_atlas_mapping', 'high_to_low_res_atlas_mapping')]),
         (read_labels, extract_label_means, [('label_names', 'label_name_list')]),
         (read_labels, extract_label_means, [('label_atlases', 'label_atlases_list')]),
         (read_labels, extract_label_means, [('label_ints', 'label_ints_list')]),

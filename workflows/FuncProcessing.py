@@ -315,6 +315,20 @@ def init_func_processing(
         elif mc_transform_method == MotionCorrectionTransform.CONCAT:
             assert ("ERROR: CANNOT CONCAT MOTION CORRECTION TRANSFORM WHEN PERFORMING SLICE TIMING CORRECTION")
 
+    # downsample atlas (only putting it into the split functional volumes right now)
+    from nipype_interfaces.downsampling_node import get_node_downsample_atlas
+    from nipype_interfaces.CorrelationMatrix import get_node_label_list
+    label_list = get_node_label_list()
+    downsample_node = get_node_downsample_atlas()
+    wf.connect([
+        (inputnode, label_list, [('label_mapping', 'label_mapping_file')]),
+        (label_list, downsample_node, [('label_list', 'highres_label_list')]),
+        (inputnode, downsample_node, [('atlas', 'highres_atlas')]),
+        (inputnode, downsample_node, [('func_file', 'lowres_func')]),
+    ])
+
+
+
     if not SPLIT_FUNC_INTO_SEPARATE_VOLUMES:
         register_func_to_atlas = pe.Node(interface=ApplyTransforms(), name='register_func_to_atlas',
                                          n_procs=nthreads_node, mem_gb=mem_gb_node)
@@ -388,10 +402,12 @@ def init_func_processing(
         create_4d_image.inputs.dimension = 't'
         create_4d_image.inputs.tr = tr
 
+
         wf.connect([
             (func_to_warp_to_atlas, register_func_to_atlas, [('func_file', 'input_image')]),
-            (inputnode, register_func_to_atlas, [('atlas', 'reference_image')]),
+            (downsample_node, register_func_to_atlas, [('output_lowres_atlas_path', 'reference_image')]),
             (concat_transforms_func_to_atlas, concat_list_mc_to_func_to_atlas, [('output_image', 'apply_second')]),
+            (downsample_node, concat_list_mc_to_func_to_atlas, [('shift_transform_file', 'apply_third')]),
             (concat_list_mc_to_func_to_atlas, register_func_to_atlas, [('transforms', 'transforms')]),
             # (register_func_to_atlas, create_4d_image, [('output_image', 'in_files')]),
         ])
@@ -419,6 +435,7 @@ def init_func_processing(
             wf.connect([
                 (inputnode, extract_label_means, [('label_mapping', 'inputnode.label_file')]),
                 (register_func_to_atlas, extract_label_means, [('output_image', 'inputnode.split_volumes_list')]),
+                (downsample_node, extract_label_means, [('lowres_label_map', 'inputnode.high_to_low_res_atlas_mapping')]),
                 (extract_label_means, compute_corr_mtx, [('outputnode.output_file_pkl', 'label_signals_pkl')]),
             ])
 
@@ -453,6 +470,8 @@ def init_func_processing(
     register_func_avg_to_atlas.inputs.float = reduce_to_float_precision
     register_func_avg_to_atlas.inputs.interpolation = interpolation
 
+
+
     def first_element_if_list(mylist):
         if type(mylist) == list:
             return mylist[0]
@@ -465,13 +484,33 @@ def init_func_processing(
                                                               bids_description='FuncAvgToAtlas',
                                                               derivatives_collection_dir=derivatives_collection_dir,
                                                               derivatives_pipeline_name=derivatives_pipeline_name)
+    if 0:
+        #replaced by lowres atlas registration
+        wf.connect([
+            (preprocess_func_wf, register_func_avg_to_atlas, [('outputnode.func_avg', 'input_image')]),
+            (inputnode, register_func_avg_to_atlas, [('atlas', 'reference_image')]),
+            (concat_list_mc_to_func_to_atlas, reduce_mapnode_if_necessary, [('transforms', 'mylist')]),
+            (reduce_mapnode_if_necessary, register_func_avg_to_atlas, [('first_element', 'transforms')]),
+            (inputnode, derivatives_func_avg_to_atlas, [('func_file', 'inputnode.original_bids_file')]),
+            (register_func_avg_to_atlas, derivatives_func_avg_to_atlas, [('output_image', 'inputnode.file_to_rename')]),
+
+        ])
+
+    # show user how well the functional registered to the lowres atlas
+    register_func_avg_to_lowres_atlas = pe.Node(interface=ApplyTransforms(), name='register_func_avg_to_lowres_atlas',
+                                                n_procs=nthreads_node,
+                                                mem_gb=mem_gb_node)
+    register_func_avg_to_lowres_atlas.inputs.dimension = 3
+    register_func_avg_to_lowres_atlas.inputs.float = reduce_to_float_precision
+    register_func_avg_to_lowres_atlas.inputs.interpolation = interpolation
+
     wf.connect([
-        (preprocess_func_wf, register_func_avg_to_atlas, [('outputnode.func_avg', 'input_image')]),
-        (inputnode, register_func_avg_to_atlas, [('atlas', 'reference_image')]),
+        (preprocess_func_wf, register_func_avg_to_lowres_atlas, [('outputnode.func_avg', 'input_image')]),
+        (downsample_node, register_func_avg_to_lowres_atlas, [('output_lowres_atlas_path', 'reference_image')]),
         (concat_list_mc_to_func_to_atlas, reduce_mapnode_if_necessary, [('transforms', 'mylist')]),
-        (reduce_mapnode_if_necessary, register_func_avg_to_atlas, [('first_element', 'transforms')]),
+        (reduce_mapnode_if_necessary, register_func_avg_to_lowres_atlas, [('first_element', 'transforms')]),
         (inputnode, derivatives_func_avg_to_atlas, [('func_file', 'inputnode.original_bids_file')]),
-        (register_func_avg_to_atlas, derivatives_func_avg_to_atlas, [('output_image', 'inputnode.file_to_rename')]),
+        (register_func_avg_to_lowres_atlas, derivatives_func_avg_to_atlas, [('output_image', 'inputnode.file_to_rename')]),
 
     ])
 
