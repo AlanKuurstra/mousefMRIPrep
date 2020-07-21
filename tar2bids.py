@@ -154,6 +154,10 @@ if __name__ == "__main__":
                         default='*/*/*/{subject}/{session}.*/*/*.dcm',
                         help='The heudiconv template. Default works with cfmm2tar\'s tar directory. For unzipped '
                              'dicom folder from cfmm\'s dicom server, use */{subject}/{session}.*/*/*.dcm')
+    parser.add_argument('--remove_faulty_dicoms',
+                        action='store_true',
+                        help='Some dicoms (eg. localizers) cause heudiconv problems. This flag will remove known '
+                             'problematic dicoms. Processing will take longer.')
     parser.add_argument('--overwrite',
                         action='store_true',
                         help='Overwrite bids (session) directories if they already exist.')
@@ -171,19 +175,31 @@ if __name__ == "__main__":
     relative_dcm_dir_template = args.dcm_dir_template
     intermediate_dicom_dir = args.intermediate_dicom_dir
     overwrite = args.overwrite
+    remove_faulty_dicoms = args.remove_faulty_dicoms
 
     dicom_root, _ = get_dicom_root(data_folder, relative_dcm_dir_template, output_dicom_dir=intermediate_dicom_dir)
-
     dcm_dir_template = os.path.join(dicom_root, relative_dcm_dir_template)
-
     completed_patient_sessions = []
 
+    if remove_faulty_dicoms:
+        for root, dirs, files in os.walk(dicom_root):
+            for file in files:
+                if file.endswith(".dcm"):
+                    dcm_file = os.path.join(root, file)
+                    dcm_obj = pydicom.read_file(dcm_file, stop_before_pixels=True)
+                    faulty_dicom = dcm_obj.SeriesDescription in [
+                        '1_Localizer_FOV80mm',
+                    ]
+                    if faulty_dicom:
+                        print(f"Removing problematic {dcm_file}")
+                        os.remove(dcm_file)
+
+    # should really do a bids search for subject,session pairs rather than letting heudiconv fail when a folder
+    # already exists.
     for root, dirs, files in os.walk(dicom_root):
         for file in files:
             if file.endswith(".dcm"):
                 dcm_file = os.path.join(root, file)
-                #dcm_obj = pydicom.read_file(dcm_file, stop_before_pixels=True)
-                #pydicom.filereader.dcmread(dcm_file,specific_tags=[ProtocolName,PatientName,StudyID]) #is this faster?
                 if True: #'rsFMRI' in dcm_obj.ProtocolName:
                     # we bidsify the dicom directory now
                     # bids_subject = bidsify_string(str(dcm_obj.PatientName))
@@ -194,7 +210,6 @@ if __name__ == "__main__":
                     bids_session = re.match(session_re, dcm_file).group(1)
                     if (bids_subject, bids_session) in completed_patient_sessions:
                         continue
-
                     subprocess.call(
                         ["heudiconv", "-b", "-d", dcm_dir_template, "-o", bids_output, "-f", heuristic_file, "-s",
                          bids_subject, "-ss", bids_session] + ['--overwrite'] * overwrite)
@@ -205,3 +220,5 @@ if __name__ == "__main__":
         os.makedirs(os.path.join(bids_output, 'derivatives'))
     if os.path.exists(os.path.join(bids_output, '.heudiconv')):
         shutil.rmtree(os.path.join(bids_output, '.heudiconv'))
+
+

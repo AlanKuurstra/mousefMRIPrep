@@ -99,8 +99,8 @@ if __name__=="__main__":
                         help="")
 
     parameters = ['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/intermediate_dicoms',
-                  '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids',
-                  '--skip_orientation_fix'
+                  '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids2',
+                  #'--skip_orientation_fix',
                   ]
     args = parser.parse_args()
 
