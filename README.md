@@ -28,7 +28,7 @@ SINGULARITY_IMAGES=$TEST_FOLDER/singularity_images
 TAR=$TEST_FOLDER/tar
 DICOM=$TEST_FOLDER/intermediate_dicoms
 ATLASES=$TEST_FOLDER/atlases
-NIPYPE_SCRATCH=$TEST_FOLDER/mousefMRIPrep_scratch
+NIPYPE_SCRATCH=$TEST_FOLDER/mousefMRIPrep_nipype_working_directory
 BIDS=$DATA_FOLDER/bids
 BIDS_DERIVATIVES=$BIDS/derivatives
 
@@ -67,7 +67,7 @@ singularity exec \
 -B $DICOM:/dicom \
 -B $TMP_FOLDER:/tmp \
 $SINGULARITY_IMAGES/mousefmriprep_latest.sif \
-tar2bids.py /tar /bids --intermediate_dicom_dir /dicom
+tar2bids.py /tar /bids --remove_faulty_dicoms --intermediate_dicom_dir /dicom
 
 # fix quadraped image orientation and introduce slice timing info
 singularity exec \
@@ -124,6 +124,26 @@ $SINGULARITY_IMAGES/mousefmriprep_latest.sif \
 --keep_unnecessary_outputs 
 
 
+
+# example using downsampled atlas
+singularity run \
+-B $BIDS:/bids \
+-B $BIDS_DERIVATIVES:/derivatives \
+-B $NIPYPE_SCRATCH:/nipype \
+-B $ATLASES:/atlases/ \
+-B $TMP_FOLDER:/tmp \
+$SINGULARITY_IMAGES/mousefmriprep_latest.sif \
+/bids /derivatives participant \
+--participant_label Nl311f9 \
+--func_session_labels 2020021001 \
+--func_run_label 01 \
+--anat_brain_extract_method USER_PROVIDED_MASK \
+--anat_mask /derivatives/CreateInitialMasks/sub-Nl311f9/ses-2020021001/anat/sub-Nl311f9_ses-2020021001_acq-TurboRARE_run-1_desc-ManualBrainMask_T2w.nii.gz \
+--atlas /atlases/AMBMC_model_downsampled.nii.gz \
+--atlas_mask /atlases/AMBMC_model_downsampled_mask.nii.gz \
+--label_mapping /atlases/label_downsampled_mapping.txt \
+--nipype_processing_dir /nipype \
+--keep_unnecessary_outputs 
 
 # the output directory of interest is:
 # $BIDS_DERIVATIVES/MousefMRIPrep/sub-Nl311f9/ses-2020021001 
