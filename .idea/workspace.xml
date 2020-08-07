@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/mousersfMRIPrep.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/other.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/nipype_interfaces/DerivativesDatasink.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/run.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tools/split_exts.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/AnatProcessing.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/CFMMAnts.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/CFMMBase.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/CFMMBrainSuite.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/CFMMCommon.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/CFMMEnums.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/MouseAnat.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="JupyterTrust" id="d9ba561c-e7b6-432b-98f5-f116399282f4" />
+  <component name="ProjectId" id="1Z26tvc95fXY1I2i89fjqdhj6Ar" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="Python" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../qsm_sstv/run.py" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings is-module-sdk="true">
+        <option name="myUseModuleSdk" value="true" />
+      </console-settings>
+    </option>
+    <option name="myUseExistingConsole" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/examples" />
+      <recent name="$PROJECT_DIR$/old" />
+      <recent name="$PROJECT_DIR$/nipype_interfaces" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/examples" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/workflows" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Python.MouseBrainExtraction">
+    <configuration name="MouseBrainExtraction" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="ANTSPATH" value="/usr/lib/ants/" />
+        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
+        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
+        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/workflows" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="PythonConfigurationType" factoryName="Python">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="ANTSPATH" value="/usr/lib/ants/" />
+        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
+        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
+        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/bin/python" />
+      <option name="WORKING_DIRECTORY" value="" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="fix_mouse_bids" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tools" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/fix_mouse_bids.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="run" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="ANTSPATH" value="/usr/lib/ants/" />
+        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
+        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
+        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/run.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="scratch_16" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+        <env name="ANTSPATH" value="/usr/lib/ants/" />
+        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
+        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
+        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/scratch_16.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="tar2bids" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tools" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tar2bids.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="Python.fix_mouse_bids" />
+      <item itemvalue="Python.run" />
+      <item itemvalue="Python.scratch_16" />
+      <item itemvalue="Python.tar2bids" />
+      <item itemvalue="Python.MouseBrainExtraction" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.MouseBrainExtraction" />
+        <item itemvalue="Python.run" />
+        <item itemvalue="Python.scratch_16" />
+        <item itemvalue="Python.fix_mouse_bids" />
+        <item itemvalue="Python.tar2bids" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="" />
+      <created>1584025059176</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1584025059176</updated>
+      <workItem from="1584025062157" duration="5114000" />
+      <workItem from="1584037878413" duration="42638000" />
+      <workItem from="1584361259647" duration="10362000" />
+      <workItem from="1584385308566" duration="8701000" />
+      <workItem from="1584450249844" duration="13826000" />
+      <workItem from="1584539108074" duration="13143000" />
+      <workItem from="1584622292751" duration="16933000" />
+      <workItem from="1584789760595" duration="3918000" />
+      <workItem from="1584878177647" duration="4508000" />
+      <workItem from="1584962494204" duration="17340000" />
+      <workItem from="1585049601857" duration="15935000" />
+      <workItem from="1585138729002" duration="29754000" />
+      <workItem from="1585233480144" duration="9914000" />
+      <workItem from="1585307750668" duration="599000" />
+      <workItem from="1585316141675" duration="612000" />
+      <workItem from="1585330659298" duration="20792000" />
+      <workItem from="1585481194260" duration="2461000" />
+      <workItem from="1585570828106" duration="25575000" />
+      <workItem from="1585652156857" duration="26022000" />
+      <workItem from="1585736343286" duration="47884000" />
+      <workItem from="1585915362310" duration="7332000" />
+      <workItem from="1586179176613" duration="23799000" />
+      <workItem from="1586259496107" duration="42064000" />
+      <workItem from="1586435179490" duration="18625000" />
+      <workItem from="1586785045708" duration="48624000" />
+      <workItem from="1586954605490" duration="14887000" />
+      <workItem from="1587036867771" duration="13757000" />
+      <workItem from="1587122660629" duration="30939000" />
+      <workItem from="1587219240747" duration="3184000" />
+      <workItem from="1587385011289" duration="31823000" />
+      <workItem from="1587474978450" duration="17353000" />
+      <workItem from="1587494853310" duration="75433000" />
+      <workItem from="1587620144367" duration="3395000" />
+      <workItem from="1587623896929" duration="1592000" />
+      <workItem from="1587643479505" duration="11111000" />
+      <workItem from="1587688453132" duration="1117000" />
+      <workItem from="1587729275237" duration="22336000" />
+      <workItem from="1587761657822" duration="116000" />
+      <workItem from="1587813894040" duration="2423000" />
+      <workItem from="1587816391344" duration="3000" />
+      <workItem from="1596717915909" duration="20001000" />
+      <workItem from="1596801403565" duration="17231000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state width="2514" height="544" key="GridCell.Tab.0.bottom" timestamp="1596746053700">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="544" key="GridCell.Tab.0.bottom/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1596746053700" />
+    <state width="2514" height="544" key="GridCell.Tab.0.center" timestamp="1596746053700">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="544" key="GridCell.Tab.0.center/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1596746053700" />
+    <state width="2514" height="544" key="GridCell.Tab.0.left" timestamp="1596746053700">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="544" key="GridCell.Tab.0.left/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1596746053700" />
+    <state width="2514" height="544" key="GridCell.Tab.0.right" timestamp="1596746053700">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="544" key="GridCell.Tab.0.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1596746053700" />
+    <state width="2514" height="544" key="GridCell.Tab.1.bottom" timestamp="1596746053700">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="544" key="GridCell.Tab.1.bottom/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1596746053700" />
+    <state width="2514" height="544" key="GridCell.Tab.1.center" timestamp="1596746053700">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="544" key="GridCell.Tab.1.center/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1596746053700" />
+    <state width="2514" height="544" key="GridCell.Tab.1.left" timestamp="1596746053700">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="544" key="GridCell.Tab.1.left/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1596746053700" />
+    <state width="2514" height="544" key="GridCell.Tab.1.right" timestamp="1596746053700">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state width="2514" height="544" key="GridCell.Tab.1.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1596746053700" />
+    <state x="3329" y="354" key="SettingsEditor" timestamp="1596717962882">
+      <screen x="2560" y="0" width="2560" height="1440" />
+    </state>
+    <state x="3329" y="354" key="SettingsEditor/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1596717962882" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/old/correlation_test.py</url>
+          <line>45</line>
+          <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workflows/AnatProcessing.py</url>
+          <line>151</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/fix_mouse_bids.py</url>
+          <line>1</line>
+          <option name="timeStamp" value="46" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workflows/MouseBrainExtraction.py</url>
+          <line>258</line>
+          <option name="timeStamp" value="51" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workflows/MouseBrainExtraction.py</url>
+          <line>597</line>
+          <option name="timeStamp" value="55" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workflows/MouseBrainExtraction.py</url>
+          <line>399</line>
+          <option name="timeStamp" value="56" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workflows/MouseBrainExtraction.py</url>
+          <line>521</line>
+          <option name="timeStamp" value="57" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$create_template.coverage" NAME="create_template Coverage Results" MODIFIED="1587581916298" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$scratch_17.coverage" NAME="scratch_17 Coverage Results" MODIFIED="1588381235979" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$downsampling_node.coverage" NAME="downsampling_node Coverage Results" MODIFIED="1595591370067" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/nipype_interfaces" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$BoldToAtlasRegistration_wf.coverage" NAME="BoldToAtlasRegistration_wf Coverage Results" MODIFIED="1585748601771" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$scratch_14.coverage" NAME="scratch_14 Coverage Results" MODIFIED="1585674051607" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$correlation_test.coverage" NAME="correlation_test Coverage Results" MODIFIED="1586180030817" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$correlation_test2.coverage" NAME="correlation_test2 Coverage Results" MODIFIED="1586350854857" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$scratch_20.coverage" NAME="scratch_20 Coverage Results" MODIFIED="1595534994659" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$test_merge.coverage" NAME="test_merge Coverage Results" MODIFIED="1585667446184" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$AnatProcessing.coverage" NAME="AnatProcessing Coverage Results" MODIFIED="1587396541923" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$BrainExtraction.coverage" NAME="BrainExtraction Coverage Results" MODIFIED="1586886075581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$create_template_probability_mask.coverage" NAME="create_template_probability_mask Coverage Results" MODIFIED="1587152498882" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$fix_mouse_bids.coverage" NAME="fix_mouse_bids Coverage Results" MODIFIED="1587506418793" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$tar2bids.coverage" NAME="tar2bids Coverage Results" MODIFIED="1584628704748" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$initial_masks_for_model_probability_mask.coverage" NAME="initial_masks_for_model_probability_mask Coverage Results" MODIFIED="1585793896799" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$test_trait_argparse.coverage" NAME="test_trait_argparse Coverage Results" MODIFIED="1592931144048" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$create_initial_masks.coverage" NAME="create_initial_masks Coverage Results" MODIFIED="1587574274476" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$downsampling.coverage" NAME="downsampling Coverage Results" MODIFIED="1595280400034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$create_model_probability_mask.coverage" NAME="create_model_probability_mask Coverage Results" MODIFIED="1585798449589" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$tar2bids.coverage" NAME="tar2bids Coverage Results" MODIFIED="1595363270601" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$BE_classes.coverage" NAME="my_program Coverage Results" MODIFIED="1592602114569" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$run.coverage" NAME="run Coverage Results" MODIFIED="1588097681174" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$scratch_15.coverage" NAME="scratch_15 Coverage Results" MODIFIED="1587422760184" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$my_program.coverage" NAME="my_program Coverage Results" MODIFIED="1594826105060" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$create_model_probability_mask.coverage" NAME="create_model_probability_mask Coverage Results" MODIFIED="1585171826751" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$initial_masks_for_model_probability_mask.coverage" NAME="initial_masks_for_model_probability_mask Coverage Results" MODIFIED="1585148720129" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$wip_split_displacement.coverage" NAME="wip_split_displacement Coverage Results" MODIFIED="1584884239939" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$BoldToAtlasRegistration_wf.coverage" NAME="BoldToAtlasRegistration_wf Coverage Results" MODIFIED="1584373579375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$test_nl_mc.coverage" NAME="test_nl_mc Coverage Results" MODIFIED="1585237680545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$test_nl_mc.coverage" NAME="test_nl_mc Coverage Results" MODIFIED="1585577041303" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/mousersfMRIPrep$BrainExtractionWorkflows.coverage" NAME="BrainExtractionWorkflows Coverage Results" MODIFIED="1584040963173" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseBrainExtraction.coverage" NAME="MouseBrainExtraction Coverage Results" MODIFIED="1596746015624" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$test_merge__1_.coverage" NAME="test_merge (1) Coverage Results" MODIFIED="1585755693732" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/old" />
+  </component>
+</project>

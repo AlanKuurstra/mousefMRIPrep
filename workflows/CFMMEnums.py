@@ -1,0 +1,14 @@
+from enum import Enum
+
+class ParameterListeningMode(Enum):
+    REPLACE_VALUE = 1
+    REPLACE_DEFAULT = 2
+    IGNORE = 3
+
+class BrainExtractMethod(Enum):
+    BRAINSUITE = 1
+    REGISTRATION_WITH_INITIAL_MASK = 2
+    REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK = 3
+    REGISTRATION_NO_INITIAL_MASK = 4
+    USER_PROVIDED_MASK = 5
+    NO_BRAIN_EXTRACTION = 6
