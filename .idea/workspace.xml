@@ -2,12 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMAnts.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMAnts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMBase.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBase.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMBrainSuite.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBrainSuite.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMCommon.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMCommon.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -286,7 +280,7 @@
       <workItem from="1597096589431" duration="57000" />
       <workItem from="1597097054086" duration="12898000" />
       <workItem from="1597146619141" duration="45371000" />
-      <workItem from="1597314526027" duration="16131000" />
+      <workItem from="1597314526027" duration="17089000" />
     </task>
     <servers />
   </component>
