@@ -1,5 +1,6 @@
 from workflows.CFMMBase import CFMMWorkflow
-from workflows.CFMMCommon import NipypeWorkflowArguments, NipypeRunArguments, get_node_inputs_to_list, get_node_existing_inputs_to_list
+from workflows.CFMMCommon import NipypeWorkflowArguments, NipypeRunArguments, get_node_inputs_to_list, \
+    get_node_existing_inputs_to_list
 from workflows.CFMMBIDS import BIDSAppArguments, get_node_get_input_file_entities_labels_dict, \
     get_node_bids_file_multiplexer, get_node_batch_update_entities_labels_dict, get_node_update_entities_labels_dict
 from workflows.CFMMBrainSuite import MouseBse
@@ -37,11 +38,12 @@ import os
 
 
 class MouseBrainSuiteBrainExtraction(CFMMWorkflow):
+    group_name = 'Mouse BrainSuite Brain Extraction'
+
     def __init__(self, *args, **kwargs):
-        subcomponents = [NipypeWorkflowArguments(group_name='Nipype Arguments',
-                                                 flag_prefix='nipype_',
-                                                 exclude_list=['nthreads_mapnode','mem_gb_mapnode']),
-                         MouseBse(group_name='BrainSuite Bse', flag_prefix='bse_'),
+        subcomponents = [NipypeWorkflowArguments(flag_prefix='nipype_',
+                                                 exclude_list=['nthreads_mapnode', 'mem_gb_mapnode']),
+                         MouseBse(flag_prefix='bse_'),
                          ]
         self.outputs = ['out_file_brain_extracted', 'out_file_mask']
         super().__init__(subcomponents, *args, **kwargs)
@@ -57,11 +59,11 @@ class MouseBrainSuiteBrainExtraction(CFMMWorkflow):
             self.populate_parameters(arg_dict)
             self.validate_parameters()
 
-        omp_nthreads = self.get_subcomponent('Nipype Arguments')._parameters['nthreads_node'].user_value
+        omp_nthreads = self.get_subcomponent('Nipype Workflow Arguments')._parameters['nthreads_node'].user_value
         if omp_nthreads is None or omp_nthreads < 1:
             omp_nthreads = cpu_count()
 
-        bse = self.get_subcomponent('BrainSuite Bse').get_node(name='BSE', n_procs=omp_nthreads)
+        bse = self.get_subcomponent('Mouse BrainSuite BSE').get_node(name='BSE', n_procs=omp_nthreads)
 
         # default behaviour of brainsuite is to rotate to LPI orientation
         # this can be overridden by using the noRotate option, however this option will create a nifti with inconsistent
@@ -94,14 +96,15 @@ class MouseBrainSuiteBrainExtraction(CFMMWorkflow):
 
 
 class MouseAntsBrainExtraction(CFMMWorkflow):
+    group_name = 'Mouse ANTs Brain Extraction'
+
     def __init__(self, *args, **kwargs):
-        subcomponents = [NipypeWorkflowArguments(group_name='Nipype Arguments',
-                                                 flag_prefix='nipype_',
-                                                 exclude_list=['nthreads_mapnode','mem_gb_mapnode']),
-                         AntsArguments(group_name='ANTs Arguments', flag_prefix='ants_'),
-                         MouseAntsRegistrationBE(group_name='ANTs Registration', flag_prefix='reg_'),
-                         CFMMApplyTransforms(group_name='Apply Transforms', flag_prefix='apply_'),
-                         CFMMThresholdImage(group_name='Threshold Image', flag_prefix='thresh_'),
+        subcomponents = [NipypeWorkflowArguments(flag_prefix='nipype_',
+                                                 exclude_list=['nthreads_mapnode', 'mem_gb_mapnode']),
+                         AntsArguments(flag_prefix='ants_'),
+                         MouseAntsRegistrationBE(flag_prefix='reg_'),
+                         CFMMApplyTransforms(flag_prefix='apply_'),
+                         CFMMThresholdImage(flag_prefix='thresh_'),
                          ]
         self.outputs = ['out_file_brain_extracted', 'out_file_mask']
         super().__init__(subcomponents, *args, **kwargs)
@@ -142,11 +145,11 @@ class MouseAntsBrainExtraction(CFMMWorkflow):
             self.populate_parameters(arg_dict)
             self.validate_parameters()
 
-        omp_nthreads = self.get_subcomponent('Nipype Arguments')._parameters['nthreads_node'].user_value
+        omp_nthreads = self.get_subcomponent('Nipype Workflow Arguments')._parameters['nthreads_node'].user_value
         if omp_nthreads is None or omp_nthreads < 1:
             omp_nthreads = cpu_count()
 
-        ants_reg = self.get_subcomponent('ANTs Registration').get_node(n_procs=omp_nthreads, name='ants_reg')
+        ants_reg = self.get_subcomponent('Mouse ANTs Registration').get_node(n_procs=omp_nthreads, name='ants_reg')
         apply_transform = self.get_subcomponent('Apply Transforms').get_node(name='antsApplyTransforms')
         thr_brainmask = self.get_subcomponent('Threshold Image').get_node(name='thr_brainmask', n_procs=omp_nthreads)
         apply_mask = pe.Node(ApplyMask(), name='apply_mask', n_procs=omp_nthreads)
@@ -203,8 +206,10 @@ class MouseAntsBrainExtraction(CFMMWorkflow):
 
 
 class MouseBrainSuiteBrainExtractionBIDS(MouseBrainSuiteBrainExtraction):
+    group_name = 'Mouse BrainSuite Brain Extraction BIDS'
+
     def __init__(self, *args, **kwargs):
-        self.add_subcomponent(BIDSAppArguments('BIDS Arguments'))
+        self.add_subcomponent(BIDSAppArguments())
         super().__init__(*args, **kwargs)
         self.outputs = {
             'out_file_brain_extracted': 'BrainSuiteBrainExtracted',
@@ -239,10 +244,11 @@ class MouseBrainSuiteBrainExtractionBIDS(MouseBrainSuiteBrainExtraction):
             'input_file_entities_labels_dict')
         choose_in_file = get_node_bids_file_multiplexer('choose_in_file')
 
-        inputnode, (outputnode, derivatives_node), wf, brainsuite_be_wf = self.get_io_and_workflow(get_superclass_workflow=True,
-                                                                               superclass_inputnode_exclude_list=[
-                                                                                   'in_file'],
-                                                                               output_bids_derivatives=True, )
+        inputnode, (outputnode, derivatives_node), wf, brainsuite_be_wf = self.get_io_and_workflow(
+            get_superclass_workflow=True,
+            superclass_inputnode_exclude_list=[
+                'in_file'],
+            output_bids_derivatives=True, )
 
         wf.connect([
             # deciding between in_file and bids search
@@ -265,8 +271,10 @@ class MouseBrainSuiteBrainExtractionBIDS(MouseBrainSuiteBrainExtraction):
 
 
 class MouseAntsBrainExtractionBIDS(MouseAntsBrainExtraction):
+    group_name = 'Mouse ANTs Brain Extraction BIDS'
+
     def __init__(self, *args, **kwargs):
-        self.add_subcomponent(BIDSAppArguments('BIDS Arguments'))
+        self.add_subcomponent(BIDSAppArguments())
         super().__init__(*args, **kwargs)
         self.outputs = {
             'out_file_brain_extracted': 'ANTsBrainExtracted',
@@ -330,22 +338,21 @@ class MouseAntsBrainExtractionBIDS(MouseAntsBrainExtraction):
         template_entities_dict.inputs.entity = ['subject', 'desc']
         choose_template = get_node_bids_file_multiplexer('choose_template')
 
-        template_probability_mask_labels_list = get_node_existing_inputs_to_list('template_probability_mask_labels_list')
+        template_probability_mask_labels_list = get_node_existing_inputs_to_list(
+            'template_probability_mask_labels_list')
         template_probability_mask_entities_dict = get_node_update_entities_labels_dict(
             'template_probability_mask_entities_dict')
         template_probability_mask_entities_dict.inputs.entity = ['subject', 'desc']
         choose_template_probability_mask = get_node_bids_file_multiplexer('choose_template_probability_mask')
 
-        inputnode, (outputnode, derivatives_node), wf, ants_be_wf = self.get_io_and_workflow(get_superclass_workflow=True,
-                                                                         superclass_inputnode_exclude_list=['in_file',
-                                                                                                            'in_file_mask',
-                                                                                                            'template',
-                                                                                                            'template_probability_mask'
-                                                                                                            ],
-                                                                         output_bids_derivatives=True)
-
-
-
+        inputnode, (outputnode, derivatives_node), wf, ants_be_wf = self.get_io_and_workflow(
+            get_superclass_workflow=True,
+            superclass_inputnode_exclude_list=['in_file',
+                                               'in_file_mask',
+                                               'template',
+                                               'template_probability_mask'
+                                               ],
+            output_bids_derivatives=True)
 
         # acrobatics for deciding between in_file and bids search
         # not a fan of this
@@ -393,9 +400,6 @@ class MouseAntsBrainExtractionBIDS(MouseAntsBrainExtraction):
             (inputnode, choose_template_probability_mask, [('bids_layout_db', 'bids_layout_db')]),
         ])
 
-
-
-
         wf.connect([
             # connect chosen file ants_be_wf
             (choose_in_file, ants_be_wf, [('chosen_file', 'inputnode.in_file')]),
@@ -411,15 +415,14 @@ class MouseAntsBrainExtractionBIDS(MouseAntsBrainExtraction):
 
 
 class MouseBrainExtractionBIDS(CFMMWorkflow):
+    group_name = 'Mouse Brain Extraction'
+
     def __init__(self, *args, **kwargs):
-        subcomponents = [BIDSAppArguments('BIDS Arguments'),
-                         NipypeWorkflowArguments(group_name='Nipype Arguments',
-                                                 exclude_list=['nthreads_mapnode','mem_gb_mapnode']),
-                         MouseN4BiasFieldCorrection(group_name='N4 Bias Field Correction', flag_prefix='n4_'),
-                         MouseBrainSuiteBrainExtractionBIDS(group_name='BrainSuite Brain Extraction BIDS',
-                                                            flag_prefix='bs_'),
-                         MouseAntsBrainExtractionBIDS(group_name='ANTs Brain Extraction BIDS',
-                                                      flag_prefix='ants_'),
+        subcomponents = [BIDSAppArguments(),
+                         NipypeWorkflowArguments(exclude_list=['nthreads_mapnode', 'mem_gb_mapnode']),
+                         MouseN4BiasFieldCorrection(flag_prefix='n4_'),
+                         MouseBrainSuiteBrainExtractionBIDS(flag_prefix='bs_'),
+                         MouseAntsBrainExtractionBIDS(flag_prefix='ants_'),
                          ]
         self.outputs = {
             'out_file_n4_corrected': 'N4Corrected',
@@ -438,15 +441,15 @@ class MouseBrainExtractionBIDS(CFMMWorkflow):
         self.add_parser_argument('in_file',
                                  help='Explicitly specify location of the input file for brain extraction.',
                                  override_parameters=[
-                                     ('in_file', 'BrainSuite Brain Extraction BIDS'),
-                                     ('in_file', 'ANTs Brain Extraction BIDS')
+                                     ('in_file', 'Mouse BrainSuite Brain Extraction BIDS'),
+                                     ('in_file', 'Mouse ANTs Brain Extraction BIDS')
                                  ],
                                  )
         self.add_parser_argument('in_file_entities_labels_string',
                                  help=f'BIDS entity-label search string for in_file. Some entities are reused if doing a bids search for the in_file mask, template, or template probability mask. The in_file search can be overridden by --{self._parameters["in_file"].parser_flag}.',
                                  override_parameters=[
-                                     ('in_file_entities_labels_string', 'BrainSuite Brain Extraction BIDS'),
-                                     ('in_file_entities_labels_string', 'ANTs Brain Extraction BIDS')
+                                     ('in_file_entities_labels_string', 'Mouse BrainSuite Brain Extraction BIDS'),
+                                     ('in_file_entities_labels_string', 'Mouse ANTs Brain Extraction BIDS')
                                  ],
                                  )
         self.add_parser_argument('brain_extract_method',
@@ -456,11 +459,11 @@ class MouseBrainExtractionBIDS(CFMMWorkflow):
                                  help="Brain extraction method for image.",
                                  add_to_inputnode=False,
                                  override_parameters=[
-                                     ('brain_extract_method', 'ANTs Brain Extraction BIDS')
+                                     ('brain_extract_method', 'Mouse ANTs Brain Extraction BIDS')
                                  ],
                                  )
-        parent_nipype = self.get_subcomponent('Nipype Arguments')
-        child_nipype = self.get_subcomponent(['ANTs Brain Extraction BIDS', 'Nipype Arguments'])
+        parent_nipype = self.get_subcomponent('Nipype Workflow Arguments')
+        child_nipype = self.get_subcomponent(['Mouse ANTs Brain Extraction BIDS', 'Nipype Workflow Arguments'])
         self.replace_defaults(parent_nipype, child_nipype)
 
     def validate_parameters(self):
@@ -473,7 +476,7 @@ class MouseBrainExtractionBIDS(CFMMWorkflow):
                 BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK, BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK,
                 BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK):
 
-            ants_be_base_obj = self.get_subcomponent('ANTs Brain Extraction BIDS')
+            ants_be_base_obj = self.get_subcomponent('Mouse ANTs Brain Extraction BIDS')
             template = ants_be_base_obj._parameters['template']
             template_probability_mask = ants_be_base_obj._parameters['template_probability_mask']
             template_bids_entities = ants_be_base_obj._parameters['template_sub_label']
@@ -489,7 +492,7 @@ class MouseBrainExtractionBIDS(CFMMWorkflow):
             self.populate_parameters(arg_dict)
             self.validate_parameters()
 
-        omp_nthreads = self.get_subcomponent('Nipype Arguments')._parameters['nthreads_node'].user_value
+        omp_nthreads = self.get_subcomponent('Nipype Workflow Arguments')._parameters['nthreads_node'].user_value
         if omp_nthreads is None or omp_nthreads < 1:
             omp_nthreads = cpu_count()
 
@@ -498,12 +501,13 @@ class MouseBrainExtractionBIDS(CFMMWorkflow):
         # what if choose_in_file uses bids and returns multiple files???
         choose_in_file = get_node_bids_file_multiplexer('choose_in_file')
 
-        n4 = self.get_subcomponent('N4 Bias Field Correction').get_node(n_procs=omp_nthreads, name='n4')
-        ants_wf = self.get_subcomponent('ANTs Brain Extraction BIDS').get_workflow()
-        brainsuite_wf = self.get_subcomponent('BrainSuite Brain Extraction BIDS').get_workflow()
+        n4 = self.get_subcomponent('Mouse N4 Correction').get_node(n_procs=omp_nthreads, name='n4')
+        ants_wf = self.get_subcomponent('Mouse ANTs Brain Extraction BIDS').get_workflow()
+        brainsuite_wf = self.get_subcomponent('Mouse BrainSuite Brain Extraction BIDS').get_workflow()
 
-        inputnode, (outputnode, derivatives_node), wf = self.get_io_and_workflow(overridden_inputnode_exclude_list=['in_file', ],
-                                                             output_bids_derivatives=True)
+        inputnode, (outputnode, derivatives_node), wf = self.get_io_and_workflow(
+            overridden_inputnode_exclude_list=['in_file', ],
+            output_bids_derivatives=True)
 
         wf.connect([
             (inputnode, input_file_entities_labels_dict, [('participant_label', 'participant_label')]),
@@ -513,7 +517,7 @@ class MouseBrainExtractionBIDS(CFMMWorkflow):
             (input_file_entities_labels_dict, choose_in_file, [('entities_labels_dict', 'entities_labels_dict')]),
             (inputnode, choose_in_file, [('in_file', 'input_file')]),
             (inputnode, choose_in_file, [('bids_layout_db', 'bids_layout_db')]),
-            (choose_in_file, derivatives_node, [('chosen_file','original_bids_file')]),
+            (choose_in_file, derivatives_node, [('chosen_file', 'original_bids_file')]),
             (choose_in_file, n4, [('chosen_file', 'input_image')]),
             (n4, outputnode, [('output_image', 'out_file_n4_corrected')]),
         ])
@@ -526,7 +530,8 @@ class MouseBrainExtractionBIDS(CFMMWorkflow):
         if brain_extraction_method == BrainExtractMethod.BRAINSUITE:
             wf.connect([
                 (n4, brainsuite_wf, [('output_image', 'inputnode.in_file')]),
-                (brainsuite_wf, outputnode,[('outputnode.out_file_brain_extracted', 'brainsuite_out_file_n4_corrected_brain_extracted')]),
+                (brainsuite_wf, outputnode,
+                 [('outputnode.out_file_brain_extracted', 'brainsuite_out_file_n4_corrected_brain_extracted')]),
                 (brainsuite_wf, outputnode, [('outputnode.out_file_mask', 'brainsuite_out_file_mask')]),
             ])
 
@@ -548,7 +553,8 @@ class MouseBrainExtractionBIDS(CFMMWorkflow):
 
             wf.connect([
                 (n4, ants_wf, [('output_image', 'inputnode.in_file')]),
-                (ants_wf, outputnode,[('outputnode.out_file_brain_extracted', 'ants_out_file_n4_corrected_brain_extracted')]),
+                (ants_wf, outputnode,
+                 [('outputnode.out_file_brain_extracted', 'ants_out_file_n4_corrected_brain_extracted')]),
                 (ants_wf, outputnode, [('outputnode.out_file_mask', 'ants_out_file_mask')]),
             ])
 
@@ -594,7 +600,7 @@ if __name__ == '__main__':
     be_obj = MouseBrainExtractionBIDS(parser=parser)
     nipype_run_arguments = NipypeRunArguments(parser=parser)
 
-    #parser.print_help()
+    # parser.print_help()
 
     args = parser.parse_args(cmd_args)
     args_dict = vars(args)
@@ -602,12 +608,10 @@ if __name__ == '__main__':
     nipype_run_arguments.populate_parameters(arg_dict=args_dict)
     be_wf = be_obj.get_workflow(arg_dict=args_dict)
 
-
     from workflows.CFMMCommon import NipypeLogger
+
     NipypeLogger.info('Starting Program!')
 
     nipype_run_arguments.run_workflow(be_wf)
 
     NipypeLogger.info('Finished Program!')
-
-

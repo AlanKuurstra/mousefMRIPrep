@@ -4,6 +4,7 @@ from niworkflows.interfaces.ants import ThresholdImage
 
 
 class AntsArguments(CFMMParserArguments):
+    group_name="ANTs Arguments"
     def add_parser_arguments(self):
         # add parser arguments
         self.add_parser_argument('interpolation',
@@ -18,6 +19,7 @@ class AntsArguments(CFMMParserArguments):
 
 
 class CFMMN4BiasFieldCorrection(CFMMInterface):
+    group_name = 'N4 Correction'
     def __init__(self, *args, **kwargs):
         super().__init__(N4BiasFieldCorrection, *args, **kwargs)
 
@@ -29,6 +31,7 @@ class CFMMN4BiasFieldCorrection(CFMMInterface):
 
 
 class CFMMAntsRegistration(CFMMInterface):
+    group_name = 'ANTs Registration'
     def __init__(self, *args, **kwargs):
         super().__init__(Registration, *args, **kwargs)
 
@@ -37,6 +40,7 @@ class CFMMAntsRegistration(CFMMInterface):
 
 
 class CFMMApplyTransforms(CFMMInterface):
+    group_name='Apply Transforms'
     def __init__(self, *args, **kwargs):
         super().__init__(ApplyTransforms, *args, **kwargs)
 
@@ -52,6 +56,7 @@ class CFMMApplyTransforms(CFMMInterface):
 
 
 class CFMMThresholdImage(CFMMInterface):
+    group_name = "Threshold Image"
     def __init__(self, *args, **kwargs):
         super().__init__(ThresholdImage, *args, **kwargs)
 
@@ -67,6 +72,7 @@ class MouseN4BiasFieldCorrection(CFMMN4BiasFieldCorrection):
     """
     Wrapper class for CFMMN4BiasFieldCorrection with default parameter values suitable for mouse brains.
     """
+    group_name = "Mouse N4 Correction"
     def add_parser_arguments(self):
         """
         Modifies default parameter values.
@@ -84,6 +90,7 @@ class MouseAntsRegistrationBE(CFMMAntsRegistration):
     """
     Wrapper class for CFMMAntsRegistration with default parameter values suitable for mouse brains.
     """
+    group_name = "Mouse ANTs Registration"
     def add_parser_arguments(self):
         """
         Wrapper class for CFMMBse with default parameter values suitable for mouse brains.

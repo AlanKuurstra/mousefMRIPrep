@@ -142,6 +142,7 @@ def get_node_existing_inputs_to_list(name='existing_inputs_to_list'):
 
 
 class CFMMConfig(CFMMParserArguments):
+    group_name = "Config Options"
     def add_parser_arguments(self):
         parser.add_argument('--config_file',
                             help='Use a config file for argument default values. Command line arguments override config file.')
@@ -153,6 +154,7 @@ class CFMMConfig(CFMMParserArguments):
 
 
 class NipypeRunArguments(CFMMParserArguments):
+    group_name = "Nipype Run Arguments"
     def add_parser_arguments(self):
         self.add_parser_argument('nipype_processing_dir',
                                  help='Directory where intermediate images, logs, and crash files should be stored.')
@@ -234,6 +236,7 @@ class NipypeRunArguments(CFMMParserArguments):
 
 
 class NipypeWorkflowArguments(CFMMParserArguments):
+    group_name = "Nipype Workflow Arguments"
     def add_parser_arguments(self):
         # base_dir only has an effect for the toplevel workflow so we want to exclude it if we're not toplevel
         # we can exclude it in __init__ because we don't know if we have parents in the initialization (parents are set

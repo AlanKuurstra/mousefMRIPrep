@@ -11,6 +11,7 @@ class MouseBse(CFMMBse):
     """
     Wrapper class for CFMMBse with default parameter values suitable for mouse brains.
     """
+    group_name = "Mouse BrainSuite BSE"
     def add_parser_arguments(self):
         """
         Modifies default parameter values.

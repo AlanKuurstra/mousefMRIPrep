@@ -123,6 +123,7 @@ class BIDSLayoutDB():
 
 
 class BIDSAppArguments(CFMMParserArguments):
+    group_name = "BIDS Arguments"
     def __init__(self, *args, **kwargs):
         self.bids_layout_db = BIDSLayoutDB(None, None, None)
         super().__init__(*args, **kwargs)
@@ -223,6 +224,7 @@ class BIDSAppArguments(CFMMParserArguments):
         self.get_parameter('bids_layout_db').override_user_value(self.bids_layout_db,overwrite=True)
 
 class FunctionalBIDSAppArguments(BIDSAppArguments):
+    group_name = "BIDS Functional Arguments"
     def __init__(self, *args, **kwargs):
         if 'exclude_list' in kwargs:
             exclude_list = kwargs.pop('exclude_list')

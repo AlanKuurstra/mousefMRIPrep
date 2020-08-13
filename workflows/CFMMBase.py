@@ -6,16 +6,19 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as niu
 from workflows.CFMMEnums import ParameterListeningMode
 
+
 class CFMMFlagValuePair():
     """
     Class storing an argparse action, its command line flag, and the value returned from :func:`ArgumentParser.parse_args`.
     There is optional functionality for indicating if the parameter value should instead be obtained from an argument
     hierarchy.
     """
+
     def __init__(self, parser_flag, user_value, parser_action, add_to_inputnode=False,
                  superior_parameter=None, listening_mode=ParameterListeningMode.IGNORE):
         """
         :param parser_flag: argparse flag for optional arguments and (parser return dictionary) dest for optional and positional arguments
+        :type parser_flag: str
         :param user_value: value from parser return dictionary
         :param parser_action: argparse action used to change argument (eg. used to change default value, or command line help, or even to hide the argument)
         :param add_to_inputnode: Boolean determining if this argument should be added to a corresponding workflow's inputnode. See :func:`CFMMParserArguments.get_inputnode`
@@ -93,7 +96,6 @@ class CFMMFlagValuePair():
                 return None
             return not (self.parser_flag in parsed_args_dict.keys())
 
-
     def get_populate_value(self,
                            parsed_args_dict,
                            ignore_superiors_existing_values=False,
@@ -101,6 +103,7 @@ class CFMMFlagValuePair():
         """
         Traverse superiors to return the value that should be stored in self.user_value.
         :param parsed_args_dict: Dictionary returned by :func:`ArgumentParser.parse_args`
+        :type parsed_args_dict: dict
         :param ignore_superiors_existing_values: If True, ignores any superior's manually set user_value and returns the value that would have been automatically populated
         :param store_superiors: If True, stores the superiors' user_value while traversing
         :return: value that should be stored in self.user_value
@@ -113,8 +116,8 @@ class CFMMFlagValuePair():
             return self.superior_parameter.user_value
         else:
             superior_value = self.superior_parameter.get_populate_value(parsed_args_dict,
-                                                                   ignore_superiors_existing_values=ignore_superiors_existing_values,
-                                                                   store_superiors=store_superiors)
+                                                                        ignore_superiors_existing_values=ignore_superiors_existing_values,
+                                                                        store_superiors=store_superiors)
             if store_superiors:
                 self.superior_parameter.override_user_value(superior_value, overwrite=True)
             return superior_value
@@ -130,8 +133,7 @@ class CFMMFlagValuePair():
             ignore_superiors_existing_values=False,
             store_superiors=True
         )
-        self.override_user_value(populate_value,overwrite=overwrite)
-
+        self.override_user_value(populate_value, overwrite=overwrite)
 
     def __str__(self):
         return f'({self.parser_flag},{self.user_value},{"Action present" if self.parser_action else None})'
@@ -144,7 +146,8 @@ class CFMMParserArguments():
     """
     Base class for grouping a number of related argparse arguments.
     """
-    def __init__(self, group_name = None, parent=None, parser=None, exclude_list=None, flag_prefix='',
+
+    def __init__(self, group_name=None, parent=None, parser=None, exclude_list=None, flag_prefix='',
                  flag_suffix=''):
         """
         :param group_name: Name used in parser's argument group. See :func:`CFMMParserArguments.set_parser`.
@@ -154,9 +157,14 @@ class CFMMParserArguments():
         :param flag_prefix: Prefix to add to flag names to make unique.
         :param flag_suffix: Suffix to add to flag names to make unique.
         """
-        if group_name is None:
-            group_name = self.__class__.__name__
-        self.group_name = group_name
+        if group_name is not None:
+            self.group_name = group_name
+        elif hasattr(self, 'group_name'):
+            pass
+            # self.group_name = getattr(self,'group_name')
+        else:
+            self.group_name = self.__class__.__name__
+
         self.parent = parent
 
         if type(exclude_list) in (str, type(None)):
@@ -224,7 +232,6 @@ class CFMMParserArguments():
             current_parent = current_parent.parent
         return current_child
 
-
     def set_parser(self, parser):
         """
         Set the parser instance (common to all nested CFMMParserArguments instances) and the
@@ -253,7 +260,8 @@ class CFMMParserArguments():
         if parameter_name not in self.exclude_list:
             parser_group = self.parser_group
             if parameter_name not in self._parameters.keys():
-                self._parameters[parameter_name] = CFMMFlagValuePair(None, None, None,add_to_inputnode=add_to_inputnode)
+                self._parameters[parameter_name] = CFMMFlagValuePair(None, None, None,
+                                                                     add_to_inputnode=add_to_inputnode)
             # in order to customize the flag name, you can use the parser_flag keyword
             # if parser_flag keyword is not set and an existing flag name is in self._parameters[parameter_name].parser_flag
             # then the existing flag value will be respected
@@ -265,9 +273,9 @@ class CFMMParserArguments():
                 parser_flag = f'{concatenated_flag_prefix}{parameter_name}{concatenated_flag_suffix}'
                 self._parameters[parameter_name].parser_flag = parser_flag
 
-            flag_dash=''
+            flag_dash = ''
             if optional:
-                flag_dash='--'
+                flag_dash = '--'
 
             self._parameters[parameter_name].parser_action = parser_group.add_argument(
                 f'{flag_dash}{parser_flag}', *args, **kwargs)
@@ -301,7 +309,7 @@ class CFMMParserArguments():
         self._parameters[parameter_name].parser_action.help = argparse.SUPPRESS
 
     @staticmethod
-    def replace_defaults(superior,subordinate):
+    def replace_defaults(superior, subordinate):
         """
         Use parameter values from the superior CFMMParserArguments instance as defaults for the parameter values
         of the subordinate CFMMParserArguments instance.
@@ -329,7 +337,7 @@ class CFMMParserArguments():
         Automatically populate each parameter's user_value.
         :param parsed_args_dict: Dictionary returned by :func:`ArgumentParser.parse_args`
         """
-        for parameter_name,parameter in self._parameters.items():
+        for parameter_name, parameter in self._parameters.items():
             if parameter_name not in self.exclude_list:
                 parameter.populate_user_value(parsed_args_dict=parsed_args_dict)
 
@@ -346,6 +354,7 @@ class CFMMParserArguments():
         mutually exclusive.
         """
         pass
+
     def get_inputnode(self, extra_fields=None):
         """
         Create a nipype IdentityInterface named inputnode for the argument group. The inputnode inputs are the
@@ -431,6 +440,7 @@ class CFMMInterface(CFMMParserArguments):
     """
     Class for exposing a nipype interface's input traits to the commandline.
     """
+
     def __init__(self, nipype_interface, *args, **kwargs):
         """
         :param nipype_interface: nipype interface
@@ -503,7 +513,8 @@ class CFMMWorkflow(CFMMParserArguments):
     CFMMParserArguments subclasses (eg. a CFMMInterface or a CFMMWorkflow used as a subworkflow) which will have their
     commandline arguments displayed in this workflow's help.
     """
-    def __init__(self, subcomponents, *args, pipeline_name=None, pipeline_version=None,**kwargs):
+
+    def __init__(self, subcomponents, *args, pipeline_name=None, pipeline_version=None, **kwargs):
         """
         :param subcomponents: List of CFMMParserArguments subclasses
         :param args:
@@ -546,7 +557,7 @@ class CFMMWorkflow(CFMMParserArguments):
         :param override_parameters: Subcomponent parameters to be overridden by current parameter.
         :param kwargs:
         """
-        super().add_parser_argument(parameter_name, *args,**kwargs)
+        super().add_parser_argument(parameter_name, *args, **kwargs)
         if override_parameters is not None:
             superior_parameter = self.get_parameter(parameter_name)
             # create a new attribute for the CFMMFlagValuePair class that is only used by
@@ -558,7 +569,7 @@ class CFMMWorkflow(CFMMParserArguments):
                 # hide overridden parameter
                 subordinate_subcomponent.get_parameter(subordinate_parameter_name).replaced_by(superior_parameter)
                 # add overriddent parameter to new CFMMFlagValuePair attribute
-                superior_parameter.subordinate_parameters.append((subordinate_parameter_name,subordinate_subcomponent))
+                superior_parameter.subordinate_parameters.append((subordinate_parameter_name, subordinate_subcomponent))
 
     def add_parser_arguments(self):
         """
@@ -590,26 +601,27 @@ class CFMMWorkflow(CFMMParserArguments):
                 continue
             subcomponent.validate_parameters()
 
-    def add_subcomponent(self,subcomponent):
+    def add_subcomponent(self, subcomponent):
         """
         Add a subcomponent to this workflow and assign self as parent.
         :param subcomponent:
         """
-        if not hasattr(self,'subcomponents'):
+        if not hasattr(self, 'subcomponents'):
             self.subcomponents = []
-        # maybe should still use a dictionary _subcomponents for its hash table
+        # maybe should still use a dictionary _subcomponents for unique keys
         proposed_subcomponents_name = subcomponent.group_name
         for existing_subcomponent in self.subcomponents:
             if proposed_subcomponents_name == existing_subcomponent.group_name:
-                raise ValueError(f'Cannot add subcomponent with group_name {proposed_subcomponents_name}, a subcomponent with that name already exists. Subcomponent group_name must be unique.')
+                raise ValueError(
+                    f'Cannot add subcomponent with group_name {proposed_subcomponents_name}, a subcomponent with that name already exists. Subcomponent group_name must be unique.')
         subcomponent.parent = self
         # disable all bids derivatives for subcomponents
         # toplevel workflow can add back subworkflow bids, or just connect to their outputnode
-        if hasattr(subcomponent,'outputs') and type(subcomponent.outputs) == dict:
+        if hasattr(subcomponent, 'outputs') and type(subcomponent.outputs) == dict:
             for k in subcomponent.outputs: subcomponent.outputs[k] = None
         self.subcomponents.append(subcomponent)
 
-    def get_subcomponent(self,group_names):
+    def get_subcomponent(self, group_names):
         """
         Get a nested subcomponent using the nested group names.
         :param group_names: Either list of nested group names or the string returned by
@@ -622,6 +634,7 @@ class CFMMWorkflow(CFMMParserArguments):
         # go down the chain to get desired subcomponent
         for group_name in group_names:
             search_hit = False
+            # maybe should still use a dictionary _subcomponents for its hash table
             for subcomponent in current_subcomponent.subcomponents:
                 if subcomponent.group_name == group_name:
                     current_subcomponent = subcomponent
@@ -632,7 +645,7 @@ class CFMMWorkflow(CFMMParserArguments):
 
         return current_subcomponent
 
-    def get_parameter(self,parameter_name,subcomponent_chain=None):
+    def get_parameter(self, parameter_name, subcomponent_chain=None):
         """
         Return a parameter from this workflow or a subcomponent's parameter.
         :param parameter_name:
@@ -658,12 +671,12 @@ class CFMMWorkflow(CFMMParserArguments):
         :param kwargs:
         :return: inputnode
         """
-        bids_fields=[]
+        bids_fields = []
         bids_subcomponent = self.get_subcomponent('BIDS Arguments')
         if bids_subcomponent is not None:
             for parameter_name, parameter in bids_subcomponent._parameters.items():
                 if parameter.add_to_inputnode:
-                    bids_fields.append((parameter_name,parameter.user_value))
+                    bids_fields.append((parameter_name, parameter.user_value))
         extra_fields = extra_fields + bids_fields
 
         inputnode = super().get_inputnode(extra_fields=extra_fields)
@@ -705,12 +718,15 @@ class CFMMWorkflow(CFMMParserArguments):
         in :func:`CFMMWorkflow.add_parser_argument`
         :param exclude_list: List of parameter names that should not be connected to their overridden subcomponents
         """
-        for parameter_name,parameter in self._parameters.items():
-            if parameter_name not in exclude_list and parameter.add_to_inputnode and hasattr(parameter, 'subordinate_parameters'):
+        for parameter_name, parameter in self._parameters.items():
+            if parameter_name not in exclude_list and parameter.add_to_inputnode and hasattr(parameter,
+                                                                                             'subordinate_parameters'):
                 for subordinate_parameter_name, subordinate_subcomponent in parameter.subordinate_parameters:
                     self.workflow.connect([
-                        (self.inputnode, subordinate_subcomponent.workflow, [(parameter_name,f'inputnode.{subordinate_parameter_name}')])
+                        (self.inputnode, subordinate_subcomponent.workflow,
+                         [(parameter_name, f'inputnode.{subordinate_parameter_name}')])
                     ])
+
     def connect_superclass_inputnode(self, superclass_workflow, exclude_list=[]):
         """
         If this workflow is a subclass, connect its input node to the superclass inputnode
@@ -718,11 +734,11 @@ class CFMMWorkflow(CFMMParserArguments):
         :param exclude_list: List of parameter names that should not be connected to the superclass inputnode
         """
         superclass_inputnode = superclass_workflow.get_node('inputnode')
-        #superclass_inputnode.interface._fields
+        # superclass_inputnode.interface._fields
         for field in superclass_inputnode.inputs.trait_get().keys():
             if field not in exclude_list:
                 self.workflow.connect([
-                    (self.inputnode,superclass_workflow,[(field,f'inputnode.{field}')])
+                    (self.inputnode, superclass_workflow, [(field, f'inputnode.{field}')])
                 ])
 
     def get_outputnode(self, output_bids_derivatives=False):
@@ -762,7 +778,7 @@ class CFMMWorkflow(CFMMParserArguments):
             inputnode = self.inputnode
             for index in range(len(fields)):
                 if bids_descs[index] is not None:
-                    wf.connect([(outputnode, pipeline_output_list, [(fields[index], f'input{index+1}')])])
+                    wf.connect([(outputnode, pipeline_output_list, [(fields[index], f'input{index + 1}')])])
 
             wf.connect([
                 (pipeline_output_list, derivatives_datasink, [('return_list', 'derivatives_files_list')]),
@@ -772,12 +788,12 @@ class CFMMWorkflow(CFMMParserArguments):
         return outputnode
 
     def get_io_and_workflow(self,
-                                   extra_inputnode_fields=[],
-                                   overridden_inputnode_exclude_list=[],
-                                   get_superclass_workflow=False,
-                                   superclass_inputnode_exclude_list=[],
-                                   output_bids_derivatives=False,
-                                   ):
+                            extra_inputnode_fields=[],
+                            overridden_inputnode_exclude_list=[],
+                            get_superclass_workflow=False,
+                            superclass_inputnode_exclude_list=[],
+                            output_bids_derivatives=False,
+                            ):
         """
         Helper function for self.get_inputnode, self.get_base_workflow, self.connect_overridden_inputnode, and
         self.connect_superclass_inputnode.
@@ -791,8 +807,8 @@ class CFMMWorkflow(CFMMParserArguments):
         workflow = self.get_base_workflow(overwrite=False)
 
         if output_bids_derivatives:
-            outputnode,derivatives_node = self.get_outputnode(output_bids_derivatives=output_bids_derivatives)
-            outputnode=(outputnode, derivatives_node)
+            outputnode, derivatives_node = self.get_outputnode(output_bids_derivatives=output_bids_derivatives)
+            outputnode = (outputnode, derivatives_node)
             inputnode = inputnode
         else:
             outputnode = self.get_outputnode()
@@ -801,7 +817,7 @@ class CFMMWorkflow(CFMMParserArguments):
         if get_superclass_workflow:
             pipeline_name = self.pipeline_name
             self.pipeline_name = self.__class__.__base__.__name__
-            superclass_workflow = super( self.__class__, self).get_workflow()
+            superclass_workflow = super(self.__class__, self).get_workflow()
             self.pipeline_name = pipeline_name
             # this rename needs to be done before the superclass workflow has made any connections in order for it
             # to be effective. So this is useless here. Rename the pipeline instead.
@@ -810,7 +826,6 @@ class CFMMWorkflow(CFMMParserArguments):
             self.connect_superclass_inputnode(superclass_workflow, exclude_list=superclass_inputnode_exclude_list)
             return inputnode, outputnode, workflow, superclass_workflow
         return inputnode, outputnode, workflow
-
 
     def get_workflow(self, arg_dict=None):
         """
@@ -837,4 +852,3 @@ class CFMMWorkflow(CFMMParserArguments):
             },
         }
         return dataset_desc
-
