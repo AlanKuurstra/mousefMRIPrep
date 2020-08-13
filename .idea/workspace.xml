@@ -3,11 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nipype_interfaces/DerivativesDatasink.py" beforeDir="false" afterPath="$PROJECT_DIR$/nipype_interfaces/DerivativesDatasink.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/CFMMBase.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBase.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/CFMMCommon.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMCommon.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMEnums.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMEnums.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -285,7 +282,8 @@
       <workItem from="1597061865727" duration="29809000" />
       <workItem from="1597096589431" duration="57000" />
       <workItem from="1597097054086" duration="12898000" />
-      <workItem from="1597146619141" duration="44861000" />
+      <workItem from="1597146619141" duration="45371000" />
+      <workItem from="1597314526027" duration="9950000" />
     </task>
     <servers />
   </component>
@@ -293,38 +291,38 @@
     <option name="version" value="3" />
   </component>
   <component name="WindowStateProjectService">
-    <state width="2514" height="407" key="GridCell.Tab.0.bottom" timestamp="1597239964349">
+    <state width="2514" height="407" key="GridCell.Tab.0.bottom" timestamp="1597323040898">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="407" key="GridCell.Tab.0.bottom/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597239964349" />
-    <state width="2514" height="407" key="GridCell.Tab.0.center" timestamp="1597239964349">
+    <state width="2514" height="407" key="GridCell.Tab.0.bottom/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597323040898" />
+    <state width="2514" height="407" key="GridCell.Tab.0.center" timestamp="1597323040897">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="407" key="GridCell.Tab.0.center/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597239964349" />
-    <state width="2514" height="407" key="GridCell.Tab.0.left" timestamp="1597239964349">
+    <state width="2514" height="407" key="GridCell.Tab.0.center/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597323040897" />
+    <state width="2514" height="407" key="GridCell.Tab.0.left" timestamp="1597323040897">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="407" key="GridCell.Tab.0.left/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597239964349" />
-    <state width="2514" height="407" key="GridCell.Tab.0.right" timestamp="1597239964349">
+    <state width="2514" height="407" key="GridCell.Tab.0.left/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597323040897" />
+    <state width="2514" height="407" key="GridCell.Tab.0.right" timestamp="1597323040898">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="407" key="GridCell.Tab.0.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597239964349" />
-    <state width="2514" height="407" key="GridCell.Tab.1.bottom" timestamp="1597239964349">
+    <state width="2514" height="407" key="GridCell.Tab.0.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597323040898" />
+    <state width="2514" height="407" key="GridCell.Tab.1.bottom" timestamp="1597323040898">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="407" key="GridCell.Tab.1.bottom/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597239964349" />
-    <state width="2514" height="407" key="GridCell.Tab.1.center" timestamp="1597239964349">
+    <state width="2514" height="407" key="GridCell.Tab.1.bottom/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597323040898" />
+    <state width="2514" height="407" key="GridCell.Tab.1.center" timestamp="1597323040898">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="407" key="GridCell.Tab.1.center/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597239964349" />
-    <state width="2514" height="407" key="GridCell.Tab.1.left" timestamp="1597239964349">
+    <state width="2514" height="407" key="GridCell.Tab.1.center/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597323040898" />
+    <state width="2514" height="407" key="GridCell.Tab.1.left" timestamp="1597323040898">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="407" key="GridCell.Tab.1.left/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597239964349" />
-    <state width="2514" height="407" key="GridCell.Tab.1.right" timestamp="1597239964349">
+    <state width="2514" height="407" key="GridCell.Tab.1.left/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597323040898" />
+    <state width="2514" height="407" key="GridCell.Tab.1.right" timestamp="1597323040898">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="407" key="GridCell.Tab.1.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597239964349" />
+    <state width="2514" height="407" key="GridCell.Tab.1.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1597323040898" />
     <state x="3329" y="354" key="SettingsEditor" timestamp="1596717962882">
       <screen x="2560" y="0" width="2560" height="1440" />
     </state>
@@ -347,6 +345,21 @@
           <url>file://$PROJECT_DIR$/fix_mouse_bids.py</url>
           <line>1</line>
           <option name="timeStamp" value="46" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/lib/python3.6/site-packages/nipype/utils/logger.py</url>
+          <line>26</line>
+          <option name="timeStamp" value="49" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workflows/MouseBrainExtraction.py</url>
+          <line>351</line>
+          <option name="timeStamp" value="51" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workflows/CFMMBase.py</url>
+          <line>793</line>
+          <option name="timeStamp" value="53" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
@@ -383,7 +396,7 @@
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$test_nl_mc.coverage" NAME="test_nl_mc Coverage Results" MODIFIED="1585237680545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$test_nl_mc.coverage" NAME="test_nl_mc Coverage Results" MODIFIED="1585577041303" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$BrainExtractionWorkflows.coverage" NAME="BrainExtractionWorkflows Coverage Results" MODIFIED="1584040963173" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
-    <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseBrainExtraction.coverage" NAME="MouseBrainExtraction Coverage Results" MODIFIED="1597239776416" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseBrainExtraction.coverage" NAME="MouseBrainExtraction Coverage Results" MODIFIED="1597322794902" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$test_merge__1_.coverage" NAME="test_merge (1) Coverage Results" MODIFIED="1585755693732" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/old" />
   </component>
 </project>

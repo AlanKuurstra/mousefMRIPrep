@@ -1,10 +1,28 @@
 from workflows.CFMMBase import CFMMParserArguments
-from nipype import config, logging
+from nipype import config
 import tempfile
 import os
 from datetime import datetime
 from nipype.pipeline import engine as pe
 from nipype.interfaces.utility import Function
+import logging
+from nipype import logging as nipype_logging
+
+class NipypeLoggerClass():
+    def __init__(self):
+        self.stdout_handler = logging.getLogger('nipype').handlers[0]
+        self.workflow_logger = logging.getLogger('nipype.workflow')
+    def info(self,msg):
+        prev_level = self.stdout_handler.level
+        self.stdout_handler.setLevel('INFO')
+        self.workflow_logger.info(msg)
+        self.stdout_handler.setLevel(prev_level)
+    def warning(self,msg):
+        self.workflow_logger.warning(msg)
+    def error(self,msg):
+        self.workflow_logger.error(msg)
+
+NipypeLogger = NipypeLoggerClass()
 
 # if a connection is made on one of the inputs, but no upstream value is passed along, then the None value is still
 # included in the list. If list_length is not provided, can only guess the list length is equal to the the index
@@ -36,9 +54,9 @@ def inputs_to_list(
             if input is not None:
                 list_length = index
             index += 1
-
+    elif list_length == 0:
+        return []
     return_list = parameters[:list_length]
-
     return return_list
 
 
@@ -158,8 +176,13 @@ class NipypeRunArguments(CFMMParserArguments):
 
     def populate_parameters(self, arg_dict):
         super().populate_parameters(arg_dict)
-        # setup scratch, logging, crash dirs
 
+        # set nipype's stdout handler to ERROR to clean up commandline (leave module loggers' file handlers at
+        # default level of INFO)
+        nipype_logger = logging.getLogger('nipype')
+        nipype_logger.handlers[0].setLevel('ERROR')
+
+        # setup scratch, logging, crash dirs
         nipype_dir = self._parameters['nipype_processing_dir'].user_value
         log_dir = self._parameters['log_dir'].user_value
         crash_dir = self._parameters['crash_dir'].user_value
@@ -194,7 +217,7 @@ class NipypeRunArguments(CFMMParserArguments):
                 'crashdump_dir': crash_dir,
                 'crashfile_format': 'txt',
             }})
-        logging.update_logging(config)
+        nipype_logging.update_logging(config)
 
     def run_workflow(self, wf):
         wf.config['execution']['remove_unnecessary_outputs'] = not self._parameters[

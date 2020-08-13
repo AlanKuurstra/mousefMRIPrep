@@ -239,7 +239,7 @@ class MouseBrainSuiteBrainExtractionBIDS(MouseBrainSuiteBrainExtraction):
             'input_file_entities_labels_dict')
         choose_in_file = get_node_bids_file_multiplexer('choose_in_file')
 
-        (inputnode,derivatives_original_file), outputnode, wf, brainsuite_be_wf = self.get_io_and_workflow(get_superclass_workflow=True,
+        inputnode, (outputnode, derivatives_node), wf, brainsuite_be_wf = self.get_io_and_workflow(get_superclass_workflow=True,
                                                                                superclass_inputnode_exclude_list=[
                                                                                    'in_file'],
                                                                                output_bids_derivatives=True, )
@@ -254,7 +254,7 @@ class MouseBrainSuiteBrainExtractionBIDS(MouseBrainSuiteBrainExtraction):
             (input_file_entities_labels_dict, choose_in_file, [('entities_labels_dict', 'entities_labels_dict')]),
             (inputnode, choose_in_file, [('in_file', 'input_file')]),
             (inputnode, choose_in_file, [('bids_layout_db', 'bids_layout_db')]),
-            (choose_in_file, derivatives_original_file, [('chosen_file', 'bids_file')]),
+            (choose_in_file, derivatives_node, [('chosen_file', 'original_bids_file')]),
 
             # connect chosen file brainsuite_be_wf
             (choose_in_file, brainsuite_be_wf, [('chosen_file', 'inputnode.in_file')]),
@@ -336,7 +336,7 @@ class MouseAntsBrainExtractionBIDS(MouseAntsBrainExtraction):
         template_probability_mask_entities_dict.inputs.entity = ['subject', 'desc']
         choose_template_probability_mask = get_node_bids_file_multiplexer('choose_template_probability_mask')
 
-        (inputnode,derivatives_original_file), outputnode, wf, ants_be_wf = self.get_io_and_workflow(get_superclass_workflow=True,
+        inputnode, (outputnode, derivatives_node), wf, ants_be_wf = self.get_io_and_workflow(get_superclass_workflow=True,
                                                                          superclass_inputnode_exclude_list=['in_file',
                                                                                                             'in_file_mask',
                                                                                                             'template',
@@ -358,7 +358,7 @@ class MouseAntsBrainExtractionBIDS(MouseAntsBrainExtraction):
             (input_file_entities_labels_dict, choose_in_file, [('entities_labels_dict', 'entities_labels_dict')]),
             (inputnode, choose_in_file, [('in_file', 'input_file')]),
             (inputnode, choose_in_file, [('bids_layout_db', 'bids_layout_db')]),
-            (choose_in_file, derivatives_original_file, [('chosen_file', 'bids_file')]),
+            (choose_in_file, derivatives_node, [('chosen_file', 'original_bids_file')]),
 
             (input_file_entities_labels_dict, remove_in_file_extension,
              [('entities_labels_dict', 'entities_labels_dict')]),
@@ -502,7 +502,7 @@ class MouseBrainExtractionBIDS(CFMMWorkflow):
         ants_wf = self.get_subcomponent('ANTs Brain Extraction BIDS').get_workflow()
         brainsuite_wf = self.get_subcomponent('BrainSuite Brain Extraction BIDS').get_workflow()
 
-        (inputnode,derivatives_original_file), outputnode, wf = self.get_io_and_workflow(overridden_inputnode_exclude_list=['in_file', ],
+        inputnode, (outputnode, derivatives_node), wf = self.get_io_and_workflow(overridden_inputnode_exclude_list=['in_file', ],
                                                              output_bids_derivatives=True)
 
         wf.connect([
@@ -513,7 +513,7 @@ class MouseBrainExtractionBIDS(CFMMWorkflow):
             (input_file_entities_labels_dict, choose_in_file, [('entities_labels_dict', 'entities_labels_dict')]),
             (inputnode, choose_in_file, [('in_file', 'input_file')]),
             (inputnode, choose_in_file, [('bids_layout_db', 'bids_layout_db')]),
-            (choose_in_file,derivatives_original_file, [('chosen_file','bids_file')]),
+            (choose_in_file, derivatives_node, [('chosen_file','original_bids_file')]),
             (choose_in_file, n4, [('chosen_file', 'input_image')]),
             (n4, outputnode, [('output_image', 'out_file_n4_corrected')]),
         ])
@@ -590,13 +590,24 @@ if __name__ == '__main__':
     ]
 
     parser = argparse.ArgumentParser(description=__doc__)
+
     be_obj = MouseBrainExtractionBIDS(parser=parser)
     nipype_run_arguments = NipypeRunArguments(parser=parser)
 
-    parser.print_help()
+    #parser.print_help()
 
     args = parser.parse_args(cmd_args)
     args_dict = vars(args)
+
     nipype_run_arguments.populate_parameters(arg_dict=args_dict)
     be_wf = be_obj.get_workflow(arg_dict=args_dict)
+
+
+    from workflows.CFMMCommon import NipypeLogger
+    NipypeLogger.info('Starting Program!')
+
     nipype_run_arguments.run_workflow(be_wf)
+
+    NipypeLogger.info('Finished Program!')
+
+

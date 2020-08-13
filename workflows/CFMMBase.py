@@ -740,8 +740,12 @@ class CFMMWorkflow(CFMMParserArguments):
 
         if output_bids_derivatives:
             if len(bids_descs) == 0:
-                return outputnode, None
-
+                # if all the derivatives outputs are disabled, then we won't use the derivatives_datasink node
+                # but we still return an IdentityInterface to avoid erros if the user connected things to the
+                # datasink node (eg. original_bids_file)
+                fields = list(get_node_derivatives_datasink().inputs.trait_get().keys())
+                fields.remove('function_str')
+                return outputnode, pe.Node(niu.IdentityInterface(fields=fields), name='derivatives_datasink')
             pipeline_name = self.get_toplevel_parent().pipeline_name
             pipeline_dataset_desc = self.get_toplevel_parent().get_bids_derivatives_description()
             pipeline_nested_path = os.path.join(pipeline_name, self.get_group_name_chain())
@@ -761,7 +765,6 @@ class CFMMWorkflow(CFMMParserArguments):
                     wf.connect([(outputnode, pipeline_output_list, [(fields[index], f'input{index+1}')])])
 
             wf.connect([
-                (self.derivatives_original_file, derivatives_datasink, [('bids_file', 'original_bids_file')]),
                 (pipeline_output_list, derivatives_datasink, [('return_list', 'derivatives_files_list')]),
                 (inputnode, derivatives_datasink, [('output_derivatives_dir', 'derivatives_dir')]),
             ])
@@ -788,10 +791,9 @@ class CFMMWorkflow(CFMMParserArguments):
         workflow = self.get_base_workflow(overwrite=False)
 
         if output_bids_derivatives:
-            derivatives_original_file = pe.Node(niu.IdentityInterface(fields='bids_file'), name='derivatives_original_file')
-            self.derivatives_original_file = derivatives_original_file
-            outputnode,_ = self.get_outputnode(output_bids_derivatives=output_bids_derivatives)
-            inputnode = (inputnode, derivatives_original_file)
+            outputnode,derivatives_node = self.get_outputnode(output_bids_derivatives=output_bids_derivatives)
+            outputnode=(outputnode, derivatives_node)
+            inputnode = inputnode
         else:
             outputnode = self.get_outputnode()
 
