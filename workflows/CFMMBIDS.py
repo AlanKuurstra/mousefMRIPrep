@@ -146,7 +146,8 @@ class BIDSAppArguments(CFMMParserArguments):
     def add_parser_arguments(self):
         self.add_parser_argument('bids_dir',
                                  optional=False,
-                                 help='Data directory formatted according to BIDS standard.')
+                                 help='Data directory formatted according to BIDS standard.',
+                                 add_to_inputnode=False)
 
         self.add_parser_argument('output_derivatives_dir',
                                  optional=False,
@@ -159,7 +160,8 @@ class BIDSAppArguments(CFMMParserArguments):
 
         self.add_parser_argument('input_derivatives_dirs',
                                  help='List of additional bids derivatives dirs used for searching.',
-                                 nargs="+")
+                                 nargs="+",
+                                 add_to_inputnode=False)
 
         self.add_parser_argument('bids_layout_db',
                                  help='Path to database for storing indexing of bids_dir and input_derivatives_dirs',
@@ -187,9 +189,6 @@ class BIDSAppArguments(CFMMParserArguments):
                                       'provided all runs will be analyzed. Multiple '
                                       'runs can be specified with a space separated list.',
                                  nargs="+")
-        self.add_parser_argument('output_derivatives_original_file',
-                                 default=None,
-                                 help=argparse.SUPPRESS)
 
     def populate_parameters(self, arg_dict):
         # only one workflow can have positional bids arguments for bids app
@@ -202,7 +201,7 @@ class BIDSAppArguments(CFMMParserArguments):
         for parameter_name in self._parameters.keys():
             toplevel_parameter = toplevel_bids_app_arguments._parameters[parameter_name]
             if toplevel_parameter.parser_flag in arg_dict.keys():
-                self.get_parameter(parameter_name).set_user_value(arg_dict[toplevel_parameter.parser_flag])
+                self.get_parameter(parameter_name).override_user_value(arg_dict[toplevel_parameter.parser_flag])
 
         if self.parent == toplevel_parent:
             # bidslayout uses in memory db by default, but nipype needs to pickle anything it passes to nodes
@@ -221,7 +220,7 @@ class BIDSAppArguments(CFMMParserArguments):
         else:
             self.bids_layout_db = toplevel_bids_app_arguments.bids_layout_db
 
-        self.get_parameter('bids_layout_db').set_user_value(self.bids_layout_db,force=True)
+        self.get_parameter('bids_layout_db').override_user_value(self.bids_layout_db,overwrite=True)
 
 class FunctionalBIDSAppArguments(BIDSAppArguments):
     def __init__(self, *args, **kwargs):

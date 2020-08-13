@@ -46,6 +46,8 @@ def derivatives_datasink_fn(
                      '[_{suffix}]'
                      '.{extension<nii|nii.gz|json|png|mat|pkl>|nii.gz}']
     for derivatives_file,derivatives_description in zip(derivatives_files_list,derivatives_description_list):
+        if derivatives_file is None:
+            continue
         original_entities['description'] = derivatives_description
         _, exts = split_exts(derivatives_file)
         # overwrite original extension
