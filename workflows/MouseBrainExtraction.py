@@ -33,6 +33,10 @@ import os
 # not more than one parent can override child.
 # if not used in connections, should not be in inputnode ... if used for flow control
 
+def BrainSuiteBrainExtraction_add_parser_arguments(self):
+    self.add_parser_argument('in_file',
+                             help='Specify location of the input file for brain extraction.')
+    super(type(self),self).add_parser_arguments()
 
 class BrainSuiteBrainExtraction(CFMMWorkflow):
     group_name = 'BrainSuite Brain Extraction'
@@ -44,10 +48,7 @@ class BrainSuiteBrainExtraction(CFMMWorkflow):
         self.outputs = ['out_file_brain_extracted', 'out_file_mask']
         super().__init__(subcomponents, *args, **kwargs)
 
-    def add_parser_arguments(self):
-        self.add_parser_argument('in_file',
-                                 help='Specify location of the input file for brain extraction.')
-        super().add_parser_arguments()
+    add_parser_arguments = BrainSuiteBrainExtraction_add_parser_arguments
 
     def get_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
@@ -72,7 +73,8 @@ class BrainSuiteBrainExtraction(CFMMWorkflow):
 
         apply_mask = pe.Node(ApplyMask(), name='apply_mask', n_procs=omp_nthreads)
 
-        inputnode, outputnode, wf = self.get_io_and_workflow(calling_class=BrainSuiteBrainExtraction)
+        #inputnode, outputnode, wf = self.get_io_and_workflow(calling_class=BrainSuiteBrainExtraction)
+        inputnode, outputnode, wf = self.get_io_and_workflow()
 
         wf.connect([
             (inputnode, bse, [('in_file', 'inputMRIFile')]),
@@ -91,6 +93,29 @@ class BrainSuiteBrainExtraction(CFMMWorkflow):
         return wf
 
 
+
+
+def AntsBrainExtraction_add_parser_arguments(self):
+    self.add_parser_argument('in_file',
+                             help='Explicitly specify location of the input file for brain extraction.')
+
+    self.add_parser_argument('in_file_mask',
+                             help='Explicitly specify location of an input file mask used in registration based brain extraction.')
+
+    self.add_parser_argument('template',
+                             help='Explicitly specify location of the template used in registration based brain extraction.')
+
+    self.add_parser_argument('template_probability_mask',
+                             help='Explicitly specify location of the probability mask used in registration based brain extraction.')
+
+    self.add_parser_argument('brain_extract_method',
+                             choices=list(BrainExtractMethod),
+                             default=BrainExtractMethod.NO_BRAIN_EXTRACTION.name,
+                             type=BrainExtractMethod.argparse_convert,
+                             help="Brain extraction method for image.",
+                             add_to_inputnode=False, )
+    super(type(self),self).add_parser_arguments()
+
 class AntsBrainExtraction(CFMMWorkflow):
     group_name = 'ANTs Brain Extraction'
     flag_prefix = 'ants_be_'
@@ -105,26 +130,7 @@ class AntsBrainExtraction(CFMMWorkflow):
         self.outputs = ['out_file_brain_extracted', 'out_file_mask']
         super().__init__(subcomponents, *args, **kwargs)
 
-    def add_parser_arguments(self):
-        self.add_parser_argument('in_file',
-                                 help='Explicitly specify location of the input file for brain extraction.')
-
-        self.add_parser_argument('in_file_mask',
-                                 help='Explicitly specify location of an input file mask used in registration based brain extraction.')
-
-        self.add_parser_argument('template',
-                                 help='Explicitly specify location of the template used in registration based brain extraction.')
-
-        self.add_parser_argument('template_probability_mask',
-                                 help='Explicitly specify location of the probability mask used in registration based brain extraction.')
-
-        self.add_parser_argument('brain_extract_method',
-                                 choices=list(BrainExtractMethod),
-                                 default=BrainExtractMethod.NO_BRAIN_EXTRACTION.name,
-                                 type=BrainExtractMethod.argparse_convert,
-                                 help="Brain extraction method for image.",
-                                 add_to_inputnode=False, )
-        super().add_parser_arguments()
+    add_parser_arguments = AntsBrainExtraction_add_parser_arguments
 
     def validate_parameters(self):
         template = self.get_parameter('template')
@@ -200,60 +206,70 @@ class AntsBrainExtraction(CFMMWorkflow):
 
         return wf
 
+# problem:
+# both subclass and superclass have the same parameter name, and connections are made to connect subclass to superclass
+# in bids this is necessary, both subclass and superclass need in_file (bids needs it to determine between bids search and input)
+
+# option 1
+# have nested workflows instead of sublcassing
+# give subclass flags a different name like bids_override instead of in_file
+# this is kind of confusing
+
+# option 2
+# have nested workflows instead of sublcassing
+# subclass has in_file and superclass has in_file. flag prefixes are used to make sure superclass is different from subclass
+# parameters from subclass and superclass are in same help section, but have different flag prefixes
+
+# option 3
+# have nested workflows instead of sublcassing
+# first create the superclass parameters using a helper function
+# next modify the flag names of any of the parameters that correspond to superclass inputnode
+# finally, use the same helper function to add the inputnode parameters to the subclass (no name conflicts)
+# confusing for the user
+
+# option 4
+# the user passes the subclass name when calling get_workflow
+# the baseclass memeber is a dict which stores a workflow under the sublcass key
 
 
-class BrainSuiteBrainExtractionBIDS(BrainSuiteBrainExtraction):
-    def __init__(self, *args, **kwargs):
-        self.add_subcomponent(BIDSAppArguments())
+# class BrainSuiteBrainExtractionBIDS(BrainSuiteBrainExtraction):
+#     def __init__(self, *args, **kwargs):
+#         self.add_subcomponent(BIDSAppArguments())
+#
+#         super().__init__(*args, **kwargs)
+#     def add_parser_arguments(self):
+#         super().add_parser_arguments()
+#         self.add_parser_argument('in_file_entities_labels_string',
+#                                  help=f'BIDS entity-label search string for in_file. Some entities are reused if doing a bids search for the in_file mask, template, or template probability mask. The in_file search can be overridden by ')
+#
+#     def get_workflow(self, arg_dict=None):
+#         if arg_dict is not None:
+#             self.populate_parameters(arg_dict)
+#             self.validate_parameters()
+#         wf1 = super().get_workflow()
+#         inp,outp,wf = self.get_io_and_workflow()
 
-        super().__init__(*args, **kwargs)
-    def add_parser_arguments(self):
-        super().add_parser_arguments()
-        self.add_parser_argument('in_file_entities_labels_string',
-                                 help=f'BIDS entity-label search string for in_file. Some entities are reused if doing a bids search for the in_file mask, template, or template probability mask. The in_file search can be overridden by ')
 
-    def get_workflow(self, arg_dict=None):
-        if arg_dict is not None:
-            self.populate_parameters(arg_dict)
-            self.validate_parameters()
-        wf1 = super().get_workflow()
-        inp,outp,wf = self.get_io_and_workflow()
-
-
-class BrainSuiteBrainExtractionBIDS1(CFMMWorkflow):
+class BrainSuiteBrainExtractionBIDS(CFMMWorkflow):
     group_name=BrainSuiteBrainExtraction.group_name
-    flag_prefix = BrainSuiteBrainExtraction.flag_prefix
+    flag_prefix = 'bids_bs_be_'
     def __init__(self, *args, **kwargs):
         subcomponents = [
             BIDSAppArguments(),
-            BrainSuiteBrainExtraction(group_name='',flag_prefix='')
+            BrainSuiteBrainExtraction(group_name='') # remove group_name so parameters are part of the same group
         ]
-        # the subclass has a bunch of the same parameters as the superclass
-        # the only way to have both is for them to have different flags
-        # we could try creating the superclass parameters, then modify any of the superclass' conflicting flag names, then add the subclass parameters and flags
-        # we will definitely need helper functions to do the flowthrough of the inputnodes
-        # or we can put them in the same help group, but jut give different flag prefixes
-        # then we have something like bs_be_bids_in_file and bs_be_bids_bs_be_nipype_num_cpus
-
-        # the only other option is subclassing.  but subclasses share the same self attributes, so then we can't
-        # store self.workflow and self.inputnode without messing things up when we call super().get_workflow()
-        # maybe I can check if self is my own type and store superworkflow or other depending.
-
-
-        # I think we have to go with the messy flags :(  we'll mostly be using config files anyway. too bad.
-
 
         self.outputs = {
             'out_file_brain_extracted': 'BrainSuiteBrainExtracted',
             'out_file_mask': 'BrainSuiteBrainMask'
             }
 
-        #CFMMWorkflow.__init__(self,subcomponents, *args, **kwargs)
         super().__init__(subcomponents, *args, **kwargs)
 
 
     def add_parser_arguments(self):
-        super().add_parser_arguments()
+        # BrainSuiteBrainExtraction_add_parser_arguments instead of super().add_parser_arguments()
+        BrainSuiteBrainExtraction_add_parser_arguments(self)
         BrainSuiteBrainExtraction = self.get_subcomponent('')
         self.add_parser_argument('in_file_entities_labels_string',
                                  help=f'BIDS entity-label search string for in_file. Some entities are reused if doing a bids search for the in_file mask, template, or template probability mask. The in_file search can be overridden by --{BrainSuiteBrainExtraction.get_parameter("in_file").parser_flag}.')
@@ -319,12 +335,12 @@ class BrainSuiteBrainExtractionBIDS1(CFMMWorkflow):
 
 class AntsBrainExtractionBIDS(CFMMWorkflow):
     group_name = AntsBrainExtraction.group_name
-    flag_prefix = AntsBrainExtraction.flag_prefix
+    flag_prefix = 'bids_ants_be_'
 
     def __init__(self, *args, **kwargs):
         subcomponents = [
             BIDSAppArguments(),
-            AntsBrainExtraction(group_name='', flag_prefix='')
+            AntsBrainExtraction(group_name='')
         ]
 
         self.outputs = {
@@ -337,7 +353,8 @@ class AntsBrainExtractionBIDS(CFMMWorkflow):
 
 
     def add_parser_arguments(self):
-        super().add_parser_arguments()
+        # AntsBrainExtraction_add_parser_arguments instead of super().add_parser_arguments()
+        AntsBrainExtraction_add_parser_arguments(self)
         AntsBrainExtraction = self.get_subcomponent('')
         self.add_parser_argument('in_file_entities_labels_string',
                                  help=f'BIDS entity-label search string for in_file. Some entities are reused if doing a bids search for the in_file mask, template, or template probability mask. The in_file search can be overridden by --{AntsBrainExtraction.get_parameter("in_file").parser_flag}.')
@@ -574,13 +591,13 @@ class BrainExtractionBIDS(CFMMWorkflow):
         brainsuite_obj = self.get_subcomponent(BrainSuiteBrainExtractionBIDS.group_name)
         brainsuite_wf = brainsuite_obj.get_workflow()
         #brainsuite_super_wf = brainsuite_wf.get_node('BrainSuiteBrainExtraction')
-        brainsuite_super_wf = brainsuite_obj.get_subcomponent('').get_base_workflow()
+        #brainsuite_super_wf = brainsuite_obj.get_subcomponent('').get_base_workflow()
 
 
         ants_obj = self.get_subcomponent(AntsBrainExtractionBIDS.group_name)
         ants_wf = ants_obj.get_workflow()
         #ants_super_wf = ants_wf.get_node('AntsBrainExtraction')
-        ants_super_wf = ants_obj.get_subcomponent('').get_base_workflow()
+        #ants_super_wf = ants_obj.get_subcomponent('').get_base_workflow()
 
         inputnode, outputnode, wf = self.get_io_and_workflow(connection_exclude_list=['in_file'])
         derivatives_node = self.get_node_derivatives_datasink()
@@ -619,12 +636,12 @@ class BrainExtractionBIDS(CFMMWorkflow):
         ):
 
             if brain_extraction_method == BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK:
-                brainsuite_wf.connect(n4, 'output_image', brainsuite_super_wf, 'inputnode.in_file')
-                ants_wf.connect(brainsuite_wf,'outputnode.out_file_mask',ants_super_wf,'inputnode.in_file_mask')
+                wf.connect(n4, 'output_image', brainsuite_wf, 'inputnode.in_file')
+                wf.connect(brainsuite_wf,'outputnode.out_file_mask',ants_wf,'inputnode.in_file_mask')
             elif brain_extraction_method == BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK:
-                ants_wf.connect(inputnode, 'in_file_mask', ants_super_wf, 'inputnode.in_file_mask')
+                wf.connect(inputnode, 'in_file_mask', ants_wf, 'inputnode.in_file_mask')
 
-            ants_wf.connect(n4, 'output_image', ants_super_wf, 'inputnode.in_file')
+            wf.connect(n4, 'output_image', ants_wf, 'inputnode.in_file')
 
             wf.connect([
                 (ants_wf, outputnode,
@@ -732,7 +749,7 @@ class MouseBrainExtractionBIDS(BrainExtractionBIDS):
         bse_component = self.get_subcomponent([BrainSuiteBrainExtractionBIDS.group_name,'',CFMMBse.group_name])
         antsreg_component = self.get_subcomponent([AntsBrainExtractionBIDS.group_name,'',CFMMAntsRegistration.group_name])        
         n4_component = self.get_subcomponent(CFMMN4BiasFieldCorrection.group_name)
-        #modify_bse_for_mouse(bse_component)
+        modify_bse_for_mouse(bse_component)
         modify_antsreg_for_mouse(antsreg_component)
         modify_n4_for_mouse(n4_component)
 
@@ -752,10 +769,10 @@ if __name__ == '__main__':
         '--session_labels', '2020021001',
         '--run_labels', '01',
         '--in_file_entities_labels_string', 'acq-TurboRARE_T2w.nii.gz',
-        '--in_file','fake',
-        '--ants_be_template_sub_label', 'AnatTemplate',
-        '--ants_be_template_probability_mask_sub_label', 'AnatTemplateProbabilityMask',
-        '--ants_be_template_desc_label', '0p15x0p15x0p55mm20200804',
+        #'--in_file','fake',
+        '--bids_ants_be_template_sub_label', 'AnatTemplate',
+        '--bids_ants_be_template_probability_mask_sub_label', 'AnatTemplateProbabilityMask',
+        '--bids_ants_be_template_desc_label', '0p15x0p15x0p55mm20200804',
         '--brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
         # '--brain_extract_method', 'BRAINSUITE',
         # '--in_file', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_downsampled.nii.gz',

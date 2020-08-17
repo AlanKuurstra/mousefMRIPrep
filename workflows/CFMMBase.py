@@ -625,6 +625,36 @@ class CFMMWorkflow(CFMMParserArguments):
     def set_inputnode(self, inputnode):
         self.inputnode = inputnode
 
+    # do we need to add bids stuff to inputnode???
+
+    # def create_inputnode(self, overwrite=False, extra_fields=[]):
+    #     """
+    #     Create a nipype IdentityInterface named inputnode for the argument group and store in self.inputnode.
+    #     If being called inside a subclass' :func:`CFMMWorkflow.get_workflow` before super().get_workflow(), overwrite
+    #     should be False. This ensures that the super().get_workflow()'s call to get_inputnode will not overwrite the
+    #     existing self.inputnode.
+    #     :param args:
+    #     :param overwrite: Overwrite existing self.inputnode
+    #     :param extra_fields: additional list of (field_name, default_value) tuples to be included in the inputnode.
+    #     :param kwargs:
+    #     :return: inputnode
+    #     """
+    #     bids_fields = []
+    #     bids_subcomponent = self.get_subcomponent('BIDS Arguments')
+    #     if bids_subcomponent is not None:
+    #         for parameter_name, parameter in bids_subcomponent._parameters.items():
+    #             if parameter.add_to_inputnode:
+    #                 bids_fields.append((parameter_name, parameter.user_value))
+    #     extra_fields = extra_fields + bids_fields
+    #
+    #     inputnode = self.get_inputnode(extra_fields=extra_fields)
+    #
+    #     # when subclassing, in subclass.get_workflow() we usually define subclass.get_inputnode() before
+    #     # calling super().get_workflow() which calls super().get_inputnode(). Since the super sets self.inputnode, we
+    #     # want to avoid overwriting the existing subclass self.inputnode
+    #     if (self.inputnode is None) or overwrite:
+    #         self.set_inputnode(inputnode)
+    #     return inputnode
 
     def get_inputnode(self, extra_fields=None):
         """
@@ -635,10 +665,23 @@ class CFMMWorkflow(CFMMParserArguments):
         :param extra_fields: additional list of (field_name, default_value) tuples to be included in the inputnode.
         :return:inputnode
         """
+
         if self.inputnode is not None:
             return self.inputnode
 
-        inputnode_fields = self._inputnode_params
+        inputnode_fields = self._inputnode_params.copy()
+
+        # mess bids stuff
+        bids_fields = None
+        bids_subcomponent = self.get_subcomponent('BIDS Arguments')
+        if bids_subcomponent is not None:
+            bids_params_reduced = bids_subcomponent._parameters.copy()
+            #del bids_params_reduced['bids_dir'], bids_params_reduced['output_derivatives_dir']
+            bids_fields = [(key,param.user_value) for key,param in bids_params_reduced.items()]
+        if extra_fields is not None and bids_fields is not None:
+            extra_fields = extra_fields + bids_fields
+        elif extra_fields is None:
+            extra_fields = bids_fields
 
         if extra_fields is not None:
             for extra_field in extra_fields:
@@ -749,8 +792,11 @@ class CFMMWorkflow(CFMMParserArguments):
                 workflow.connect(inputnode, field, superclass_workflow, f'inputnode.{field}')
 
     def get_outputnode(self, extra_fields=None):
-        if self.outputnode[self.calling_subclass] is not None:
-            return self.outputnode[self.calling_subclass]
+        # if self.outputnode[self.calling_subclass] is not None:
+        #     return self.outputnode[self.calling_subclass]
+
+        if self.outputnode is not None:
+            return self.outputnode
 
 
         if type(self.outputs) == dict:
@@ -829,37 +875,6 @@ class CFMMWorkflow(CFMMParserArguments):
             },
         }
         return dataset_desc
-
-    # do we need to add bids stuff to inputnode???
-
-    # def create_inputnode(self, overwrite=False, extra_fields=[]):
-    #     """
-    #     Create a nipype IdentityInterface named inputnode for the argument group and store in self.inputnode.
-    #     If being called inside a subclass' :func:`CFMMWorkflow.get_workflow` before super().get_workflow(), overwrite
-    #     should be False. This ensures that the super().get_workflow()'s call to get_inputnode will not overwrite the
-    #     existing self.inputnode.
-    #     :param args:
-    #     :param overwrite: Overwrite existing self.inputnode
-    #     :param extra_fields: additional list of (field_name, default_value) tuples to be included in the inputnode.
-    #     :param kwargs:
-    #     :return: inputnode
-    #     """
-    #     bids_fields = []
-    #     bids_subcomponent = self.get_subcomponent('BIDS Arguments')
-    #     if bids_subcomponent is not None:
-    #         for parameter_name, parameter in bids_subcomponent._parameters.items():
-    #             if parameter.add_to_inputnode:
-    #                 bids_fields.append((parameter_name, parameter.user_value))
-    #     extra_fields = extra_fields + bids_fields
-    #
-    #     inputnode = self.get_inputnode(extra_fields=extra_fields)
-    #
-    #     # when subclassing, in subclass.get_workflow() we usually define subclass.get_inputnode() before
-    #     # calling super().get_workflow() which calls super().get_inputnode(). Since the super sets self.inputnode, we
-    #     # want to avoid overwriting the existing subclass self.inputnode
-    #     if (self.inputnode is None) or overwrite:
-    #         self.set_inputnode(inputnode)
-    #     return inputnode
 
     def get_node_derivatives_datasink(self):
         from nipype_interfaces.DerivativesDatasink import get_node_derivatives_datasink
