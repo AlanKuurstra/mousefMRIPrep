@@ -231,7 +231,17 @@ class AntsBrainExtraction(CFMMWorkflow):
 # the user passes the subclass name when calling get_workflow
 # the baseclass memeber is a dict which stores a workflow under the sublcass key
 
+# option 5
+# should reset instance attributes when returning youur build wf.  instance attributes are just to help get your workflow,
+# after it's delivered you should reset them
 
+# option 6
+# have a get_super_workflow method which stores and then resets all class members (workflow,innode,etc),
+# calls the super get_workflow, then restores the class members to the previously stored values. basically save the state
+# of the self instance, reset it, let the super do its thing, then restore the state
+
+
+#use super with resetting inputnode and workflow
 # class BrainSuiteBrainExtractionBIDS(BrainSuiteBrainExtraction):
 #     def __init__(self, *args, **kwargs):
 #         self.add_subcomponent(BIDSAppArguments())
@@ -270,6 +280,10 @@ class BrainSuiteBrainExtractionBIDS(CFMMWorkflow):
     def add_parser_arguments(self):
         # BrainSuiteBrainExtraction_add_parser_arguments instead of super().add_parser_arguments()
         BrainSuiteBrainExtraction_add_parser_arguments(self)
+        subordinate_subcomponent = self.get_subcomponent('')
+        for parameter_name,superior_parameter in self._parameters.items():
+            subordinate_subcomponent.get_parameter(parameter_name).replaced_by(superior_parameter)
+            self._param_subordinates[superior_parameter] = (parameter_name, subordinate_subcomponent)
         BrainSuiteBrainExtraction = self.get_subcomponent('')
         self.add_parser_argument('in_file_entities_labels_string',
                                  help=f'BIDS entity-label search string for in_file. Some entities are reused if doing a bids search for the in_file mask, template, or template probability mask. The in_file search can be overridden by --{BrainSuiteBrainExtraction.get_parameter("in_file").parser_flag}.')
@@ -308,10 +322,10 @@ class BrainSuiteBrainExtractionBIDS(CFMMWorkflow):
 
         brainsuite_be_wf = self.get_subcomponent('').get_workflow()
 
-        inputnode, outputnode, wf = self.get_io_and_workflow()
+        inputnode, outputnode, wf = self.get_io_and_workflow(connection_exclude_list=['in_file'])
         derivatives_node = self.get_node_derivatives_datasink()
 
-        self.connect_to_superclass_inputnode(brainsuite_be_wf, exclude_list=['in_file'])
+        #self.connect_to_superclass_inputnode(brainsuite_be_wf, exclude_list=['in_file'])
 
         wf.connect([
             # deciding between in_file and bids search
@@ -355,6 +369,12 @@ class AntsBrainExtractionBIDS(CFMMWorkflow):
     def add_parser_arguments(self):
         # AntsBrainExtraction_add_parser_arguments instead of super().add_parser_arguments()
         AntsBrainExtraction_add_parser_arguments(self)
+        subordinate_subcomponent = self.get_subcomponent('')
+        for parameter_name,superior_parameter in self._parameters.items():
+            subordinate_subcomponent.get_parameter(parameter_name).replaced_by(superior_parameter)
+            self._param_subordinates[superior_parameter] = (parameter_name, subordinate_subcomponent)
+
+
         AntsBrainExtraction = self.get_subcomponent('')
         self.add_parser_argument('in_file_entities_labels_string',
                                  help=f'BIDS entity-label search string for in_file. Some entities are reused if doing a bids search for the in_file mask, template, or template probability mask. The in_file search can be overridden by --{AntsBrainExtraction.get_parameter("in_file").parser_flag}.')
@@ -420,14 +440,18 @@ class AntsBrainExtractionBIDS(CFMMWorkflow):
 
         ants_be_wf = self.get_subcomponent('').get_workflow()
 
-        inputnode, outputnode, wf = self.get_io_and_workflow()
-        derivatives_node = self.get_node_derivatives_datasink()
-
-        self.connect_to_superclass_inputnode(ants_be_wf, exclude_list=['in_file',
+        inputnode, outputnode, wf = self.get_io_and_workflow(connection_exclude_list=['in_file',
                                                'in_file_mask',
                                                'template',
                                                'template_probability_mask'
                                                ])
+        derivatives_node = self.get_node_derivatives_datasink()
+
+        # self.connect_to_superclass_inputnode(ants_be_wf, exclude_list=['in_file',
+        #                                        'in_file_mask',
+        #                                        'template',
+        #                                        'template_probability_mask'
+        #                                        ])
 
         # acrobatics for deciding between in_file and bids search
         # not a fan of this
@@ -518,7 +542,7 @@ class BrainExtractionBIDS(CFMMWorkflow):
                                  help='Explicitly specify location of the input file for brain extraction.',
                                  override_parameters=[
                                      ('in_file', BrainSuiteBrainExtractionBIDS.group_name),
-                                     ('in_file', [AntsBrainExtractionBIDS.group_name,''])
+                                     ('in_file', AntsBrainExtractionBIDS.group_name)
                                  ],
                                  )
         self.add_parser_argument('in_file_entities_labels_string',
@@ -590,14 +614,9 @@ class BrainExtractionBIDS(CFMMWorkflow):
 
         brainsuite_obj = self.get_subcomponent(BrainSuiteBrainExtractionBIDS.group_name)
         brainsuite_wf = brainsuite_obj.get_workflow()
-        #brainsuite_super_wf = brainsuite_wf.get_node('BrainSuiteBrainExtraction')
-        #brainsuite_super_wf = brainsuite_obj.get_subcomponent('').get_base_workflow()
-
 
         ants_obj = self.get_subcomponent(AntsBrainExtractionBIDS.group_name)
         ants_wf = ants_obj.get_workflow()
-        #ants_super_wf = ants_wf.get_node('AntsBrainExtraction')
-        #ants_super_wf = ants_obj.get_subcomponent('').get_base_workflow()
 
         inputnode, outputnode, wf = self.get_io_and_workflow(connection_exclude_list=['in_file'])
         derivatives_node = self.get_node_derivatives_datasink()
@@ -785,7 +804,7 @@ if __name__ == '__main__':
     be_obj = MouseBrainExtractionBIDS(parser=parser)
     nipype_run_arguments = NipypeRunArguments(parser=parser)
 
-    # parser.print_help()
+    parser.print_help()
 
     args = parser.parse_args(cmd_args)
     args_dict = vars(args)

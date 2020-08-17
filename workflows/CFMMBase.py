@@ -750,7 +750,7 @@ class CFMMWorkflow(CFMMParserArguments):
             self.get_base_workflow()
 
         if input_name in child_CFMMWorkflow._inputnode_params:
-            child_CFMMWorkflow.hide_parser_argument(input_name)
+            #child_CFMMWorkflow.hide_parser_argument(input_name) #this is silly, can't happen in get_workflow(). needs to happen in add_parameters()
             self.workflow.connect(node, node_output, child_CFMMWorkflow.workflow, f'inputnode.{input_name}')
 
 
@@ -789,6 +789,7 @@ class CFMMWorkflow(CFMMParserArguments):
                 # dont' use CFMMWorkflow.connect_to_child_inputnode() because subclass and superclass share
                 # the same _parameters and connect_to_child_inputnode hides the superclass (and therefore subclass)
                 # argparse argument.
+                # hiding during get_workflow doesn't work. has to be done during add_parameters
                 workflow.connect(inputnode, field, superclass_workflow, f'inputnode.{field}')
 
     def get_outputnode(self, extra_fields=None):
