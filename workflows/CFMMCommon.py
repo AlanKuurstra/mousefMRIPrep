@@ -8,22 +8,6 @@ from nipype.interfaces.utility import Function
 import logging
 from nipype import logging as nipype_logging
 
-class NipypeLoggerClass():
-    def __init__(self):
-        self.stdout_handler = logging.getLogger('nipype').handlers[0]
-        self.workflow_logger = logging.getLogger('nipype.workflow')
-    def info(self,msg):
-        prev_level = self.stdout_handler.level
-        self.stdout_handler.setLevel('INFO')
-        self.workflow_logger.info(msg)
-        self.stdout_handler.setLevel(prev_level)
-    def warning(self,msg):
-        self.workflow_logger.warning(msg)
-    def error(self,msg):
-        self.workflow_logger.error(msg)
-
-NipypeLogger = NipypeLoggerClass()
-
 # if a connection is made on one of the inputs, but no upstream value is passed along, then the None value is still
 # included in the list. If list_length is not provided, can only guess the list length is equal to the the index
 # of the last input with a value (we will not know if there were more inputs that had no upstream value and didn't
@@ -237,6 +221,7 @@ class NipypeRunArguments(CFMMParserArguments):
 
 class NipypeWorkflowArguments(CFMMParserArguments):
     group_name = "Nipype Workflow Arguments"
+    flag_prefix = "nipype_"
     def add_parser_arguments(self):
         # base_dir only has an effect for the toplevel workflow so we want to exclude it if we're not toplevel
         # we can exclude it in __init__ because we don't know if we have parents in the initialization (parents are set
@@ -262,10 +247,7 @@ class NipypeWorkflowArguments(CFMMParserArguments):
         pipeline_name = self.get_toplevel_parent().pipeline_name
         self.add_parser_argument('base_dir',
                                  help=f"Nipype base dir for storing intermediate results. Defaults to <nipype_processing_dir>/{pipeline_name}_workdir'",
-                                 # inputnode is only used for parameters that are useful when a workflow is a
-                                 # subworkflow. If a workflow is a subworkflow, then it's base_dir is ignored so it
-                                 # is not useful for inputnode
-                                 add_to_inputnode=False)
+                                 )
 
     def populate_parameters(self, arg_dict):
         super().populate_parameters(arg_dict)

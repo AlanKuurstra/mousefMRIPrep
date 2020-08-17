@@ -2,6 +2,8 @@ from workflows.CFMMBase import CFMMInterface
 from nipype.interfaces.brainsuite import Bse
 
 class CFMMBse(CFMMInterface):
+    group_name = "BrainSuite BSE"
+    flag_prefix = 'bse_'
     def __init__(self, *args, **kwargs):
         super().__init__(Bse, *args, **kwargs)
     def add_parser_arguments(self):
@@ -11,7 +13,6 @@ class MouseBse(CFMMBse):
     """
     Wrapper class for CFMMBse with default parameter values suitable for mouse brains.
     """
-    group_name = "Mouse BrainSuite BSE"
     def add_parser_arguments(self):
         """
         Modifies default parameter values.

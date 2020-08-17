@@ -128,13 +128,13 @@ class BIDSAppArguments(CFMMParserArguments):
         self.bids_layout_db = BIDSLayoutDB(None, None, None)
         super().__init__(*args, **kwargs)
 
-    def add_parser_argument(self, parameter_name, add_to_inputnode=True, *args, **kwargs):
+    def add_parser_argument(self, parameter_name, *args, **kwargs):
         # only add positional arguments to argparse parser if you're the top level bids workflow
         if self.parent == self.get_toplevel_parent():
             super().add_parser_argument(parameter_name, *args, **kwargs)
         else:
             if parameter_name not in self.exclude_list + list(self._parameters.keys()):
-                self._parameters[parameter_name] = CFMMFlagValuePair(None, None, None, add_to_inputnode=add_to_inputnode)
+                self._parameters[parameter_name] = CFMMFlagValuePair(None, None, None)
 
     def modify_parser_argument(self, *args, **kwargs):
         if self.parent == self.get_toplevel_parent():
@@ -147,8 +147,8 @@ class BIDSAppArguments(CFMMParserArguments):
     def add_parser_arguments(self):
         self.add_parser_argument('bids_dir',
                                  optional=False,
-                                 help='Data directory formatted according to BIDS standard.',
-                                 add_to_inputnode=False)
+                                 help='Data directory formatted according to BIDS standard.',)
+
 
         self.add_parser_argument('output_derivatives_dir',
                                  optional=False,
@@ -161,8 +161,7 @@ class BIDSAppArguments(CFMMParserArguments):
 
         self.add_parser_argument('input_derivatives_dirs',
                                  help='List of additional bids derivatives dirs used for searching.',
-                                 nargs="+",
-                                 add_to_inputnode=False)
+                                 nargs="+",)
 
         self.add_parser_argument('bids_layout_db',
                                  help='Path to database for storing indexing of bids_dir and input_derivatives_dirs',
@@ -194,34 +193,38 @@ class BIDSAppArguments(CFMMParserArguments):
     def populate_parameters(self, arg_dict):
         # only one workflow can have positional bids arguments for bids app
         # populate bids parameters using top level parent bids arguments
-        toplevel_parent = self.get_toplevel_parent()
-        for subcomponent in toplevel_parent.subcomponents:
-            if type(subcomponent) == type(self):
-                toplevel_bids_app_arguments = subcomponent
-                break
-        for parameter_name in self._parameters.keys():
-            toplevel_parameter = toplevel_bids_app_arguments._parameters[parameter_name]
-            if toplevel_parameter.parser_flag in arg_dict.keys():
-                self.get_parameter(parameter_name).override_user_value(arg_dict[toplevel_parameter.parser_flag])
 
-        if self.parent == toplevel_parent:
+        current_component = self.parent
+        toplevel_bids_app_arguments = self
+        while current_component.parent is not None:
+            current_component = current_component.parent
+            for subcomponent in current_component.subcomponents:
+                if type(subcomponent) == type(self):
+                    toplevel_bids_app_arguments = subcomponent
+
+        for parameter_name in self._parameters.keys():
+            toplevel_parameter = toplevel_bids_app_arguments.get_parameter(parameter_name)
+            if toplevel_parameter.parser_flag in arg_dict.keys():
+                self.get_parameter(parameter_name).user_value = arg_dict[toplevel_parameter.parser_flag]
+
+        if self == toplevel_bids_app_arguments:
             # bidslayout uses in memory db by default, but nipype needs to pickle anything it passes to nodes
             # here we specify a file db for bidslayout to use so that it can be pickled to other nodes and this way
             # indexing only happens once
-
             db_location = arg_dict[self.get_parameter('bids_layout_db').parser_flag]
             if db_location is None:
                 db_location = tempfile.TemporaryDirectory().name
             else:
                 db_location = os.path.abspath(db_location)
 
-            self.bids_layout_db.set_directories(self._parameters['bids_dir'].user_value,
-                                                self._parameters['input_derivatives_dirs'].user_value,
+            self.bids_layout_db.set_directories(self.get_parameter('bids_dir').user_value,
+                                                self.get_parameter('input_derivatives_dirs').user_value,
                                                 db_location)
         else:
             self.bids_layout_db = toplevel_bids_app_arguments.bids_layout_db
 
-        self.get_parameter('bids_layout_db').override_user_value(self.bids_layout_db,overwrite=True)
+        #slightly hacky
+        self.get_parameter('bids_layout_db').user_value = self.bids_layout_db
 
 class FunctionalBIDSAppArguments(BIDSAppArguments):
     group_name = "BIDS Functional Arguments"
