@@ -9,9 +9,10 @@ from nipype.pipeline import engine as pe
 from multiprocessing import cpu_count
 from nipype.interfaces.fsl import ImageMaths, CopyGeom, ApplyMask
 from workflows.CFMMEnums import BrainExtractMethod
-import configargparse as argparse
+from workflows.CFMMArgumentParser import CFMMArgumentParser as ArgumentParser
 from workflows.CFMMLogging import NipypeLogger as logger
 import os
+from workflows.CFMMConfigFile import CFMMConfig
 
 # explain
 # _parameters
@@ -266,7 +267,7 @@ class BrainSuiteBrainExtractionBIDS(CFMMWorkflow):
     def __init__(self, *args, **kwargs):
         subcomponents = [
             BIDSAppArguments(),
-            BrainSuiteBrainExtraction(group_name='') # remove group_name so parameters are part of the same group
+            BrainSuiteBrainExtraction(group_name='')
         ]
 
         self.outputs = {
@@ -389,22 +390,58 @@ class AntsBrainExtractionBIDS(CFMMWorkflow):
         self.get_subcomponent(BIDSAppArguments.group_name).modify_parser_argument('analysis_level', 'choices', ['participant'])
 
     def validate_parameters(self):
-        super().validate_parameters()
-        # warning if :
-        # in_file overrides in_file_entities_labels_string
-        # template overrides template_sub_label and template_desc_label
-        # template_probability_mask overrides template_probability_mask_sub_label and template_desc_label
-        #
-        # depending on brain extraction method, warning if
-        # in_file_mask overrides in_file_mask_desc_label
 
-        template = self.get_subcomponent('').get_parameter('template')
-        template_probability_mask = self.get_subcomponent('').get_parameter('template_probability_mask')
-        template_bids_desc = self.get_parameter('template_desc_label')
-        if ((template.user_value is not None) and (template_probability_mask.user_value is not None)):
-            if template_bids_desc.user_value is not None:
-                print(
-                    f"Waring: overriding {template_bids_desc.parser_flag}={template_bids_desc.user_value} search with {template.parser_flag} {template.user_value} and {template_probability_mask.parser_flag} {template_probability_mask.user_value}")
+        super().validate_parameters()
+
+        explicit_method = self.get_subcomponent('').get_parameter('in_file')
+        bids_method = self.get_parameter('in_file_entities_labels_string')
+        full_group_name = os.sep.join([self.get_group_name_chain(),self.group_name])
+        if (not explicit_method.obtaining_value_from_superior()) \
+            and \
+                (explicit_method.user_value is not None and bids_method.user_value is not None):
+            logger.warning(f"{full_group_name}: BIDS search for input is being overridden by --{explicit_method.parser_flag}")
+        if (not (explicit_method.obtaining_value_from_superior() or bids_method.obtaining_value_from_superior())) \
+        and explicit_method.user_value is None and bids_method.user_value is None:
+            logger.error(f"{full_group_name}: Either --{explicit_method.parser_flag} or --{bids_method.parser_flag} must be supplied")
+
+        explicit_method = self.get_subcomponent('').get_parameter('template')
+        bids_method = self.get_parameter('template_sub_label')
+        full_group_name = os.sep.join([self.get_group_name_chain(),self.group_name])
+        if (not explicit_method.obtaining_value_from_superior()) \
+            and \
+                (explicit_method.user_value is not None and bids_method.user_value is not None):
+            logger.warning(f"{full_group_name}: BIDS search for template is being overridden by --{explicit_method.parser_flag}")
+        if (not (explicit_method.obtaining_value_from_superior() or bids_method.obtaining_value_from_superior())) \
+        and explicit_method.user_value is None and bids_method.user_value is None:
+            logger.error(f"{full_group_name}: Either --{explicit_method.parser_flag} or --{bids_method.parser_flag} must be supplied")
+
+        explicit_method = self.get_subcomponent('').get_parameter('template_probability_mask')
+        bids_method = self.get_parameter('template_probability_mask_sub_label')
+        full_group_name = os.sep.join([self.get_group_name_chain(),self.group_name])
+        if (not explicit_method.obtaining_value_from_superior()) \
+            and \
+                (explicit_method.user_value is not None and bids_method.user_value is not None):
+            logger.warning(f"{full_group_name}: BIDS search for template probability mask is being overridden by --{explicit_method.parser_flag}")
+        if (not (explicit_method.obtaining_value_from_superior() or bids_method.obtaining_value_from_superior())) \
+        and explicit_method.user_value is None and bids_method.user_value is None:
+            logger.error(f"{full_group_name}: Either --{explicit_method.parser_flag} or --{bids_method.parser_flag} must be supplied")
+
+        brain_extract_method = self.get_subcomponent('').get_parameter('brain_extract_method')
+        if brain_extract_method.user_value == BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK:
+            explicit_method = self.get_subcomponent('').get_parameter('in_file_mask')
+            bids_method = self.get_parameter('in_file_mask_desc_label')
+            full_group_name = os.sep.join([self.get_group_name_chain(), self.group_name])
+            if (not explicit_method.obtaining_value_from_superior()) \
+                    and \
+                    (explicit_method.user_value is not None and bids_method.user_value is not None):
+                logger.warning(
+                    f"{full_group_name}: BIDS search for input mask is being overridden by --{explicit_method.parser_flag}")
+                if (
+                not (explicit_method.obtaining_value_from_superior() or bids_method.obtaining_value_from_superior())) \
+                        and explicit_method.user_value is None and bids_method.user_value is None:
+                    logger.error(
+                        f"{full_group_name}: Either --{explicit_method.parser_flag} or --{bids_method.parser_flag} must be supplied when using ")
+
 
     def get_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
@@ -746,7 +783,8 @@ def modify_n4_for_mouse(n4_component):
     n4_component.modify_parser_argument('dimension', 'default', 3)
     n4_component.modify_parser_argument('save_bias', 'default', False)
     n4_component.modify_parser_argument('copy_header', 'default', True)
-    n4_component.modify_parser_argument('n_iterations', 'default', [50] * 4)
+    #n4_component.modify_parser_argument('n_iterations', 'default', [50] * 4)
+    n4_component.modify_parser_argument('n_iterations', 'default', str([50] * 4))
     n4_component.modify_parser_argument('convergence_threshold', 'default', 1e-7)
     n4_component.modify_parser_argument('shrink_factor', 'default', 4)
     
@@ -782,7 +820,7 @@ if __name__ == '__main__':
         '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives',
         'participant',
         '--input_derivatives_dirs',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives',
+        "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
         '--bids_layout_db', './brain_extract_test/bids_database',
         '--participant_label', 'Nl311f9',
         '--session_labels', '2020021001',
@@ -799,15 +837,17 @@ if __name__ == '__main__':
         '--keep_unnecessary_outputs',
     ]
 
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = ArgumentParser(description=__doc__)
 
-    be_obj = MouseBrainExtractionBIDS(parser=parser)
+    config_file_obj = CFMMConfig(parser=parser)
     nipype_run_arguments = NipypeRunArguments(parser=parser)
+    be_obj = MouseBrainExtractionBIDS(parser=parser)
 
-    parser.print_help()
+    #parser.print_help()
+    args = config_file_obj.parse_args(cmd_args)
 
-    args = parser.parse_args(cmd_args)
     args_dict = vars(args)
+
 
     nipype_run_arguments.populate_parameters(arg_dict=args_dict)
     be_wf = be_obj.get_workflow(arg_dict=args_dict)

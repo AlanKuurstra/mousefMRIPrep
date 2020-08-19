@@ -161,7 +161,8 @@ class BIDSAppArguments(CFMMParserArguments):
 
         self.add_parser_argument('input_derivatives_dirs',
                                  help='List of additional bids derivatives dirs used for searching.',
-                                 nargs="+",)
+                                 type=eval,)
+                                 #nargs="+",)
 
         self.add_parser_argument('bids_layout_db',
                                  help='Path to database for storing indexing of bids_dir and input_derivatives_dirs',

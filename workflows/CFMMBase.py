@@ -7,11 +7,18 @@ from nipype.interfaces import utility as niu
 from workflows.CFMMEnums import ParameterListeningMode
 from workflows.CFMMLogging import NipypeLogger as logger
 
+
 class CFMMFlagValuePair():
     """
     Class storing an argparse action, its command line flag, and the value returned from :func:`ArgumentParser.parse_args`.
     There is optional functionality for indicating if the parameter value should instead be obtained from an argument
     hierarchy.
+
+    :ivar parser_flag: initial value:
+    :ivar user_value: initial value:
+    :ivar parser_action: initial value:
+    :ivar superior_parameter: initial value:
+    :ivar listening_mode: initial value:
     """
 
     def __init__(self, parser_flag, user_value, parser_action,
@@ -76,7 +83,7 @@ class CFMMFlagValuePair():
 
     def populate_user_value(self, parsed_args_dict):
         """
-        Traverse superiors to return the value that should be stored in self.user_value.
+        Traverse superiors and populate values that should be stored in self.user_value.
         :param parsed_args_dict: Dictionary returned by :func:`ArgumentParser.parse_args`
         :type parsed_args_dict: dict
         :param ignore_superiors_existing_values: If True, ignores any superior's manually set user_value and returns the value that would have been automatically populated
@@ -99,6 +106,16 @@ class CFMMFlagValuePair():
 class CFMMParserArguments():
     """
     Base class for grouping a number of related argparse arguments.
+
+    :ivar group_name: initial value:
+    :ivar flag_prefix: initial value:
+    :ivar flag_suffix: initial value:
+    :ivar parent: initial value:
+    :ivar exclude_list: initial value:
+    :ivar _parameters: initial value:
+    :ivar parser: initial value:
+    :ivar parser_group: initial value:
+
     """
     def __init__(self, group_name=None, parent=None, parser=None, exclude_list=None, flag_prefix=None,
                  flag_suffix=None):
@@ -367,24 +384,58 @@ class convert_argparse_using_eval():
         :param argparse_value:
         :return:
         """
+        # everything that comes from the commandline will be put through python's eval()
+        # this causes trouble for strings - every argument from the commandline is read in as a string
+        # so it's hard to determine which arguments were meant as strings for eval() and which arguments were meant
+        # as something else for eval
+
+        # when a user is inputing a string for eval(), we require them to indicate it using double quotes
+        # it's not good enough to use:
+        # --string_input mystringinput
+        # --string_input 'mystringinput'
+        # --string_input "mystringinput"
+        # because they will all evaluate to the string mystringinput which can't be processed by eval()
+
+        # We require the user to put
+        # --string_input '"mystringinput"' which evaluates to "mystringinput" and can be processed by eval()
+        # or
+        # --string_input "'mystringinput'"which evaluates to 'mystringinput' and can be processed by eval()
+
+        # similarly, when using a dictionary or list the user should use
+        # --my_dict_input "{'string_key':3}"
+        # --my_list_input "['string1','string2']"
+
         # this is annoying for the user, but low maitenance
-        # since users will mostly use config files, the annoying strings are acceptable
-        # we can put in logic for strings outside of lists to behave differently (ie. enum and string traits)
-        # if trait is string, don't do eval()
-        # if trait is enum, '' converts to None, and the casting should be done by the enum.values ignoring a
-        # None enum.value if it exists
-        # but then None in enum and None in a list or tuple is input differently.
+        # since users will mostly use config files, the annoying strings on the commandline are acceptable
+
+
+        # we could put in logic for strings outside of lists to behave differently (ie. enum and string traits)
+
+        # if trait is string, don't do eval() - but then a string in list and on it's own is input differently
+
+        # with enum traits we have the additional problem of inputting a python None object.
+        # some numerated types have both 'None' the string and None the python object
+        # using eval we can differentiate the two with '"None"' for the string and 'None" for the python object
+        # But without eval, this becomes difficult.  We could decide that '' will convert to the python None object.
+        # And every other string input can be cast using the enum.values.
+        # But then None in enum and None in a list or tuple is input differently on the commandline
+
         try:
-            trait_value = eval(argparse_value)
+            if argparse_value == "<undefined>":
+                trait_value = Undefined
+            else:
+                trait_value = eval(argparse_value)
         except Exception as e:
             raise argparse.ArgumentTypeError(
                 f'input "{argparse_value}" must be a valid input for python\'s eval(). Did you forget quotes around a string? eg. for a string input use "\'string_1\'" and for a list input use "[\'string_1\',\'string_2\']"')
-
         class dummy(HasTraits):
             trait_argument = self.trait_type
 
         try:
-            self.trait_type.validate(dummy(), 'trait_argument', trait_value)
+            # Undefined throws an error with this trait type check, but is actually a special type that is safe to
+            # use when setting a trait value.
+            if trait_value != Undefined:
+                self.trait_type.validate(dummy(), 'trait_argument', trait_value)
         except Exception as e:
             raise argparse.ArgumentTypeError(
                 str(e).replace("'trait_argument' trait of a dummy instance", f'input "{str(trait_value)}"'))
@@ -416,10 +467,12 @@ class CFMMInterface(CFMMParserArguments):
         default = Undefined
         if trait.usedefault:
             default = trait.default
+
         if type(default) is str:
             # prepare string defaults for eval() inside convert_argparse_using_eval.convert()
             if default == '' or not ((default[0] == default[-1] == "'") or (default[0] == default[-1] == '"')):
                 default = '"' + default + '"'
+
         self.add_parser_argument(parameter_name,
                                  default=default,
                                  type=convert_obj.convert,
@@ -467,6 +520,14 @@ class CFMMWorkflow(CFMMParserArguments):
     Class for managing a nipype workflow with commandline arguments. Manages a list self.subcomponents of
     CFMMParserArguments subclasses (eg. a CFMMInterface or a CFMMWorkflow used as a subworkflow) which will have their
     commandline arguments displayed in this workflow's help.
+
+    :ivar pipeline_name: initial value:
+    :ivar _inputnode_params: initial value:
+    :ivar _param_subordinates: initial value:
+    :ivar inputnode: initial value:
+    :ivar outputnode: initial value:
+    :ivar workflow: initial value:
+    :ivar pipeline_version: initial value:
     """
 
     def __init__(self, subcomponents, *args, pipeline_name=None, pipeline_version=None, **kwargs):
@@ -486,7 +547,6 @@ class CFMMWorkflow(CFMMParserArguments):
 
         self._inputnode_params = []
         self._param_subordinates = {}
-        self.calling_subclass = None
         self.inputnode = None
         self.outputnode = None
         self.workflow = None

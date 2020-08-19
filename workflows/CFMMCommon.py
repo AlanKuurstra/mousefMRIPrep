@@ -125,18 +125,6 @@ def get_node_existing_inputs_to_list(name='existing_inputs_to_list'):
     return node
 
 
-class CFMMConfig(CFMMParserArguments):
-    group_name = "Config Options"
-    def add_parser_arguments(self):
-        parser.add_argument('--config_file',
-                            help='Use a config file for argument default values. Command line arguments override config file.')
-
-        parser.add_argument('--write_config_file',
-                            const='config.txt',
-                            nargs='?',
-                            help='Write a config file storing the current command line arguments and exit.')
-
-
 class NipypeRunArguments(CFMMParserArguments):
     group_name = "Nipype Run Arguments"
     def add_parser_arguments(self):
