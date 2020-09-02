@@ -43,10 +43,11 @@ class BrainSuiteBrainExtraction(CFMMWorkflow):
     group_name = 'BrainSuite Brain Extraction'
     flag_prefix = 'bs_be_'
     def __init__(self, *args, **kwargs):
-        subcomponents = [NipypeWorkflowArguments(exclude_list=['nthreads_mapnode', 'mem_gb_mapnode']),
-                         CFMMBse(),
-                         ]
+        self.nipype = NipypeWorkflowArguments(exclude_list=['nthreads_mapnode', 'mem_gb_mapnode'])
+        self.bse = CFMMBse()
         self.outputs = ['out_file_brain_extracted', 'out_file_mask']
+
+        subcomponents = [self.nipype, self.bse]
         super().__init__(subcomponents, *args, **kwargs)
 
     add_parser_arguments = BrainSuiteBrainExtraction_add_parser_arguments
@@ -839,11 +840,19 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description=__doc__)
 
-    config_file_obj = CFMMConfig(parser=parser)
-    nipype_run_arguments = NipypeRunArguments(parser=parser)
-    be_obj = MouseBrainExtractionBIDS(parser=parser)
+    config_file_obj = CFMMConfig()
+    nipype_run_arguments = NipypeRunArguments()
+    be_obj = MouseBrainExtractionBIDS()
 
-    #parser.print_help()
+    config_file_obj.set_parser(parser)
+    nipype_run_arguments.set_parser(parser)
+    be_obj.set_parser(parser)
+
+    config_file_obj.add_parser_arguments()
+    nipype_run_arguments.add_parser_arguments()
+    be_obj.add_parser_arguments()
+
+    parser.print_help()
     args = config_file_obj.parse_args(cmd_args)
 
     args_dict = vars(args)

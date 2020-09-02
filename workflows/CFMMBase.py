@@ -117,7 +117,7 @@ class CFMMParserArguments():
     :ivar parser_group: initial value:
 
     """
-    def __init__(self, group_name=None, parent=None, parser=None, exclude_list=None, flag_prefix=None,
+    def __init__(self, group_name=None, parent=None, exclude_list=None, flag_prefix=None,
                  flag_suffix=None):
         """
         :param group_name: Name used in parser's argument group. See :func:`CFMMParserArguments.set_parser`.
@@ -160,9 +160,7 @@ class CFMMParserArguments():
 
         self._parameters = {}
 
-        if parser is not None:
-            self.set_parser(parser)
-            self.add_parser_arguments()
+
 
     def get_concatenated_flag_affixes(self):
         """
