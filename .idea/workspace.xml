@@ -7,10 +7,6 @@
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/CFMMBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAnat.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAnat.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -338,7 +334,7 @@
       <workItem from="1603110712598" duration="32013000" />
       <workItem from="1603194080797" duration="26458000" />
       <workItem from="1603286217393" duration="23601000" />
-      <workItem from="1603385786134" duration="58673000" />
+      <workItem from="1603385786134" duration="61219000" />
     </task>
     <servers />
   </component>

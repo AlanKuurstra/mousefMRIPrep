@@ -855,6 +855,7 @@ class CFMMBIDSWorkflowMixer():
         self.add_derivatives()
 
     def inject_bids_search(self):
+        # puts all subcomponents bids search nodes in the same directory
         bids_search_wf = Workflow(name='BIDSInputSearches')
         for subcomponent in self.subcomponents:
             if isinstance(subcomponent, (BIDSInputWorkflow, BIDSDerivativesInputWorkflow)):
@@ -862,6 +863,7 @@ class CFMMBIDSWorkflowMixer():
                 subcomponent.inject_bids_search_wf()
 
     def add_derivatives(self):
+        # puts all subcomponents bids derivatives nodes in the same directory
         derivatives_wf = Workflow(name='BIDSDerivatives')
         for subcomponent in self.subcomponents:
             if isinstance(subcomponent, CFMMBIDSInput):
@@ -894,19 +896,17 @@ class CFMMBIDSWorkflowMixer():
         input_names = bids_iterables.keys()
 
         from itertools import zip_longest
-        def zip_equal(*iterables):
-            sentinel = object()
-            for combo in zip_longest(*iterables, fillvalue=sentinel):
-                if sentinel in combo:
-                    iterables_str = ''
-                    for x in bids_iterables.items():
-                        iterables_str+=str(x)+'\n'
-                    raise ValueError(f'Iterables have different lengths. \n'+iterables_str)
-                yield combo
-
+        # def zip_equal(*iterables):
+        #     sentinel = object()
+        #     for combo in zip_longest(*iterables, fillvalue=sentinel):
+        #         if sentinel in combo:
+        #             iterables_str = ''
+        #             for x in bids_iterables.items():
+        #                 iterables_str+=str(x)+'\n'
+        #             raise ValueError(f'Iterables have different lengths. \n'+iterables_str)
+        #         yield combo
+        # elements_to_synchronize = zip_equal(*bids_iterables.values())
         from nipype.interfaces.base import Undefined
-        #elements_to_synchronize = zip_equal(*bids_iterables.values())
-
         # if all bids_iterables.values() are an empty list, then every single_iteration key-value should be
         # set to undefined. But zip_longest just skips them and the iterable inputs do not get set.
         # this is only needed if we do zip_longest instead of zip_equal
@@ -928,12 +928,12 @@ class CFMMBIDSWorkflowMixer():
                     synchronized_iterables.setdefault(k, []).append(v)
         return synchronized_iterables
 
-    def check_bids_cache(self, wf):
+    def check_bids_cache(self):
         # perform bids searches
         # synchronize the bids search results if iterable
         # make sure it's just a flat list if not an iterable
         # remove items from iterable list if derivatives exist
-        # if all derivatives exist return True so run_bids can skip running the workflow
+        # if all derivatives exist return True ti indicate run_bids can skip running the workflow
 
         bids_iterables = {}
         bids_non_iterables = {}
@@ -968,27 +968,29 @@ class CFMMBIDSWorkflowMixer():
         # remove cached results from iteration list
         field_names = list(synchronized_iterables.keys())
         iterable_lists = list(synchronized_iterables.values())
-        iterables_need_proccessing = {}
+        reduced_iterables = {}
         for images in zip(*iterable_lists):
             is_cached = True
             for field_name, image in zip(field_names, images):
                 if bids_derivatives[field_name] is not None:
                     # don't know derivative extension a priori. for now just count the number of derivatives
-                    # with the same description.
+                    # with the same description. Actually, I'm not sure you're allowed to have 2 derivatives
+                    # with the same name but different extensions so this is probably unnecessary. the reason it won't
+                    # work is that filename.pkl and filename.mat both need a sidecar and they'd have to share filename.json
                     for derivative_desc, count in Counter(bids_derivatives[field_name].values()).items():
                         num_derivs = self.output_derivative_exists(image, derivative_desc)
                         if num_derivs != count:
                             is_cached = False
             if not is_cached:
                 for field_name, image in zip(field_names, images):
-                    iterables_need_proccessing.setdefault(field_name, []).append(image)
-                    iterables_need_proccessing.setdefault(f'{field_name}_original_file', []).append(image)
+                    reduced_iterables.setdefault(field_name, []).append(image)
+                    reduced_iterables.setdefault(f'{field_name}_original_file', []).append(image)
             else:
                 logger.info(f"Derivatives found for inputs {[f'{f}:{i}' for f,i in zip(field_names,images)]}."
                             f"\n\t Skipping.")
 
         # if all iterables are cached, check if non-iterable caches exist so we can skip the pipeline.
-        if iterables_need_proccessing == {}:
+        if reduced_iterables == {}:
             is_cached = True
             for field_name, images in bids_non_iterables.items():
                 if bids_derivatives[field_name] is not None:
@@ -999,22 +1001,12 @@ class CFMMBIDSWorkflowMixer():
                             if num_derivs != count:
                                 is_cached = False
             if is_cached:
-                logger.info(f'Nothing to run, finished {wf.name}')
-                return True
+                return True, {}, {}
 
-
-        inputnode = wf.get_node('inputnode')
-        for field,iterable_list in iterables_need_proccessing.items():
-            self.set_inputnode_iterable(inputnode,field,iterable_list)
-            # don't need ot do this!! it's done by set_inputnode_iterable!
-            # self.set_inputnode_iterable(inputnode, f'{field}_original_file', iterable_list)
-
-        for field,non_iterable in bids_non_iterables.items():
-            setattr(inputnode.inputs, field, delistify(non_iterable))
-            setattr(inputnode.inputs, f'{field}_original_file', delistify(non_iterable))
-        return False
+        return False, bids_non_iterables, reduced_iterables
 
     def run_bids(self, dbg_args=None):
+        # only difference between CFMMWorkflow.run() and this function is self.chck_bids_cache
         parser_groups = CFMMParserGroups(configargparse.ArgumentParser())
 
         config_file_obj = CFMMConfig()
@@ -1031,10 +1023,19 @@ class CFMMBIDSWorkflowMixer():
 
         nipype_run_arguments.populate_parameters(parsed_dict)
         self.populate_parameters(parsed_dict)
-        self.validate_parameters()
+        is_cached, non_iterables, reduced_iterables = self.check_bids_cache()
+        self.validate_parameters() # self.validate should probably check the bids search results in non_iterables and reduced_iterables
         wf = self.create_workflow()
         # wf.write_graph(graph2use='flat')
-        if not self.check_bids_cache(wf):
+        if is_cached:
+            logger.info(f'Nothing to run, finished {wf.name}')
+        else:
+            inputnode = wf.get_node('inputnode')
+            for field, iterable_list in reduced_iterables.items():
+                self.set_inputnode_iterable(inputnode, field, iterable_list)
+            for field, non_iterable in non_iterables.items():
+                setattr(inputnode.inputs, field, delistify(non_iterable))
+                setattr(inputnode.inputs, f'{field}_original_file', delistify(non_iterable))
             nipype_run_arguments.run_workflow(wf)
 
     def connect_dynamic_derivatives_desc(self, wf, srcnode, srcnode_output_name, dynamic_node_names,
