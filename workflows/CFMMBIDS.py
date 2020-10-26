@@ -340,7 +340,9 @@ def get_node_bids_search_override(name=None, output_names=('input_parameter', 'i
 
 
 class CFMMBIDSInput():
-    # works on owner's parameters
+    # this is a subcomponent that doesn't subclass CFMMParameterGroup
+    # instead, it adds parameters (for the bids search) to the owner's parameter group
+    # it mimics a CMMParameterGroup
     def _add_parameters(self):
         input_parameter = self.input_parameter
         owner = self.owner
@@ -349,25 +351,25 @@ class CFMMBIDSInput():
                                                            default_value=None,
                                                            iterable=self.owner.get_inputnode_field(input_parameter).iterable))
 
-        if input_parameter not in self.owner.exclude_list:
-            if self.create_base_bids_string:
-                base_cmdline_param = f'{input_parameter}_base_bids_string'
-                owner._add_parameter(base_cmdline_param,
-                                     help=f'The base BIDS entity-label search string for {input_parameter}. The bids '
-                                          f'search can be overridden by --{owner.get_parameter(input_parameter).flagname}.',
-                                     add_to_inputnode=False,
-                                     default="''",
-                                     )
+        input_parameter_flagname = owner.get_parameter(input_parameter).flagname if input_parameter not in self.owner.exclude_list else 'DOES NOT EXIST'
+        if self.create_base_bids_string:
+            base_cmdline_param = f'{input_parameter}_base_bids_string'
+            owner._add_parameter(base_cmdline_param,
+                                 help=f'The base BIDS entity-label search string for {input_parameter}. The bids '
+                                      f'search can be overridden by --{input_parameter_flagname}.',
+                                 add_to_inputnode=False,
+                                 default="''",
+                                 )
 
-            for entity, label in list(self.entities_to_overwrite.items()) + self.entities_to_extend:
-                if label is CMDLINE_VALUE:
-                    owner._add_parameter(f'{input_parameter}_{entity}',
-                                         help=f"The label(s) of the BIDS entity '{entity}' ({entity}-<{entity}_label>) "
-                                              f"used to search for {input_parameter} . Overridden by "
-                                              f"--{owner.get_parameter(input_parameter).flagname}.",
-                                         default=LEAVE_EXISTING,
-                                         type=label_eval,
-                                         add_to_inputnode=False)
+        for entity, label in list(self.entities_to_overwrite.items()) + self.entities_to_extend:
+            if label is CMDLINE_VALUE:
+                owner._add_parameter(f'{input_parameter}_{entity}',
+                                     help=f"The label(s) of the BIDS entity '{entity}' ({entity}-<{entity}_label>) "
+                                          f"used to search for {input_parameter} . Overridden by "
+                                          f"--{input_parameter_flagname}.",
+                                     default=LEAVE_EXISTING,
+                                     type=label_eval,
+                                     add_to_inputnode=False)
 
     def __init__(self,
                  owner,
@@ -380,6 +382,16 @@ class CFMMBIDSInput():
                  derivatives_mapnode=False,
                  disable_derivatives=False):
 
+        if input_parameter in owner.exclude_list:
+            # if corresponding parameter in the owner is in the exclude_list, the add all the related bids parameters
+            # to the exclude list too!
+            bids_exclude_list = []
+            bids_exclude_list.append(f'{input_parameter}_base_bids_string')
+            for entity, label in list(entities_to_overwrite.items()) + entities_to_extend:
+                if label is CMDLINE_VALUE:
+                    bids_exclude_list.append(f'{input_parameter}_{entity}')
+            owner.exclude_list.extend(bids_exclude_list)
+
         self.owner = owner
         self.input_parameter = input_parameter
         self.create_base_bids_string = create_base_bids_string
@@ -391,9 +403,11 @@ class CFMMBIDSInput():
         self.disable_derivatives = disable_derivatives
 
         self.owner_wf = None
+        # putting derivatives nodes and bids search nodes in their own respective workflows
+        # cleans up the working directory (puts bids node caches in their own directory)
         self.bids_search_wf = None
         self.derivatives_wf = None
-        # either inputnode or bids_search node
+        # either inputnode or bids_search node depending on if
         self.bids_search_node = None
 
         self.group_name = f'{input_parameter}_bids_input'
@@ -403,6 +417,7 @@ class CFMMBIDSInput():
     def populate_parameters(self, parsed_args_dict):
         owner = self.owner
         input_parameter = self.input_parameter
+
         if input_parameter not in self.owner.exclude_list:
             entities_to_overwrite = self.entities_to_overwrite
             entities_to_extend = self.entities_to_extend
@@ -436,6 +451,7 @@ class CFMMBIDSInput():
         inputnode = owner_wf.get_node('inputnode')
         outputnode = owner_wf.get_node('outputnode')
 
+        #if input_parameter not in self.owner.exclude_list and
         if not self.disable_derivatives:
             input_parameter = self.input_parameter
             derivatives_info = self.output_derivatives
@@ -1057,48 +1073,8 @@ class CFMMBIDSWorkflowMixer():
         }
         return dataset_desc
 
-    # def add_bids_to_workflow2(self, wf, inputnode, outputnode, bids_parameter_group):
-    #     bids_input_searches = Workflow(name='BIDSInputSearches')
-    #     bids_search_nodes = {}
-    #     iterables_lengths = {}
-    #
-    #     for input_parameter in self._bids_search_info.keys():
-    #         inputnode_field = self.get_inputnode_field(input_parameter)
-    #         commandline_parameter = self.get_parameter(input_parameter)
-    #
-    #         # bids search
-    #         # iterables have their bids search done outside the pipeline because iterables are set external to the
-    #         # pipeline. non-iterables have their bids search performed inside the pipeline (as a node) to allow the
-    #         # possibility of obtaining search criteria from inside the pipeline. non-iterables usually only search for a
-    #         # single image. however, if they are meant to search for a list then the downstream node should
-    #         # consume lists - either because it's a mapnode or it has an input which requires a list.
-    #         if inputnode_field.iterable:
-    #             # if the input_parameter is not set, then we perform a bids search for inputs
-    #             if commandline_parameter.user_value is None:
-    #                 bids_search_result = self.input_parameter_search(input_parameter)
-    #                 self.set_inputnode_iterable(inputnode, input_parameter, bids_search_result)
-    #                 self.set_inputnode_iterable(inputnode, f'{input_parameter}_original_file', bids_search_result)
-    #                 input_length = len(listify(bids_search_result))
-    #             else:
-    #                 # althought the input_parameter was set by get_inputnode() - it was set under the nodes inputs,
-    #                 # not under its iterables. We set it as an iterable.
-    #                 self.set_inputnode_iterable(inputnode, input_parameter, commandline_parameter.user_value)
-    #                 self.set_inputnode_iterable(inputnode, f'{input_parameter}_original_file',
-    #                                             commandline_parameter.user_value)
-    #                 input_length = len(listify(commandline_parameter.user_value))
-    #
-    #             iterables_lengths[input_parameter] = input_length
-    #
-    #
-    #     # check all iterables same length for synchronization
-    #     if len(set(iterables_lengths.values())) > 1:
-    #         logger.warning(f'Iterable inputs are different lengths {iterables_lengths}')
 
-    #
-    # def disable_derivatives_datasink(self):
-    #     for key in self.outputs.keys():
-    #         self.outputs[key]=None
-    #
+
     # @classmethod
     # def get_node_replacing_derivatives_datasink_original_bids_file(cls, wf):
     #     dstnode = wf.get_node('derivatives_datasink')

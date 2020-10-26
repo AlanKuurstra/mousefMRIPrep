@@ -185,11 +185,7 @@ class MouseFuncPreprocessingBIDS(MouseFuncPreprocessing, CFMMBIDSWorkflowMixer):
                                                   'extension': ['.nii', '.nii.gz'],
                                               },
                                               )
-        # should the exclude check happen in _modify_parameters??
-        # doing that would hide potential mistakes from the user. if they make a typo in the parameter, it would just
-        # be ignored - the modification to the parameter would not be made and the user might not notice
-        if 'in_file_mask' not in self.exclude_list:
-            self._modify_parameter('in_file_mask_desc', 'default', "'ManualBrainMask'")
+        self._modify_parameter('in_file_mask_desc', 'default', "'ManualBrainMask'")
 
     def create_workflow(self):
 
@@ -216,7 +212,7 @@ class MouseFuncPreprocessingBIDS(MouseFuncPreprocessing, CFMMBIDSWorkflowMixer):
             ])
 
         self.replace_srcnode_connections(inputnode, 'slice_timing', get_slice_timing, 'parameter_value')
-        inputnode.inputs.remove_trait('slice_timing')
+        inputnode.inputs.remove_trait('slice_timing') #hack, removes trait from inputnode without node's knowledge
         self.replace_srcnode_connections(inputnode, 'tr', get_tr, 'parameter_value')
         inputnode.inputs.remove_trait('tr')
         self.replace_srcnode_connections(inputnode, 'slice_encoding_direction', get_encode_dir, 'parameter_value')
@@ -233,17 +229,17 @@ if __name__ == "__main__":
         "'participant'",
         '--input_derivatives_dirs',
         "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
-        '--bids_layout_db', './func_preprocessing_test/bids_database',
-        '--in_file_base_bids_string', 'task-rs_bold.nii.gz',
+        '--bids_layout_db', "'./func_preprocessing_test/bids_database'",
+        '--in_file_base_bids_string', "'task-rs_bold.nii.gz'",
         '--in_file_subject', "'Nl311f9'",
         '--in_file_session', "'2020021001'",
-        # '--run_labels', '01',
+        '--in_file_run', "'01'",
         '--be4d_ants_be_antsarg_float',
         '--be4d_brain_extract_method', 'BRAINSUITE',
-        '--nipype_processing_dir', './func_preprocessing_test',
+        '--nipype_processing_dir', "'./func_preprocessing_test'",
         '--keep_unnecessary_outputs',
         '--skip_mc',
     ]
 
     tmp = MouseFuncPreprocessingBIDS()
-    tmp.run(cmd_args)
+    tmp.run_bids(cmd_args)

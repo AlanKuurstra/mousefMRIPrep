@@ -5,40 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/nipype_interfaces/AntsDisplacementManip.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nipype_interfaces/ComputeCorrelationMatrix.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nipype_interfaces/DownsampleAtlas.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nipype_interfaces/ExtractLabels.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/old/MouseBrainExtraction_old.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/BrainExtraction.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/CFMMInterface.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/CFMMMapNode.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/CFMMParameterGroup.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/CFMMWorkflow.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/DownsampleAtlas.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/MotionCorrection.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/MouseAnatToAtlas.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/MouseFuncToAnat.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/MouseMotionCorrection.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/deleteme.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nipype_interfaces/DerivativesDatasink.py" beforeDir="false" afterPath="$PROJECT_DIR$/nipype_interfaces/DerivativesDatasink.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tools/split_exts.py" beforeDir="false" afterPath="$PROJECT_DIR$/tools/split_exts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMAnts.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMAnts.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/CFMMBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMBase.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMBrainSuite.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBrainSuite.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMCommon.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMCommon.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMConfigFile.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMConfigFile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMEnums.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMEnums.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMLogging.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMLogging.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseAnat.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAnat.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAnat.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,32 +66,6 @@
     </key>
   </component>
   <component name="RunManager" selected="Python.MouseCorrelationMatrix">
-    <configuration name="MouseAnatToAtlas" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="mousersfMRIPrep" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-        <env name="ANTSPATH" value="/usr/lib/ants/" />
-        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
-        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
-        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
-      </envs>
-      <option name="SDK_HOME" value="$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/bin/python" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/workflows" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseAnatToAtlas.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="MouseCorrelationMatrix" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -163,6 +109,31 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="MouseFuncPreprocessing" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="ANTSPATH" value="/usr/lib/ants/" />
+        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
+        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
+        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/workflows" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -251,17 +222,17 @@
     <list>
       <item itemvalue="Python.MouseCorrelationMatrix" />
       <item itemvalue="Python.MouseFuncToAtlas" />
-      <item itemvalue="Python.MouseAnatToAtlas" />
       <item itemvalue="Python.MouseCorrelationMatrixFull" />
       <item itemvalue="Python.scratch_27" />
+      <item itemvalue="Python.MouseFuncPreprocessing" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.MouseCorrelationMatrix" />
+        <item itemvalue="Python.MouseFuncPreprocessing" />
         <item itemvalue="Python.scratch_27" />
         <item itemvalue="Python.MouseCorrelationMatrixFull" />
         <item itemvalue="Python.MouseFuncToAtlas" />
-        <item itemvalue="Python.MouseAnatToAtlas" />
       </list>
     </recent_temporary>
   </component>
@@ -367,7 +338,7 @@
       <workItem from="1603110712598" duration="32013000" />
       <workItem from="1603194080797" duration="26458000" />
       <workItem from="1603286217393" duration="23601000" />
-      <workItem from="1603385786134" duration="51808000" />
+      <workItem from="1603385786134" duration="58673000" />
     </task>
     <servers />
   </component>
@@ -445,10 +416,10 @@
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
     <state width="1280" height="721" key="XDebugger.FullValuePopup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603383835633" />
-    <state x="2987" y="282" width="1294" height="783" key="find.popup" timestamp="1603727795903">
+    <state x="2987" y="282" width="1294" height="783" key="find.popup" timestamp="1603733472423">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state x="2987" y="282" width="1294" height="783" key="find.popup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603727795903" />
+    <state x="2987" y="282" width="1294" height="783" key="find.popup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603733472423" />
     <state x="2864" y="365" width="672" height="676" key="search.everywhere.popup" timestamp="1603479241951">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
@@ -505,7 +476,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/workflows/CFMMBIDS.py</url>
-          <line>648</line>
+          <line>664</line>
           <option name="timeStamp" value="205" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">

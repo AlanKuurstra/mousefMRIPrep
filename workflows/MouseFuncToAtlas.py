@@ -169,6 +169,7 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
                                                'extension': ['.nii', '.nii.gz'],
                                            },
                                            )
+        self._modify_parameter('func_mask_desc', 'default', "'ManualBrainMask'")
 
         self.anat_bids = BIDSInputExternalSearch(self,
                                       'anat',
@@ -195,6 +196,8 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
                                                           'extension': ['.nii', '.nii.gz'],
                                                       },
                                                       )
+        self._modify_parameter('anat_mask_desc', 'default', "'ManualBrainMask'")
+
         # Having the bids search as nodes inside the pipeline (using BIDSInputWorkflow or BIDSDerivativesInputWorkflow)
         # allows for a bids search that is dependent on an iterable without having to bring the iterable all the way
         # to the top level. The iterable will arrive on the inputnode inside the pipeline and the search can still
@@ -207,27 +210,29 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
                                                                                        '.h5'],
                                                                                    )
 
+        # want to do a bids search for downsampled atlas
+        # first create the parameter that the bids search will be around
         self._add_parameter('atlas',
                             help='')
+        # create the bids search subcomponent related to the atlas parameter
         self.atlas_bids = BIDSInputWorkflow(self,
                                             'atlas',
                                             )
         self.res_desc_node = get_node_dynamic_res_desc('res_desc')
+        # create the derivative search subcomponent that relies on the atlas bids search.
         self.downsample_atlas_bids = BIDSDerivativesInputWorkflow(self,
                                                                   'downsampled_atlas',
                                                                   base_input='atlas',
                                                                   base_input_derivative_desc=self.res_desc_node,
                                                                   base_input_derivative_extension=['.nii', '.nii.gz'],
                                                                   )
+        # create the derivative search subcomponent that relies on the downsampled atlas.
         self.downsample_atlas_shift_bids = BIDSDerivativesInputWorkflow(self,
                                                                         'downsample_shift_transformation',
                                                                         base_input='downsampled_atlas',
                                                                         base_input_derivative_desc='ShiftTransformation',
                                                                         base_input_derivative_extension=['.mat'],
                                                                         )
-
-        if 'func_mask' not in self.exclude_list:
-            self._modify_parameter('func_mask_desc', 'default', "'ManualBrainMask'")
 
     def create_workflow(self):
         wf = super().create_workflow()
@@ -236,10 +241,13 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
         inputnode = wf.get_node('inputnode')
         # the func,func_mask,anat,anat_mask connectinos are done in super
         # the bids_original file connections are not.
-        wf.connect(inputnode, 'func_original_file', self.func2anat.workflow, 'inputnode.in_file_original_file')
-        wf.connect(inputnode, 'func_mask_original_file', self.func2anat.workflow, 'inputnode.in_file_mask_original_file')
-        wf.connect(inputnode, 'anat_original_file', self.func2anat.workflow, 'inputnode.anat_original_file')
-        wf.connect(inputnode, 'anat_mask_original_file', self.func2anat.workflow, 'inputnode.anat_mask_original_file')
+        wf.connect([
+            (inputnode, self.func2anat.workflow, [('func_original_file', 'inputnode.in_file_original_file'),
+                                                ('func_mask_original_file', 'inputnode.in_file_mask_original_file'),
+                                                  ('anat_original_file', 'inputnode.anat_original_file'),
+                                                  ('anat_mask_original_file', 'inputnode.anat_mask_original_file'),
+                                                ])
+            ])
 
         bids_input_searches = wf.get_node('BIDSInputSearches')
         wf.connect(inputnode, 'func', bids_input_searches, f'{self.res_desc_node.name}.reference')

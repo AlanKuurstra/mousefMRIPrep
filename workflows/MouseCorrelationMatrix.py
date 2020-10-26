@@ -76,6 +76,7 @@ class MouseCorrelationMatrixBIDS(CFMMWorkflow, CFMMBIDSWorkflowMixer):
                                                           'extension': ['.nii', '.nii.gz'],
                                                       },
                                                       )
+        self._modify_parameter('func_mask_desc', 'default', "'ManualBrainMask'")
 
         self.anat_bids = BIDSInputExternalSearch(self,
                                                  'anat',
@@ -98,11 +99,7 @@ class MouseCorrelationMatrixBIDS(CFMMWorkflow, CFMMBIDSWorkflowMixer):
                                                           'extension': ['.nii', '.nii.gz'],
                                                       },
                                                       )
-
-        if 'func_mask' not in self.exclude_list:
-            self._modify_parameter('func_mask_desc', 'default', "'ManualBrainMask'")
-        if 'anat_mask' not in self.exclude_list:
-            self._modify_parameter('anat_mask_desc', 'default', "'ManualBrainMask'")
+        self._modify_parameter('anat_mask_desc', 'default', "'ManualBrainMask'")
 
     def create_workflow(self):
         # correlation wf
@@ -112,7 +109,7 @@ class MouseCorrelationMatrixBIDS(CFMMWorkflow, CFMMBIDSWorkflowMixer):
         compute_corr_mtx = self.corr_mtx.get_node(name='compute_corr_mtx')
         inputnode, outputnode, wf = self.get_io_and_workflow()
         wf.connect([
-            # this bids wf does not have a non-bids super.
+            # this bids wf does not have a non-bids super workflow.
             # we must connect both the func, and func_original_file
             (inputnode, func2atlas_wf, [('func', 'inputnode.func')]),
             (inputnode, func2atlas_wf, [('func_original_file', 'inputnode.func_original_file')]),
@@ -122,8 +119,8 @@ class MouseCorrelationMatrixBIDS(CFMMWorkflow, CFMMBIDSWorkflowMixer):
             (inputnode, func2atlas_wf, [('anat_original_file', 'inputnode.anat_original_file')]),
             (inputnode, func2atlas_wf, [('anat_mask', 'inputnode.anat_mask')]),
             (inputnode, func2atlas_wf, [('anat_mask_original_file', 'inputnode.anat_mask_original_file')]),
-            (inputnode, read_label_mapping, [('label_mapping', 'label_mapping_file')]),
 
+            (inputnode, read_label_mapping, [('label_mapping', 'label_mapping_file')]),
             (func2atlas_wf, extract_label_means, [('outputnode.func_to_atlas', 'fmri_volume')]),
             (read_label_mapping, extract_label_means, [('label_mapping', 'label_mapping')]),
             (extract_label_means, outputnode, [('output_file_pkl', 'label_signals_pkl')]),
@@ -134,23 +131,6 @@ class MouseCorrelationMatrixBIDS(CFMMWorkflow, CFMMBIDSWorkflowMixer):
             (compute_corr_mtx, outputnode, [('output_file_png', 'corr_mtx_png')]),
             (compute_corr_mtx, outputnode, [('output_file_shift_png', 'corr_mtx_shift_png')]),
         ])
-        # bids
-        # disable unused iterables (wf creater must manage flow control of pipeline and unused iterables)
-
-        # dependent on:
-        # skip_func2anat_reg (mousefunc2atlas)
-        # no_mask_func2anat (mousefunc2anat)
-        # brain_extract_method (mousefuncpreprocessing->mousebrainextraction->MouseBrainExtraction4D)
-
-        # iterable dependencies are decided by subworkflow (like when mask is necessary)
-        # but the skipping needs to be done at the top level
-        # during synchronization, we can fill uneven iterables with <undefined>
-        # or we can raise an error that iterables are different lengths
-        # or we can disable the iterable that isn't needed
-
-        # if self.func2atlas.func2anat.preproc.be.get_parameter('brain_extract_method').user_value \
-        #        in []:
-
         self.add_bids_to_workflow(wf)
 
         return wf
@@ -166,7 +146,7 @@ if __name__ == "__main__":
         "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
 
         '--in_file_base_bids_string', "'acq-TurboRARE_T2w.nii.gz'",
-        '--in_file_subject', "['Nl311f9','Nl311f10']",
+        '--in_file_subject', "['Nl311f9','Nl311f10','Nl247m1']",
 
         # for masking in_file through registration of template
         '--be_ants_be_template',
@@ -195,8 +175,11 @@ if __name__ == "__main__":
 
         '--anat_base_bids_string', "'acq-TurboRARE_T2w.nii.gz'",
         '--func_base_bids_string', "'task-rs_bold.nii.gz'",
-        '--func_subject', "['Nl311f9','Nl311f10']",
+        '--func_subject', "['Nl311f9','Nl311f10', 'Nl247m1']",
 
+
+         '--func_session', "'2020031301'",
+         '--func_run', "['05','02']",
         # '--func_session', "'2020021001'",
         # '--func_run', "'05'",
         # '--func','/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/sub-Nl311f9/ses-2020021001/func/sub-Nl311f9_ses-2020021001_task-rs_run-01_bold.nii.gz',

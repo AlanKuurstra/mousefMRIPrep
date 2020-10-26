@@ -158,6 +158,7 @@ class MouseFuncToAnatBIDS(MouseFuncToAnat, CFMMBIDSWorkflowMixer):
 
         # easier to use MouseFuncPreprocessing existing BIDS component because it takes care of removing
         # tr, slice encoding direction, and slice timings with information from the sidecar file
+        # this is unusual behaviour
         self._remove_subcomponent('preproc')
         self.preproc = MouseFuncPreprocessingBIDS(owner=self,
                                                   exclude_list=['in_file', 'in_file_mask'],
@@ -207,25 +208,21 @@ class MouseFuncToAnatBIDS(MouseFuncToAnat, CFMMBIDSWorkflowMixer):
                                                'extension': ['.nii', '.nii.gz'],
                                            },
                                            )
-        # should the exclude check happen in _modify_parameters??
-        # doing that would hide potential mistakes from the user. if they make a typo in the parameter, it would just
-        # be ignored - the modification to the parameter would not be made and the user might not notice
-        # also note that although in_file_mask is put in the exclude list by the parent, but in_file_mask_desc is not
-        # perhaps during the bids setup we should put things in the exclude list rather than use an if statement and
-        # not perform the add_parameters.
-        if 'in_file_mask' not in self.exclude_list:
-            self._modify_parameter('in_file_mask_desc', 'default', "'ManualBrainMask'")
-        if 'anat_mask' not in self.exclude_list:
-            self._modify_parameter('anat_mask_desc', 'default', "'ManualBrainMask'")
+        self._modify_parameter('in_file_mask_desc', 'default', "'ManualBrainMask'")
+        self._modify_parameter('anat_mask_desc', 'default', "'ManualBrainMask'")
 
     def create_workflow(self):
         wf = super().create_workflow()
         self.add_bids_to_workflow(wf)
         inputnode = self.inputnode
-        # necessary for subworkflow derivatives and sidecar fetching
-        # in_file connection is done by super()
-        # the bids connection is not.
-        wf.connect(inputnode, 'in_file_original_file', self.preproc.workflow, 'inputnode.in_file_original_file')
+
+        # when replacing a normal subcomponent with its bid version, (which is an unusual activity)
+        # we must manually provide the original bids file
+        wf.connect([
+            (inputnode, self.preproc.workflow, [('in_file_original_file', 'inputnode.in_file_original_file'),
+                                                ('in_file_mask_original_file', 'inputnode.in_file_mask_original_file')
+                                                ])
+            ])
 
         return wf
 
