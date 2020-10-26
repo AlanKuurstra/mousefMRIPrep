@@ -1020,20 +1020,18 @@ class CFMMBIDSWorkflowMixer():
 
         nipype_run_arguments.populate_parameters(parsed_dict)
         self.populate_parameters(parsed_dict)
-        is_cached, non_iterables, reduced_iterables = self.check_bids_cache()
-        print(is_cached)
-        print(non_iterables)
-        print(reduced_iterables)
+        is_cached, bids_non_iterables, bids_reduced_iterables = self.check_bids_cache()
         self.validate_parameters() # self.validate should probably check the bids search results in non_iterables and reduced_iterables
         wf = self.create_workflow()
         # wf.write_graph(graph2use='flat')
         if is_cached:
             logger.info(f'Nothing to run, finished {wf.name}')
         else:
+            # set results form bids search
             inputnode = wf.get_node('inputnode')
-            for field, iterable_list in reduced_iterables.items():
+            for field, iterable_list in bids_reduced_iterables.items():
                 self.set_inputnode_iterable(inputnode, field, iterable_list)
-            for field, non_iterable in non_iterables.items():
+            for field, non_iterable in bids_non_iterables.items():
                 setattr(inputnode.inputs, field, delistify(non_iterable))
                 setattr(inputnode.inputs, f'{field}_original_file', delistify(non_iterable))
             nipype_run_arguments.run_workflow(wf)

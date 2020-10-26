@@ -5,11 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixBidsCaching.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/CFMMBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,7 +64,7 @@
       <recent name="$PROJECT_DIR$/nipype_interfaces" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.MouseCorrelationMatrixFull">
+  <component name="RunManager" selected="Python.MouseCorrelationMatrixBidsCaching">
     <configuration name="MouseCorrelationMatrix" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -82,6 +82,31 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="MouseCorrelationMatrixBidsCaching" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="ANTSPATH" value="/usr/lib/ants/" />
+        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
+        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
+        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/workflows" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseCorrelationMatrixBidsCaching.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -191,45 +216,20 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="scratch_27" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="mousersfMRIPrep" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="ANTSPATH" value="/usr/lib/ants/" />
-        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
-        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
-        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
-      </envs>
-      <option name="SDK_HOME" value="$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/bin/python" />
-      <option name="WORKING_DIRECTORY" value="$APPLICATION_CONFIG_DIR$/scratches" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$APPLICATION_CONFIG_DIR$/scratches/scratch_27.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <list>
       <item itemvalue="Python.MouseCorrelationMatrix" />
       <item itemvalue="Python.MouseCorrelationMatrixFull" />
-      <item itemvalue="Python.scratch_27" />
       <item itemvalue="Python.MouseFuncPreprocessing" />
       <item itemvalue="Python.MouseFuncToAtlasFull" />
+      <item itemvalue="Python.MouseCorrelationMatrixBidsCaching" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.MouseCorrelationMatrixBidsCaching" />
         <item itemvalue="Python.MouseCorrelationMatrixFull" />
         <item itemvalue="Python.MouseFuncToAtlasFull" />
         <item itemvalue="Python.MouseCorrelationMatrix" />
         <item itemvalue="Python.MouseFuncPreprocessing" />
-        <item itemvalue="Python.scratch_27" />
       </list>
     </recent_temporary>
   </component>
@@ -335,7 +335,7 @@
       <workItem from="1603110712598" duration="32013000" />
       <workItem from="1603194080797" duration="26458000" />
       <workItem from="1603286217393" duration="23601000" />
-      <workItem from="1603385786134" duration="65959000" />
+      <workItem from="1603385786134" duration="66897000" />
     </task>
     <servers />
   </component>

@@ -41,6 +41,7 @@ class MouseCorrelationMatrix(CFMMWorkflow):
         super().__init__(*args, **kwargs)
         self.func2atlas = MouseFuncToAtlas(owner=self, exclude_list=['func', 'func_mask', 'anat', 'anat_mask'])
         self.corr_mtx = CFMMComputeCorrelationMatrix(owner=self)
+        # should probably add outputs from anat
         self.outputs = ['label_signals_mat',
                         'label_signals_pkl',
                         'corr_mtx_pkl',
