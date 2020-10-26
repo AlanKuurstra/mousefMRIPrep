@@ -14,10 +14,12 @@ class NipypeLoggerClass():
         self.stdout_handler.setLevel('INFO')
         self.workflow_logger.warning(msg)
         self.stdout_handler.setLevel(prev_level)
-    def error(self,msg):
+    def error(self,msg,stop_execution=True):
         prev_level = self.stdout_handler.level
         self.stdout_handler.setLevel('INFO')
         self.workflow_logger.error(msg)
+        if stop_execution:
+            raise Exception(msg)
         self.stdout_handler.setLevel(prev_level)
 
 NipypeLogger = NipypeLoggerClass()
