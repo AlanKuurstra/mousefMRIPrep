@@ -961,9 +961,7 @@ class CFMMBIDSWorkflowMixer():
                 else:
                     bids_derivatives[subcomponent.input_parameter] = subcomponent.output_derivatives
 
-        print(bids_iterables)
         synchronized_iterables = self.synchronize_iterables(bids_iterables)
-        print(synchronized_iterables)
 
         # remove cached results from iteration list
         field_names = list(synchronized_iterables.keys())
@@ -1001,12 +999,11 @@ class CFMMBIDSWorkflowMixer():
                             if num_derivs != count:
                                 is_cached = False
             if is_cached:
-                return True, {}, {}
+                return True, bids_non_iterables, reduced_iterables
 
         return False, bids_non_iterables, reduced_iterables
 
     def run_bids(self, dbg_args=None):
-        # only difference between CFMMWorkflow.run() and this function is self.chck_bids_cache
         parser_groups = CFMMParserGroups(configargparse.ArgumentParser())
 
         config_file_obj = CFMMConfig()
@@ -1024,6 +1021,9 @@ class CFMMBIDSWorkflowMixer():
         nipype_run_arguments.populate_parameters(parsed_dict)
         self.populate_parameters(parsed_dict)
         is_cached, non_iterables, reduced_iterables = self.check_bids_cache()
+        print(is_cached)
+        print(non_iterables)
+        print(reduced_iterables)
         self.validate_parameters() # self.validate should probably check the bids search results in non_iterables and reduced_iterables
         wf = self.create_workflow()
         # wf.write_graph(graph2use='flat')

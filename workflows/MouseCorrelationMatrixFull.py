@@ -44,6 +44,9 @@ class MouseCorrelationMatrix(CFMMWorkflow):
         self.outputs = ['label_signals_mat',
                         'label_signals_pkl',
                         'corr_mtx_pkl',
+                        'corr_mtx_mat',
+                        'corr_mtx_png',
+                        'corr_mtx_shift_png',
                         ]
 
     def create_workflow(self, arg_dict=None):
@@ -68,7 +71,13 @@ class MouseCorrelationMatrix(CFMMWorkflow):
 
             (func2atlas_wf, extract_label_means, [('outputnode.func_to_atlas', 'fmri_volume')]),
             (read_label_mapping, extract_label_means, [('label_mapping', 'label_mapping')]),
+            (extract_label_means, outputnode, [('output_file_pkl', 'label_signals_pkl')]),
+            (extract_label_means, outputnode, [('output_file_mat', 'label_signals_mat')]),
             (extract_label_means, compute_corr_mtx, [('output_file_pkl', 'label_signals_pkl')]),
+            (compute_corr_mtx, outputnode, [('output_file_pkl', 'corr_mtx_pkl')]),
+            (compute_corr_mtx, outputnode, [('output_file_mat', 'corr_mtx_mat')]),
+            (compute_corr_mtx, outputnode, [('output_file_png', 'corr_mtx_png')]),
+            (compute_corr_mtx, outputnode, [('output_file_shift_png', 'corr_mtx_shift_png')]),
         ])
 
         inputnode, outputnode, wf = self.get_io_and_workflow()
@@ -78,7 +87,7 @@ class MouseCorrelationMatrix(CFMMWorkflow):
 
 
 from workflows.CFMMCommon import delistify
-from workflows.CFMMBIDS import CMDLINE_VALUE, BIDSAppArguments, BIDSIterable
+from workflows.CFMMBIDS import CMDLINE_VALUE, BIDSAppArguments, BIDSInputExternalSearch
 
 
 class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,CFMMBIDSWorkflowMixer):
@@ -90,146 +99,91 @@ class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,CFMMBIDSWorkflowMixer):
         self._remove_subcomponent('func2atlas')
         self.func2atlas = MouseFuncToAtlasBIDS(owner=self, exclude_list=['func', 'func_mask', 'anat', 'anat_mask'])
 
-        self.func_bids = BIDSIterable(self,
-                                      'func',
-                                      entities_to_overwrite={'subject': CMDLINE_VALUE,
-                                                             'session': CMDLINE_VALUE,
-                                                             'run': CMDLINE_VALUE,
-                                                             'extension': ['.nii', '.nii.gz'],
-                                                             },
-                                      )
+        self.func_bids = BIDSInputExternalSearch(self,
+                                                 'func',
+                                                 entities_to_overwrite={'subject': CMDLINE_VALUE,
+                                                                        'session': CMDLINE_VALUE,
+                                                                        'run': CMDLINE_VALUE,
+                                                                        'extension': ['.nii', '.nii.gz'],
+                                                                        },
+                                                 output_derivatives={
+                                                     'label_signals_mat': 'LabelSignals',
+                                                     'label_signals_pkl': 'LabelSignals',
+                                                     'corr_mtx_pkl': 'CorrelationMatrix',
+                                                     'corr_mtx_mat': 'CorrelationMatrix',
+                                                     'corr_mtx_png': 'CorrelationMatrix',
+                                                     'corr_mtx_shift_png': 'CorrelationShiftMatrix',
+                                                 }
+                                                 )
 
-        self.func_mask_bids = BIDSIterable(self,
-                                           'func_mask',
-                                           dependent_entities=['subject', 'session', 'run'],
-                                           create_base_bids_string=False,
-                                           entities_to_overwrite={
-                                               'desc': CMDLINE_VALUE,
-                                               'extension': ['.nii', '.nii.gz'],
-                                           },
-                                           )
+        self.func_mask_bids = BIDSInputExternalSearch(self,
+                                                      'func_mask',
+                                                      dependent_iterable=self.func_bids,
+                                                      dependent_entities=['subject', 'session', 'run'],
+                                                      create_base_bids_string=False,
+                                                      entities_to_overwrite={
+                                                          'desc': CMDLINE_VALUE,
+                                                          'extension': ['.nii', '.nii.gz'],
+                                                      },
+                                                      )
+        self._modify_parameter('func_mask_desc', 'default', "'ManualBrainMask'")
 
-        self.anat_bids = BIDSIterable(self,
-                                      'anat',
-                                      dependent_entities=['subject'],
-                                      entities_to_overwrite={
-                                          'session': CMDLINE_VALUE,
-                                          'run': CMDLINE_VALUE,
-                                          'extension': ['.nii', '.nii.gz'],
-                                          'scope': 'self',
-                                      },
-                                      )
+        self.anat_bids = BIDSInputExternalSearch(self,
+                                                 'anat',
+                                                 dependent_iterable=self.func_bids,
+                                                 dependent_entities=['subject','session'],
+                                                 entities_to_overwrite={
+                                                     'run': CMDLINE_VALUE,
+                                                     'extension': ['.nii', '.nii.gz'],
+                                                     'scope': 'self',
+                                                 },
+                                                 )
 
-        self.anat_mask_bids = BIDSIterable(self,
-                                           'anat_mask',
-                                           dependent_entities=['subject', 'session', 'run'],
-                                           create_base_bids_string=False,
-                                           entities_to_overwrite={
-                                               'desc': CMDLINE_VALUE,
-                                               'extension': ['.nii', '.nii.gz'],
-                                           },
-                                           )
-
-        if 'func_mask' not in self.exclude_list:
-            self._modify_parameter('func_mask_desc', 'default', "'ManualBrainMask'")
-        if 'anat_mask' not in self.exclude_list:
-            self._modify_parameter('anat_mask_desc', 'default', "'ManualBrainMask'")
+        self.anat_mask_bids = BIDSInputExternalSearch(self,
+                                                      'anat_mask',
+                                                      dependent_iterable=self.anat_bids,
+                                                      dependent_entities=['subject', 'session', 'run'],
+                                                      create_base_bids_string=False,
+                                                      entities_to_overwrite={
+                                                          'desc': CMDLINE_VALUE,
+                                                          'extension': ['.nii', '.nii.gz'],
+                                                      },
+                                                      )
+        self._modify_parameter('anat_mask_desc', 'default', "'ManualBrainMask'")
 
 
     def create_workflow(self):
         wf = super().create_workflow()
+        self.add_bids_to_workflow(wf)
 
         inputnode = wf.get_node('inputnode')
-        wf.connect(inputnode, 'func_original_file', self.func2atlas.workflow, 'inputnode.func_original_file')
-        wf.connect(inputnode, 'func_mask_original_file', self.func2atlas.workflow,'inputnode.func_mask_original_file')
-        wf.connect(inputnode, 'anat_original_file', self.func2atlas.workflow, 'inputnode.anat_original_file')
-        wf.connect(inputnode, 'anat_mask_original_file', self.func2atlas.workflow, 'inputnode.anat_mask_original_file')
+        wf.connect([
+            (inputnode, self.func2atlas.workflow, [
+                ('func_original_file','inputnode.func_original_file'),
+                ('func_mask_original_file', 'inputnode.func_mask_original_file'),
+                ('anat_original_file', 'inputnode.anat_original_file'),
+                ('anat_mask_original_file', 'inputnode.anat_mask_original_file'),
+            ])
+        ])
 
-        # user creates iteration list
-        iteration_list = []
-        for func in self.func_bids.search():
-            self.anat_bids.dependent_file = func
-            anat_list = self.anat_bids.search()
-            if len(anat_list)<1:
-                logger.warning(f'Could not find an anatomical image for {func}. Skipping.')
-            for anat in anat_list:
-                self.func_mask_bids.dependent_file = func
-                func_mask = delistify(self.func_mask_bids.search())
-                self.anat_mask_bids.dependent_file = anat
-                anat_mask = delistify(self.anat_mask_bids.search())
-                #print(anat.split('/')[-1], func.split('/')[-1])
-                inputnode_dict = {}
-                inputnode_dict['func'] = func
-                inputnode_dict['func_original_file'] = func
-                inputnode_dict['func_mask'] = func_mask
-                inputnode_dict['func_mask_original_file'] = func_mask
-                inputnode_dict['anat'] = anat
-                inputnode_dict['anat_original_file'] = anat
-                inputnode_dict['anat_mask'] = anat_mask
-                inputnode_dict['anat_mask_original_file'] = anat_mask
-                iteration_list.append(inputnode_dict)
-
-        iterable_wf = self.iterable_inputnode(wf, iteration_list)
-
-        return iterable_wf
+        return wf
 
 
 if __name__ == "__main__":
-    cmd_args = [
-        '--func',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/sub-Nl311f9/ses-2020021001/func/sub-Nl311f9_ses-2020021001_task-rs_run-02_bold.nii.gz',
-        '--anat',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/sub-Nl311f9/ses-2020021001/anat/sub-Nl311f9_ses-2020021001_acq-TurboRARE_run-01_T2w.nii.gz',
-        '--label_mapping',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/label_mapping_host_0p3x0p3x0p55mm.txt',
-
-        '--reg_atlas', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_downsampled.nii.gz',
-        '--reg_atlas_mask',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_downsampled_mask.nii.gz',
-        '--reg_downsampled_atlas',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/sub-AMBMCc57bl6_desc-ModelDownsampledDownsampled0p3x0p3x0p55mm.nii.gz',
-        '--reg_downsample_shift_transformation',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/sub-AMBMCc57bl6_desc-ModelDownsampledDownsampled0p3x0p3x0p55mmShiftTransformation.mat',
-
-        '--reg_func_antsarg_float',
-        '--reg_func_preproc_be4d_brain_extract_method', 'BRAINSUITE',
-        '--reg_func_preproc_skip_mc',
-        '--reg_func_preproc_tr', '1.5',
-        '--reg_func_preproc_slice_timing',
-        '[0.012, 0.1087741935483871, 0.2055483870967742, 0.30232258064516127, 0.3990967741935484, 0.4958709677419355, 0.5926451612903225, 0.6894193548387096, 0.7861935483870969, 0.8829677419354839, 0.979741935483871, 1.076516129032258, 1.173290322580645, 1.2700645161290323, 1.3668387096774193, 1.4636129032258063, 0.06038709677419355, 0.15716129032258064, 0.25393548387096776, 0.3507096774193548, 0.44748387096774195, 0.544258064516129, 0.6410322580645161, 0.7378064516129031, 0.8345806451612904, 0.9313548387096774, 1.0281290322580643, 1.1249032258064517, 1.2216774193548388, 1.3184516129032258, 1.415225806451613]',
-
-        '--reg_anat_antsarg_float',
-        '--reg_anat_be_brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
-        '--reg_anat_be_ants_be_template',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz',
-        '--reg_anat_be_ants_be_template_probability_mask',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz',
-
-        '--nipype_processing_dir', './func_corrmtx_test',
-        '--keep_unnecessary_outputs',
-    ]
-
-    cmd_args2 = [
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives',
-        'participant',
+    bids_args = [
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids'",
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives'",
+        "'participant'",
         '--input_derivatives_dirs',
         "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
-        '--bids_layout_db', './func_corrmtx_test/bids_database',
 
-        '--anat_base_bids_string', 'acq-TurboRARE_T2w.nii.gz',
-        '--anat_session', "'2020021001'",
-        '--anat_run', "'01'",
-
-        '--func_base_bids_string', 'task-rs_bold.nii.gz',
+        '--func_base_bids_string', "'task-rs_bold.nii.gz'",
         '--func_subject', "'Nl311f9'",
         '--func_session', "'2020021001'",
-        '--func_run', "'02'",
+        '--func_run', "'05'",
 
-        '--label_mapping','/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/label_mapping_host_0p3x0p3x0p55mm.txt',
-        '--reg_atlas', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampled.nii.gz',
-        '--reg_atlas_mask','/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampledBrainMask.nii.gz',
-        '--reg_downsample',
+        '--anat_base_bids_string', "'acq-TurboRARE_T2w.nii.gz'",
+        '--anat_run', "'01'",
 
         '--reg_func_antsarg_float',
         '--reg_func_preproc_be4d_brain_extract_method', 'NO_BRAIN_EXTRACTION',
@@ -237,12 +191,23 @@ if __name__ == "__main__":
 
         '--reg_anat_antsarg_float',
         '--reg_anat_be_brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
-        '--reg_anat_be_ants_be_template', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz',
-        '--reg_anat_be_ants_be_template_probability_mask','/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz',
+        '--reg_anat_be_ants_be_template',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
+        '--reg_anat_be_ants_be_template_probability_mask',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
 
-        '--nipype_processing_dir', './func_corrmtx_test',
+
+        '--label_mapping',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/label_mapping_host_0p3x0p3x0p55mm.txt'",
+        '--reg_atlas',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampled.nii.gz'",
+        '--reg_atlas_mask',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampledBrainMask.nii.gz'",
+        '--reg_downsample',
+
+        '--nipype_processing_dir', "'./func_corrmtx_test'",
         '--keep_unnecessary_outputs',
     ]
 
     tmp = MouseCorrelationMatrixBIDS()
-    tmp.run_bids(cmd_args2)
+    tmp.run_bids(bids_args)

@@ -7,6 +7,9 @@
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/CFMMBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,6 +51,11 @@
     <option name="myUseExistingConsole" value="true" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/workflows" />
+      <recent name="$PROJECT_DIR$/examples" />
+      <recent name="$PROJECT_DIR$" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/workflows" />
       <recent name="$PROJECT_DIR$/old" />
@@ -55,13 +63,8 @@
       <recent name="$PROJECT_DIR$/examples" />
       <recent name="$PROJECT_DIR$/nipype_interfaces" />
     </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/workflows" />
-      <recent name="$PROJECT_DIR$/examples" />
-      <recent name="$PROJECT_DIR$" />
-    </key>
   </component>
-  <component name="RunManager" selected="Python.MouseCorrelationMatrix">
+  <component name="RunManager" selected="Python.MouseCorrelationMatrixFull">
     <configuration name="MouseCorrelationMatrix" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -92,7 +95,6 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
         <env name="ANTSPATH" value="/usr/lib/ants/" />
         <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
         <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
@@ -138,12 +140,11 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="MouseFuncToAtlas" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="MouseFuncToAtlasFull" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
         <env name="ANTSPATH" value="/usr/lib/ants/" />
         <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
         <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
@@ -155,7 +156,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -217,18 +218,18 @@
     </configuration>
     <list>
       <item itemvalue="Python.MouseCorrelationMatrix" />
-      <item itemvalue="Python.MouseFuncToAtlas" />
       <item itemvalue="Python.MouseCorrelationMatrixFull" />
       <item itemvalue="Python.scratch_27" />
       <item itemvalue="Python.MouseFuncPreprocessing" />
+      <item itemvalue="Python.MouseFuncToAtlasFull" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.MouseCorrelationMatrixFull" />
+        <item itemvalue="Python.MouseFuncToAtlasFull" />
         <item itemvalue="Python.MouseCorrelationMatrix" />
         <item itemvalue="Python.MouseFuncPreprocessing" />
         <item itemvalue="Python.scratch_27" />
-        <item itemvalue="Python.MouseCorrelationMatrixFull" />
-        <item itemvalue="Python.MouseFuncToAtlas" />
       </list>
     </recent_temporary>
   </component>
@@ -334,7 +335,7 @@
       <workItem from="1603110712598" duration="32013000" />
       <workItem from="1603194080797" duration="26458000" />
       <workItem from="1603286217393" duration="23601000" />
-      <workItem from="1603385786134" duration="61219000" />
+      <workItem from="1603385786134" duration="65959000" />
     </task>
     <servers />
   </component>
@@ -355,52 +356,52 @@
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
     <state x="2983" y="477" width="424" height="484" key="FileChooserDialogImpl/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1600189095797" />
-    <state width="2514" height="419" key="GridCell.Tab.0.bottom" timestamp="1603470186719">
+    <state width="2514" height="419" key="GridCell.Tab.0.bottom" timestamp="1603746508225">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.0.bottom/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603470186719" />
+    <state width="2514" height="419" key="GridCell.Tab.0.bottom/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603746508225" />
     <state width="2514" height="363" key="GridCell.Tab.0.bottom/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.0.bottom/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.0.center" timestamp="1603470186719">
+    <state width="2514" height="419" key="GridCell.Tab.0.center" timestamp="1603746508225">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.0.center/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603470186719" />
+    <state width="2514" height="419" key="GridCell.Tab.0.center/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603746508225" />
     <state width="2514" height="363" key="GridCell.Tab.0.center/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.0.center/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.0.left" timestamp="1603470186719">
+    <state width="2514" height="419" key="GridCell.Tab.0.left" timestamp="1603746508225">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.0.left/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603470186719" />
+    <state width="2514" height="419" key="GridCell.Tab.0.left/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603746508225" />
     <state width="2514" height="363" key="GridCell.Tab.0.left/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.0.left/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.0.right" timestamp="1603470186719">
+    <state width="2514" height="419" key="GridCell.Tab.0.right" timestamp="1603746508225">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.0.right/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603470186719" />
+    <state width="2514" height="419" key="GridCell.Tab.0.right/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603746508225" />
     <state width="2514" height="363" key="GridCell.Tab.0.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.0.right/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.1.bottom" timestamp="1603470186719">
+    <state width="2514" height="419" key="GridCell.Tab.1.bottom" timestamp="1603746508225">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.1.bottom/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603470186719" />
+    <state width="2514" height="419" key="GridCell.Tab.1.bottom/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603746508225" />
     <state width="2514" height="363" key="GridCell.Tab.1.bottom/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.1.bottom/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583349" />
-    <state width="2514" height="419" key="GridCell.Tab.1.center" timestamp="1603470186719">
+    <state width="2514" height="419" key="GridCell.Tab.1.center" timestamp="1603746508225">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.1.center/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603470186719" />
+    <state width="2514" height="419" key="GridCell.Tab.1.center/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603746508225" />
     <state width="2514" height="363" key="GridCell.Tab.1.center/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.1.center/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.1.left" timestamp="1603470186719">
+    <state width="2514" height="419" key="GridCell.Tab.1.left" timestamp="1603746508225">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.1.left/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603470186719" />
+    <state width="2514" height="419" key="GridCell.Tab.1.left/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603746508225" />
     <state width="2514" height="363" key="GridCell.Tab.1.left/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.1.left/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.1.right" timestamp="1603470186719">
+    <state width="2514" height="419" key="GridCell.Tab.1.right" timestamp="1603746508225">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.1.right/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603470186719" />
+    <state width="2514" height="419" key="GridCell.Tab.1.right/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603746508225" />
     <state width="2514" height="363" key="GridCell.Tab.1.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.1.right/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
     <state x="2689" y="354" key="SettingsEditor" timestamp="1600198004407">
@@ -412,10 +413,10 @@
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
     <state width="1280" height="721" key="XDebugger.FullValuePopup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603383835633" />
-    <state x="2987" y="282" width="1294" height="783" key="find.popup" timestamp="1603733472423">
+    <state x="2987" y="282" width="1294" height="783" key="find.popup" timestamp="1603744382482">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state x="2987" y="282" width="1294" height="783" key="find.popup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603733472423" />
+    <state x="2987" y="282" width="1294" height="783" key="find.popup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603744382482" />
     <state x="2864" y="365" width="672" height="676" key="search.everywhere.popup" timestamp="1603479241951">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
@@ -476,14 +477,14 @@
           <option name="timeStamp" value="205" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py</url>
-          <line>231</line>
-          <option name="timeStamp" value="211" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$APPLICATION_CONFIG_DIR$/scratches/scratch_27.py</url>
           <line>12</line>
           <option name="timeStamp" value="216" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workflows/CFMMBIDS.py</url>
+          <line>1003</line>
+          <option name="timeStamp" value="238" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -531,6 +532,7 @@
     <SUITE FILE_PATH="coverage/mousefMRIPrep$BrainExtraction.coverage" NAME="BrainExtraction Coverage Results" MODIFIED="1586886075581" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$scratch_22.coverage" NAME="scratch_22 Coverage Results" MODIFIED="1599770611950" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$scratch_25.coverage" NAME="scratch_25 Coverage Results" MODIFIED="1602094682805" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseFuncToAtlasFull.coverage" NAME="MouseFuncToAtlasFull Coverage Results" MODIFIED="1603746166394" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$create_template_probability_mask.coverage" NAME="create_template_probability_mask Coverage Results" MODIFIED="1587152498882" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$fix_mouse_bids.coverage" NAME="fix_mouse_bids Coverage Results" MODIFIED="1587506418793" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$tar2bids.coverage" NAME="tar2bids Coverage Results" MODIFIED="1584628704748" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />

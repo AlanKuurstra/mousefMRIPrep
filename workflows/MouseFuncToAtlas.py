@@ -173,7 +173,8 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
 
         self.anat_bids = BIDSInputExternalSearch(self,
                                       'anat',
-                                      dependent_entities=['subject'],
+                                     dependent_iterable=self.func_bids,
+                                      dependent_entities=['subject', 'session'],
                                       entities_to_overwrite={
                                           'session': CMDLINE_VALUE,
                                           'run': CMDLINE_VALUE,
