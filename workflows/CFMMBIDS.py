@@ -1013,7 +1013,7 @@ class CFMMBIDSWorkflowMixer():
         nipype_run_arguments.populate_parser_groups(parser_groups)
 
         self.populate_parser_groups(parser_groups)
-        # parser_groups.parser.print_help()
+        #parser_groups.parser.print_help();stop
 
         parsed_namespace = config_file_obj.parse_args(parser_groups, dbg_args)
         parsed_dict = vars(parsed_namespace)

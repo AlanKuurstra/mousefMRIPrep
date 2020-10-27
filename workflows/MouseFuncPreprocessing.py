@@ -10,6 +10,7 @@ from nipype.interfaces import utility as niu
 from nipype.interfaces.utility import Function
 from workflows.BrainExtraction import CFMMVolumesToAvg
 from niworkflows.interfaces.utils import CopyXForm
+from workflows.CFMMFSL import CFMMSpatialSmoothing, CFMMTemporalFilter
 from workflows.CFMMLogging import NipypeLogger as logger
 
 
@@ -43,12 +44,19 @@ class MouseFuncPreprocessing(CFMMWorkflow):
                             action='store_true',
                             help=f'Do not perform slice timing correction.',
                             )
+        self._add_parameter('skip_tf',
+                            action='store_true',
+                            help=f'Do not perform temporal filtering.',
+                            )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.nipype = NipypeWorkflowArguments(owner=self, exclude_list=['nthreads_mapnode', 'mem_gb_mapnode'])
         self.roi = CFMMVolumesToAvg(owner=self)
         self.mc = MouseMotionCorrection(owner=self, exclude_list=['in_file'], )
+        #stc
+        self.ss = CFMMSpatialSmoothing(owner=self, exclude_list=['in_file'])
+        self.tf = CFMMTemporalFilter(owner=self, exclude_list=['in_file'])
         self.be = MouseBrainExtraction4D(owner=self, exclude_list=['in_file', 'in_file_mask'])
         self.outputs = ['preprocessed', 'avg', 'brain_mask', 'preprocessed_before_mc', 'mc_transform']
 
@@ -60,19 +68,16 @@ class MouseFuncPreprocessing(CFMMWorkflow):
 
         omp_nthreads = self.nipype.get_parameter('nthreads_node').user_value
 
-        # !!!??? more preprocessing steps ???!!!
-        # melodic high-pass or bandpass filtering
-        # in-plane smoothing?
-        # ica denoising? FSL's FIX program?
-        # despiking?
-        # remove global signal?
-        # regressors? (white matter, ventricle, vascular)
-        # remove motion outliers?
 
         mc_wf = self.mc.create_workflow()
         mc_placeholder = pe.Node(niu.IdentityInterface(fields=['placeholder']), name='mc_placeholder')
 
         stc = pe.Node(afni.TShift(outputtype='NIFTI_GZ'), name='stc')
+
+        spatial_smooth = self.ss.get_node(name='spatial_smooth') #spatial filtering can be disabled by 0 fwhm
+        temporal_filter = self.tf.get_node(name='temporal_filter')
+        tf_placeholder = pe.Node(niu.IdentityInterface(fields=['placeholder']), name='tf_placeholder')
+
         copy_xform = pe.Node(CopyXForm(), name='copy_xform')
         stc_placeholder = pe.Node(niu.IdentityInterface(fields=['placeholder']), name='stc_placeholder')
 
@@ -80,6 +85,7 @@ class MouseFuncPreprocessing(CFMMWorkflow):
 
         inputnode, outputnode, wf = self.get_io_and_workflow()
 
+        # motion correction
         if not self.get_parameter('skip_mc').user_value:
             wf.connect([
                 (inputnode, mc_wf, [('in_file', 'inputnode.in_file')]),
@@ -88,7 +94,7 @@ class MouseFuncPreprocessing(CFMMWorkflow):
             ])
         else:
             wf.connect(inputnode, 'in_file', mc_placeholder, 'placeholder')
-
+        # slice timing correction
         if not self.get_parameter('skip_stc').user_value:
             wf.connect([
                 (mc_placeholder, stc, [('placeholder', 'in_file')]),
@@ -103,12 +109,28 @@ class MouseFuncPreprocessing(CFMMWorkflow):
         else:
             wf.connect(mc_placeholder, 'placeholder', stc_placeholder, 'placeholder')
 
+        # spatialsmoothing (can be disabled with 0 fwhm)
+        # get the usan from the mean image (must supply mean image and the brightness threshold for the mean image)
+        # brightness threshold is 75% of the median value
+        wf.connect(stc_placeholder,'placeholder',spatial_smooth,'in_file')
+
+        # temporal filtering
+        # cutoff fwhm: 100ms  TR: 1.5ms  so fwhm is 66.6 TRs and sigma should be (since it's hwhm) 33.3 TRs
+        if not self.get_parameter('skip_tf').user_value:
+            #The 'cutoff' is defined as the FWHM of the filter, so if you ask for 100s that means 50 Trs, so the sigma, or HWHM, is 25 TRs.
+            wf.connect([
+                (spatial_smooth,temporal_filter, [('smoothed_file','in_file')]),
+                (temporal_filter, tf_placeholder, [('out_file', 'placeholder')]),
+                ])
+        else:
+            wf.connect(spatial_smooth,'smoothed_file',tf_placeholder,'placeholder')
+
         wf.connect([
             # outputnode.preprocessed_before_mc needs to change if additional preprocessing steps are included
             # between inputnode.in_file and mc_wf.in_file
             (inputnode, outputnode, [('in_file', 'preprocessed_before_mc')]),
-            (stc_placeholder, outputnode, [('placeholder', 'preprocessed')]),
-            (stc_placeholder, be_wf, [('placeholder', 'inputnode.in_file')]),
+            (tf_placeholder, outputnode, [('placeholder', 'preprocessed')]),
+            (tf_placeholder, be_wf, [('placeholder', 'inputnode.in_file')]),
             (inputnode, be_wf, [('in_file_mask', 'inputnode.in_file_mask')]),
             (be_wf, outputnode, [('outputnode.out_file_n4_corrected', 'avg')]),
             (be_wf, outputnode, [('outputnode.out_file_mask', 'brain_mask')]),
@@ -238,8 +260,45 @@ if __name__ == "__main__":
         '--be4d_brain_extract_method', 'BRAINSUITE',
         '--nipype_processing_dir', "'./func_preprocessing_test'",
         '--keep_unnecessary_outputs',
+
+        '--smooth_fwhm','0.6',
+        '--smooth_brightness_threshold','20.0',
+        '--tf_highpass_sigma','33',
         '--skip_mc',
     ]
 
     tmp = MouseFuncPreprocessingBIDS()
     tmp.run_bids(cmd_args)
+
+
+
+
+"""      
+  --tf_highpass_sigma TF_HIGHPASS_SIGMA
+                        highpass filter sigma (in volumes)
+  
+  --tf_lowpass_sigma TF_LOWPASS_SIGMA
+                        lowpass filter sigma (in volumes)
+"""
+
+
+"""
+Functional preprocessing/SUSAN:
+  
+  --smooth_brightness_threshold SMOOTH_BRIGHTNESS_THRESHOLD
+                        brightness threshold and should be greater than noise
+                        level and less than contrast of edges to be preserved.
+  --smooth_dimension SMOOTH_DIMENSION
+                        within-plane (2) or fully 3D (3)
+
+  --smooth_fwhm SMOOTH_FWHM
+                        fwhm of smoothing, in mm, gets converted using
+                        sqrt(8*log(2))
+
+  --smooth_usans SMOOTH_USANS
+                        determines whether the smoothing area (USAN) is to be
+                        found from secondary images (0, 1 or 2). A negative
+                        value for any brightness threshold will auto-set the
+                        threshold at 10 percent of the robust range
+
+"""
