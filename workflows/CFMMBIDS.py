@@ -140,6 +140,10 @@ class BIDSAppArguments(CFMMParameterGroup):
                             help='Reset the database to index any files added to the bids '
                                  'directories since the last reset.',
                             )
+        self._add_parameter('ignore_derivatives_cache',
+                            action='store_true',
+                            help='Run the pipeline even if derivatives already exist.',
+                            )
 
     def populate_parameters(self, arg_dict):
         # only one workflow can have positional bids arguments for bids app
@@ -995,13 +999,14 @@ class CFMMBIDSWorkflowMixer():
                     for image in listify(images):
                         for derivative_desc, count in Counter(bids_derivatives[field_name].values()).items():
                             num_derivs = self.output_derivative_exists(image, derivative_desc)
-                            #check if sidecars match
                             if num_derivs != count:
-                                is_cached = False
-            if is_cached:
-                return True, bids_non_iterables, reduced_iterables
+                               is_cached = False
 
-        return False, bids_non_iterables, reduced_iterables
+
+            if is_cached:
+                return True, bids_non_iterables, synchronized_iterables, reduced_iterables
+
+        return False, bids_non_iterables, synchronized_iterables, reduced_iterables
 
     def run_bids(self, dbg_args=None):
         parser_groups = CFMMParserGroups(configargparse.ArgumentParser())
@@ -1020,7 +1025,14 @@ class CFMMBIDSWorkflowMixer():
 
         nipype_run_arguments.populate_parameters(parsed_dict)
         self.populate_parameters(parsed_dict)
-        is_cached, bids_non_iterables, bids_reduced_iterables = self.check_bids_cache()
+        is_cached, bids_non_iterables, bids_full_iterables, bids_reduced_iterables = self.check_bids_cache()
+
+        if self.bids.get_parameter('ignore_derivatives_cache').user_value:
+            is_cached = False
+            bids_iterables = bids_full_iterables
+        else:
+            bids_iterables = bids_reduced_iterables
+
         self.validate_parameters() # self.validate should probably check the bids search results in non_iterables and reduced_iterables
         wf = self.create_workflow()
         # wf.write_graph(graph2use='flat')
@@ -1029,7 +1041,7 @@ class CFMMBIDSWorkflowMixer():
         else:
             # set results form bids search
             inputnode = wf.get_node('inputnode')
-            for field, iterable_list in bids_reduced_iterables.items():
+            for field, iterable_list in bids_iterables.items():
                 self.set_inputnode_iterable(inputnode, field, iterable_list)
             for field, non_iterable in bids_non_iterables.items():
                 setattr(inputnode.inputs, field, delistify(non_iterable))
