@@ -65,12 +65,9 @@ class CFMMWorkflow(CFMMParameterGroup):
         self.outputnode = None
         self.workflow = None
 
-        if pipeline_version is None:
-            import inspect
-            from git import Repo
-            subclass_dir = inspect.getfile(self.__class__)
-            subclass_git_repo = Repo(subclass_dir, search_parent_directories=True)
-            self.pipeline_version = subclass_git_repo.head.commit.hexsha
+        if pipeline_version == None:
+            pipeline_version = '1.0'
+        self.pipeline_version = pipeline_version
         super().__init__(*args, **kwargs)
 
     def get_toplevel_owner(self):
