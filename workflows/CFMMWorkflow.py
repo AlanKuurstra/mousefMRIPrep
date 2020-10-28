@@ -163,16 +163,13 @@ class CFMMWorkflow(CFMMParameterGroup):
         current_subcomponent = self
         # go down the chain to get desired subcomponent
         for group_name in groupnames:
-            search_hit = False
             # maybe should still use a dictionary _subcomponents for its hash table
             for subcomponent in current_subcomponent.subcomponents:
                 if subcomponent.group_name == group_name:
                     current_subcomponent = subcomponent
-                    search_hit = True
                     break
-            if not search_hit:
+            else:
                 return None
-
         return current_subcomponent
 
     def get_parameter(self, parameter_name, subcomponent_chain=None):
