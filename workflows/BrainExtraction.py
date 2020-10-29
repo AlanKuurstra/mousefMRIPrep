@@ -1,7 +1,7 @@
 from workflows.CFMMAnts import AntsDefaultArguments, CFMMApplyTransforms, CFMMThresholdImage, CFMMAntsRegistration, \
     CFMMN4BiasFieldCorrection
 from workflows.CFMMWorkflow import CFMMWorkflow
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixer
+from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE
 from workflows.CFMMBrainSuite import CFMMBse
 from workflows.CFMMBIDS import BIDSAppArguments
 from workflows.CFMMEnums import BrainExtractMethod
@@ -239,7 +239,7 @@ class BrainExtraction(CFMMWorkflow):
         self.nipype = NipypeWorkflowArguments(owner=self, exclude_list=['nthreads_mapnode', 'mem_gb_mapnode'])
         self.n4 = CFMMN4BiasFieldCorrection(owner=self)
 
-        #what if in_file is disabled?
+        # what if in_file is disabled?
         self.bse = BrainSuiteBrainExtraction(
             owner=self,
             exclude_list=['in_file']
@@ -247,7 +247,7 @@ class BrainExtraction(CFMMWorkflow):
 
         self.ants = AntsBrainExtraction(
             owner=self,
-            exclude_list=['in_file','in_file_mask'],
+            exclude_list=['in_file', 'in_file_mask'],
             replaced_parameters={
                 'brain_extract_method': self.get_parameter('brain_extract_method'),
             })
@@ -374,176 +374,121 @@ class BrainExtraction4D(BrainExtraction):
         return wf
 
 
-class BrainSuiteBrainExtractionBIDS(BrainSuiteBrainExtraction, CFMMBIDSWorkflowMixer):
-    def __init__(self, *args, save_derivatives=True, **kwargs):
+class BrainSuiteBrainExtractionBIDS(BrainSuiteBrainExtraction, CFMMBIDSWorkflowMixin):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.bids = BIDSAppArguments(owner=self)
+        self.add_bids_parameter_group()
         self.bids._modify_parameter('analysis_level', 'choices', ['participant'])
 
-        if save_derivatives:
-            in_file_derivatives = {
-                'out_file_brain_extracted': 'BrainSuiteBrainExtracted',
-                'out_file_mask': 'BrainSuiteBrainMask'
-            }
-        else:
-            in_file_derivatives = None
-
-        self.create_bids_input('in_file', output_derivatives=in_file_derivatives)
+        self.in_file_bids = BIDSInputExternalSearch(self,
+                                                    'in_file',
+                                                    entities_to_overwrite={'subject': CMDLINE_VALUE,
+                                                                           'session': CMDLINE_VALUE,
+                                                                           'run': CMDLINE_VALUE,
+                                                                           'extension': ['.nii', '.nii.gz'],
+                                                                           },
+                                                    output_derivatives={
+                                                        'out_file_brain_extracted': 'BrainSuiteBrainExtracted',
+                                                        'out_file_mask': 'BrainSuiteBrainMask'
+                                                    },
+                                                    derivatives_mapnode=True)
 
     def validate_parameters(self):
         super().validate_parameters()
-
-        explicit_method = self.get_parameter('in_file')
-        bids_method = self.get_parameter('in_file_entities_labels_string')
-        full_group_name = self.join_nested_groupnames(self.get_nested_groupnames())
-        # validations if standalone only
-        if self.get_toplevel_owner() == self:
-            if explicit_method.user_value is None and bids_method.user_value is None:
-                logger.error(
-                    f"{full_group_name}: Either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-        # validations irrespective if standalone or subworkflow
-        if explicit_method.user_value is not None and bids_method.user_value is not None:
-            logger.warning(
-                f"{full_group_name}: BIDS search for input is being overridden by --{explicit_method.flagname} argument.")
+        # validate that either explicit file or the bids search finds the right number of files.
+        # warn if bids search stuff has been given but it will be overridden by explicit file
+        return
 
     def create_workflow(self, arg_dict=None):
-        # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
-        if arg_dict is not None:
-            self.populate_parameters(arg_dict)
-            self.validate_parameters()
-
         wf = super().create_workflow()
-        mapnode = True
-        inputnode = self.inputnode
-        outputnode = self.outputnode
-        bids_parameter_group = self.bids
-
-        self.add_bids_to_workflow(wf, inputnode, outputnode, bids_parameter_group, mapnode)
+        self.add_bids_to_workflow(wf)
         return wf
 
 
-class AntsBrainExtractionBIDS(AntsBrainExtraction, CFMMBIDSWorkflowMixer):
-    def __init__(self, *args, save_derivatives=True, **kwargs):
+class AntsBrainExtractionBIDS(AntsBrainExtraction, CFMMBIDSWorkflowMixin):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.bids = BIDSAppArguments(owner=self)
+        self.add_bids_parameter_group()
         self.bids._modify_parameter('analysis_level', 'choices', ['participant'])
 
-        if save_derivatives:
-            in_file_derivatives = {
-                'out_file_brain_extracted': 'ANTsBrainExtracted',
-                'out_file_mask': 'ANTsBrainMask'
-            }
-        else:
-            in_file_derivatives = None
+        self.in_file_bids = BIDSInputExternalSearch(self,
+                                                    'in_file',
+                                                    entities_to_overwrite={'subject': CMDLINE_VALUE,
+                                                                           'session': CMDLINE_VALUE,
+                                                                           'run': CMDLINE_VALUE,
+                                                                           'extension': ['.nii', '.nii.gz'],
+                                                                           },
+                                                    output_derivatives={
+                                                        'out_file_brain_extracted': 'ANTsBrainExtracted',
+                                                        'out_file_mask': 'ANTsBrainMask'
+                                                    },
+                                                    derivatives_mapnode=True)
 
-        self.create_bids_input('in_file',
-                               output_derivatives=in_file_derivatives)
-        self.create_bids_input('in_file_mask',
-                               existing_base_entities_string='in_file_entities_labels_string',
-                               entities_to_remove=['extension'],
-                               entities_to_add=['desc'])
-        self.create_bids_input('template',
-                               existing_base_entities_string='in_file_entities_labels_string',
-                               entities_to_remove=['extension', 'session', 'run'],
-                               entities_to_add=['subject', 'desc'])
-        self.create_bids_input('template_probability_mask',
-                               existing_base_entities_string='in_file_entities_labels_string',
-                               entities_to_remove=['extension', 'session', 'run'],
-                               entities_to_add=['subject', 'desc'])
+        self.in_file_mask_bids = BIDSInputExternalSearch(self,
+                                                         'in_file_mask',
+                                                         dependent_search=self.in_file_bids,
+                                                         dependent_entities=['subject', 'session', 'run'],
+                                                         create_base_bids_string=False,
+                                                         entities_to_overwrite={
+                                                             'desc': CMDLINE_VALUE,
+                                                             'extension': ['.nii', '.nii.gz'],
+                                                         },
+                                                         )
+
+        self.template_bids = BIDSInputExternalSearch(self,
+                                                     'template',
+                                                     entities_to_overwrite={'subject': CMDLINE_VALUE,
+                                                                            'extension': ['.nii', '.nii.gz'],
+                                                                            },
+                                                     )
+
+        self.template_probability_mask_bids = BIDSInputExternalSearch(self,
+                                                                      'template_probability_mask',
+                                                                      dependent_search=self.template_bids,
+                                                                      dependent_entities=['subject', 'session', 'run'],
+                                                                      create_base_bids_string=False,
+                                                                      entities_to_overwrite={
+                                                                          'desc': CMDLINE_VALUE,
+                                                                          'extension': ['.nii', '.nii.gz'],
+                                                                      },
+                                                                      )
 
     def validate_parameters(self):
         super().validate_parameters()
-        full_group_name = self.join_nested_groupnames(self.get_nested_groupnames())
+        # wether or not in_file_mask is found should depend on brain_extract_method
 
-        # validations if standalone only
-        if self.get_toplevel_owner() == self:
-            explicit_method = self.get_parameter('in_file')
-            bids_method = self.get_parameter('in_file_entities_labels_string')
-            if explicit_method.user_value is None and bids_method.user_value is None:
-                logger.error(
-                    f"{full_group_name}: Either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-            explicit_method = self.get_parameter('template')
-            bids_method = self.get_parameter('template_subject')
-            if explicit_method.user_value is None and bids_method.user_value is None:
-                logger.error(
-                    f"{full_group_name}: Either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-            explicit_method = self.get_parameter('template_probability_mask')
-            bids_method = self.get_parameter('template_probability_mask_subject')
-            if explicit_method.user_value is None and bids_method.user_value is None:
-                logger.error(
-                    f"{full_group_name}: Either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-            brain_extract_method = self.get_parameter('brain_extract_method')
-            if brain_extract_method.user_value == BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK:
-                explicit_method = self.get_parameter('in_file_mask')
-                bids_method = self.get_parameter('in_file_mask_desc')
-                if explicit_method.user_value is None and bids_method.user_value is None:
-                    logger.error(
-                        f"{full_group_name}: Either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-        # validations irrespective if standalone or subworkflow
-        explicit_method = self.get_parameter('in_file')
-        bids_method = self.get_parameter('in_file_entities_labels_string')
-        if explicit_method.user_value is not None and bids_method.user_value is not None:
-            logger.warning(
-                f"{full_group_name}: BIDS search for input is being overridden by --{explicit_method.flagname} argument.")
-
-        explicit_method = self.get_parameter('template')
-        bids_method = self.get_parameter('template_subject')
-        if (explicit_method.user_value is not None and bids_method.user_value is not None):
-            logger.warning(
-                f"{full_group_name}: BIDS search for template is being overridden by --{explicit_method.flagname}")
-
-        explicit_method = self.get_parameter('template_probability_mask')
-        bids_method = self.get_parameter('template_probability_mask_subject')
-        if (explicit_method.user_value is not None and bids_method.user_value is not None):
-            logger.warning(
-                f"{full_group_name}: BIDS search for template probability mask is being overridden by --{explicit_method.flagname}")
-
-        brain_extract_method = self.get_parameter('brain_extract_method')
-        if brain_extract_method.user_value == BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK:
-            explicit_method = self.get_parameter('in_file_mask')
-            bids_method = self.get_parameter('in_file_mask_desc')
-            if (explicit_method.user_value is not None and bids_method.user_value is not None):
-                logger.warning(
-                    f"{full_group_name}: BIDS search for input mask is being overridden by --{explicit_method.flagname}")
+        # validate that either explicit file or the bids search finds the right number of files.
+        # warn if bids search stuff is provided but is overridden by explicit
+        # applies for in_file, template, template_probability_mask,
+        return
 
     def create_workflow(self, arg_dict=None):
-        # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
-        if arg_dict is not None:
-            self.populate_parameters(arg_dict)
-            self.validate_parameters()
-
         wf = super().create_workflow()
-        mapnode = True
-        inputnode = self.inputnode
-        outputnode = self.outputnode
-        bids_parameter_group = self.bids
-
-        self.add_bids_to_workflow(wf, inputnode, outputnode, bids_parameter_group, mapnode)
+        self.add_bids_to_workflow(wf)
         return wf
 
 
-class BrainExtractionBIDS(BrainExtraction, CFMMBIDSWorkflowMixer):
+class BrainExtractionBIDS(BrainExtraction, CFMMBIDSWorkflowMixin):
 
-    def __init__(self, *args, save_derivatives=True, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.bids = BIDSAppArguments(owner=self)
+        self.add_bids_parameter_group()
         self.bids._modify_parameter('analysis_level', 'choices', ['participant'])
 
-        if save_derivatives:
-            in_file_derivatives = {
-                'out_file_n4_corrected': 'N4Corrected',
-                'out_file_n4_corrected_brain_extracted': 'N4CorrectedBrainExtracted',
-                'out_file_mask': 'BrainMask',
-            }
-        else:
-            in_file_derivatives = None
+        self.in_file_bids = BIDSInputExternalSearch(self,
+                                                    'in_file',
+                                                    entities_to_overwrite={'subject': CMDLINE_VALUE,
+                                                                           'session': CMDLINE_VALUE,
+                                                                           'run': CMDLINE_VALUE,
+                                                                           'extension': ['.nii', '.nii.gz'],
+                                                                           },
+                                                    output_derivatives={
+                                                        'out_file_n4_corrected': 'N4Corrected',
+                                                        'out_file_n4_corrected_brain_extracted': 'N4CorrectedBrainExtracted',
+                                                        'out_file_mask': 'BrainMask',
+                                                    },
+                                                    derivatives_mapnode=True)
 
-        self.create_bids_input('in_file', output_derivatives=in_file_derivatives)
         self._remove_subcomponent('bse')
         self._remove_subcomponent('ants')
         self.bse = BrainSuiteBrainExtractionBIDS(
@@ -552,7 +497,6 @@ class BrainExtractionBIDS(BrainExtraction, CFMMBIDSWorkflowMixer):
                 'in_file': self.get_parameter('in_file'),
                 'in_file_entities_labels_string': self.get_parameter('in_file_entities_labels_string'),
             },
-            save_derivatives=False
         )
 
         self.ants = AntsBrainExtractionBIDS(
@@ -564,193 +508,136 @@ class BrainExtractionBIDS(BrainExtraction, CFMMBIDSWorkflowMixer):
                 'in_file_mask_entities_labels_string': self.get_parameter('in_file_mask_entities_labels_string'),
                 'brain_extract_method': self.get_parameter('brain_extract_method'),
             },
-            save_derivatives=False
         )
 
     def validate_parameters(self):
         super().validate_parameters()
-        full_group_name = self.join_nested_groupnames(self.get_nested_groupnames())
+        # whether template and template probability mask should exist depends on brain extract method.
+        # subworkflow validations depend on this wf flow control. don't need to validate ANTs if using BrainSuite
+        # is indicated.
 
-        # validations if standalone only
-        if self.get_toplevel_owner() == self:
-            brain_extract_method = self.get_parameter('brain_extract_method')
-
-            explicit_method = self.get_parameter('in_file')
-            bids_method = self.get_parameter('in_file_entities_labels_string')
-            if explicit_method.user_value is None and bids_method.user_value is None:
-                logger.error(
-                    f"{full_group_name}: Either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-            if brain_extract_method.user_value in (
-                    BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK, BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK,
-                    BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK):
-
-                explicit_method = self.ants.get_parameter('template')
-                bids_method = self.ants.get_parameter('template_subject')
-                if explicit_method.user_value is None and bids_method.user_value is None:
-                    logger.error(
-                        f"{full_group_name}: When using {brain_extract_method.flagname}={brain_extract_method.user_value}, \n"
-                        f"either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-                explicit_method = self.ants.get_parameter('template_probability_mask')
-                bids_method = self.ants.get_parameter('template_probability_mask_subject')
-                if explicit_method.user_value is None and bids_method.user_value is None:
-                    logger.error(
-                        f"{full_group_name}: When using {brain_extract_method.flagname}={brain_extract_method.user_value}, \n"
-                        f"either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-            if brain_extract_method.user_value == BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK:
-                explicit_method = self.ants.get_parameter('in_file_mask')
-                bids_method = self.ants.get_parameter('in_file_mask_desc')
-                if explicit_method.user_value is None and bids_method.user_value is None:
-                    logger.error(
-                        f"{full_group_name}: When using {brain_extract_method.flagname}={brain_extract_method.user_value}, \n"
-                        f"either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
 
     def create_workflow(self, arg_dict=None):
-
-        # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
-        if arg_dict is not None:
-            self.populate_parameters(arg_dict)
-            self.validate_parameters()
-
         wf = super().create_workflow()
-        mapnode = True
-        inputnode = self.inputnode
-        outputnode = self.outputnode
-        bids_parameter_group = self.bids
-        self.add_bids_to_workflow(wf, inputnode, outputnode, bids_parameter_group, mapnode)
+        self.add_bids_to_workflow(wf)
 
-        brain_extraction_method = self.get_parameter('brain_extract_method').user_value
-        brainsuite_wf = self.bse.workflow
-        ants_wf = self.ants.workflow
-
-        if brain_extraction_method == BrainExtractMethod.BRAINSUITE:
-            wf.connect([
-                (inputnode, brainsuite_wf, [('in_file', 'inputnode.in_file_original_file')]),
-            ])
-
-        elif brain_extraction_method in (
-                BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK,
-                BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK,
-                BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK,
-        ):
-            wf.connect([
-                (inputnode, ants_wf, [('in_file', 'inputnode.in_file_original_file')]),
-            ])
-
+        inputnode = wf.get_node('inputnode')
+        wf.connect([
+            (inputnode, self.bse.workflow, [('in_file', 'inputnode.in_file_original_file'),]),
+            (inputnode, self.ants.workflow, [('in_file', 'inputnode.in_file_original_file')]),
+        ])
         return wf
 
 
-class BrainExtraction4DBIDS(BrainExtraction4D, CFMMBIDSWorkflowMixer):
-
-    def __init__(self, *args, save_derivatives=True, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.bids = BIDSAppArguments(owner=self)
-        self.bids._modify_parameter('analysis_level', 'choices', ['participant'])
-
-        if save_derivatives:
-            in_file_derivatives = {
-                'out_file_n4_corrected': 'AvgN4Corrected',
-                'out_file_n4_corrected_brain_extracted': 'AvgN4CorrectedBrainExtracted',
-                'out_file_mask': 'BrainMask',
-            }
-        else:
-            in_file_derivatives = None
-
-        self.create_bids_input('in_file', output_derivatives=in_file_derivatives)
-        self._remove_subcomponent('bse')
-        self._remove_subcomponent('ants')
-        self.bse = BrainSuiteBrainExtractionBIDS(
-            owner=self,
-            replaced_parameters={
-                'in_file': self.get_parameter('in_file'),
-                'in_file_entities_labels_string': self.get_parameter('in_file_entities_labels_string'),
-            },
-            save_derivatives=False,
-        )
-
-        self.ants = AntsBrainExtractionBIDS(
-            owner=self,
-            replaced_parameters={
-                'in_file': self.get_parameter('in_file'),
-                'in_file_entities_labels_string': self.get_parameter('in_file_entities_labels_string'),
-                'brain_extract_method': self.get_parameter('brain_extract_method'),
-            },
-            save_derivatives=False,
-        )
-
-    def validate_parameters(self):
-        super().validate_parameters()
-        full_group_name = self.join_nested_groupnames(self.get_nested_groupnames())
-
-        # validations if standalone only
-        if self.get_toplevel_owner() == self:
-            brain_extract_method = self.get_parameter('brain_extract_method')
-
-            explicit_method = self.get_parameter('in_file')
-            bids_method = self.get_parameter('in_file_entities_labels_string')
-            if explicit_method.user_value is None and bids_method.user_value is None:
-                logger.error(
-                    f"{full_group_name}: Either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-            if brain_extract_method.user_value in (
-                    BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK, BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK,
-                    BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK):
-
-                explicit_method = self.ants.get_parameter('template')
-                bids_method = self.ants.get_parameter('template_subject')
-                if explicit_method.user_value is None and bids_method.user_value is None:
-                    logger.error(
-                        f"{full_group_name}: When using {brain_extract_method.flagname}={brain_extract_method.user_value}, \n"
-                        f"either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-                explicit_method = self.ants.get_parameter('template_probability_mask')
-                bids_method = self.ants.get_parameter('template_probability_mask_subject')
-                if explicit_method.user_value is None and bids_method.user_value is None:
-                    logger.error(
-                        f"{full_group_name}: When using {brain_extract_method.flagname}={brain_extract_method.user_value}, \n"
-                        f"either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-            if brain_extract_method.user_value == BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK:
-                explicit_method = self.ants.get_parameter('in_file_mask')
-                bids_method = self.ants.get_parameter('in_file_mask_desc')
-                if explicit_method.user_value is None and bids_method.user_value is None:
-                    logger.error(
-                        f"{full_group_name}: When using {brain_extract_method.flagname}={brain_extract_method.user_value}, \n"
-                        f"either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
-
-    def create_workflow(self, arg_dict=None):
-
-        # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
-        if arg_dict is not None:
-            self.populate_parameters(arg_dict)
-            self.validate_parameters()
-
-        wf = super().create_workflow()
-        mapnode = True
-        inputnode = self.inputnode
-        outputnode = self.outputnode
-        bids_parameter_group = self.bids
-
-        self.add_bids_to_workflow(wf, inputnode, outputnode, bids_parameter_group, mapnode)
-
-        brain_extraction_method = self.get_parameter('brain_extract_method').user_value
-        brainsuite_wf = self.bse.workflow
-        ants_wf = self.ants.workflow
-
-        if brain_extraction_method == BrainExtractMethod.BRAINSUITE:
-            wf.connect([
-                (inputnode, brainsuite_wf, [('in_file', 'inputnode.in_file_original_file')]),
-            ])
-
-        elif brain_extraction_method in (
-                BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK,
-                BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK,
-                BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK,
-        ):
-            wf.connect([
-                (inputnode, ants_wf, [('in_file', 'inputnode.in_file_original_file')]),
-            ])
-        return wf
+# class BrainExtraction4DBIDS(BrainExtraction4D, CFMMBIDSWorkflowMixin):
+#
+#     def __init__(self, *args, save_derivatives=True, **kwargs):
+#         super().__init__(*args, **kwargs)
+#
+#         self.bids = BIDSAppArguments(owner=self)
+#         self.bids._modify_parameter('analysis_level', 'choices', ['participant'])
+#
+#         if save_derivatives:
+#             in_file_derivatives = {
+#                 'out_file_n4_corrected': 'AvgN4Corrected',
+#                 'out_file_n4_corrected_brain_extracted': 'AvgN4CorrectedBrainExtracted',
+#                 'out_file_mask': 'BrainMask',
+#             }
+#         else:
+#             in_file_derivatives = None
+#
+#         self.create_bids_input('in_file', output_derivatives=in_file_derivatives)
+#         self._remove_subcomponent('bse')
+#         self._remove_subcomponent('ants')
+#         self.bse = BrainSuiteBrainExtractionBIDS(
+#             owner=self,
+#             replaced_parameters={
+#                 'in_file': self.get_parameter('in_file'),
+#                 'in_file_entities_labels_string': self.get_parameter('in_file_entities_labels_string'),
+#             },
+#             save_derivatives=False,
+#         )
+#
+#         self.ants = AntsBrainExtractionBIDS(
+#             owner=self,
+#             replaced_parameters={
+#                 'in_file': self.get_parameter('in_file'),
+#                 'in_file_entities_labels_string': self.get_parameter('in_file_entities_labels_string'),
+#                 'brain_extract_method': self.get_parameter('brain_extract_method'),
+#             },
+#             save_derivatives=False,
+#         )
+#
+#     def validate_parameters(self):
+#         super().validate_parameters()
+#         full_group_name = self.join_nested_groupnames(self.get_nested_groupnames())
+#
+#         # validations if standalone only
+#         if self.get_toplevel_owner() == self:
+#             brain_extract_method = self.get_parameter('brain_extract_method')
+#
+#             explicit_method = self.get_parameter('in_file')
+#             bids_method = self.get_parameter('in_file_entities_labels_string')
+#             if explicit_method.user_value is None and bids_method.user_value is None:
+#                 logger.error(
+#                     f"{full_group_name}: Either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
+#
+#             if brain_extract_method.user_value in (
+#                     BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK, BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK,
+#                     BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK):
+#
+#                 explicit_method = self.ants.get_parameter('template')
+#                 bids_method = self.ants.get_parameter('template_subject')
+#                 if explicit_method.user_value is None and bids_method.user_value is None:
+#                     logger.error(
+#                         f"{full_group_name}: When using {brain_extract_method.flagname}={brain_extract_method.user_value}, \n"
+#                         f"either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
+#
+#                 explicit_method = self.ants.get_parameter('template_probability_mask')
+#                 bids_method = self.ants.get_parameter('template_probability_mask_subject')
+#                 if explicit_method.user_value is None and bids_method.user_value is None:
+#                     logger.error(
+#                         f"{full_group_name}: When using {brain_extract_method.flagname}={brain_extract_method.user_value}, \n"
+#                         f"either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
+#
+#             if brain_extract_method.user_value == BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK:
+#                 explicit_method = self.ants.get_parameter('in_file_mask')
+#                 bids_method = self.ants.get_parameter('in_file_mask_desc')
+#                 if explicit_method.user_value is None and bids_method.user_value is None:
+#                     logger.error(
+#                         f"{full_group_name}: When using {brain_extract_method.flagname}={brain_extract_method.user_value}, \n"
+#                         f"either --{explicit_method.flagname} or --{bids_method.flagname} must be supplied")
+#
+#     def create_workflow(self, arg_dict=None):
+#
+#         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
+#         if arg_dict is not None:
+#             self.populate_parameters(arg_dict)
+#             self.validate_parameters()
+#
+#         wf = super().create_workflow()
+#         mapnode = True
+#         inputnode = self.inputnode
+#         outputnode = self.outputnode
+#         bids_parameter_group = self.bids
+#
+#         self.add_bids_to_workflow(wf, inputnode, outputnode, bids_parameter_group, mapnode)
+#
+#         brain_extraction_method = self.get_parameter('brain_extract_method').user_value
+#         brainsuite_wf = self.bse.workflow
+#         ants_wf = self.ants.workflow
+#
+#         if brain_extraction_method == BrainExtractMethod.BRAINSUITE:
+#             wf.connect([
+#                 (inputnode, brainsuite_wf, [('in_file', 'inputnode.in_file_original_file')]),
+#             ])
+#
+#         elif brain_extraction_method in (
+#                 BrainExtractMethod.REGISTRATION_NO_INITIAL_MASK,
+#                 BrainExtractMethod.REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK,
+#                 BrainExtractMethod.REGISTRATION_WITH_INITIAL_MASK,
+#         ):
+#             wf.connect([
+#                 (inputnode, ants_wf, [('in_file', 'inputnode.in_file_original_file')]),
+#             ])
+#         return wf

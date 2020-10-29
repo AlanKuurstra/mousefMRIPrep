@@ -1,5 +1,5 @@
 from workflows.MouseBrainExtraction import MouseBrainExtraction4D
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixer, CMDLINE_VALUE
+from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, CMDLINE_VALUE
 from workflows.CFMMWorkflow import CFMMWorkflow
 from workflows.CFMMBIDS import BIDSInputExternalSearch
 from nipype.pipeline import engine as pe
@@ -132,9 +132,14 @@ class MouseFuncPreprocessing(CFMMWorkflow):
             (tf_placeholder, outputnode, [('placeholder', 'preprocessed')]),
             (tf_placeholder, be_wf, [('placeholder', 'inputnode.in_file')]),
             (inputnode, be_wf, [('in_file_mask', 'inputnode.in_file_mask')]),
-            (be_wf, outputnode, [('outputnode.out_file_n4_corrected', 'avg')]),
-            (be_wf, outputnode, [('outputnode.out_file_mask', 'brain_mask')]),
         ])
+        # only connect subworkflow results if they are connected -
+        # pass on the non-connected signal for bids derivatives
+        if self.be.outputnode_field_connected('out_file_mask'):
+            wf.connect([(be_wf, outputnode, [('outputnode.out_file_mask', 'brain_mask')])])
+        if self.be.outputnode_field_connected('out_file_n4_corrected'):
+            wf.connect([(be_wf, outputnode, [('outputnode.out_file_n4_corrected', 'avg')])])
+
         return wf
 
 
@@ -176,12 +181,12 @@ def get_sidecar_node(*args, **kwargs):
                                              function=get_sidecar), **kwargs)
 
 
-class MouseFuncPreprocessingBIDS(MouseFuncPreprocessing, CFMMBIDSWorkflowMixer):
+class MouseFuncPreprocessingBIDS(MouseFuncPreprocessing, CFMMBIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         self.exclude_parameters(['slice_timing', 'tr', 'slice_encoding_direction', ])
         super().__init__(*args, **kwargs)
 
-        # can this be a function in bids mixer?
+        # can this be a function in bids mixin?
         self.add_bids_parameter_group()
         self.bids._modify_parameter('analysis_level', 'choices', ['participant'])
 
@@ -200,6 +205,8 @@ class MouseFuncPreprocessingBIDS(MouseFuncPreprocessing, CFMMBIDSWorkflowMixer):
                                          })
         self.in_file_mask_bids = BIDSInputExternalSearch(self,
                                               'in_file_mask',
+                                                         dependent_search=self.in_file_bids,
+
                                               dependent_entities=['subject', 'session', 'run'],
                                               create_base_bids_string=False,
                                               entities_to_overwrite={
@@ -244,7 +251,7 @@ class MouseFuncPreprocessingBIDS(MouseFuncPreprocessing, CFMMBIDSWorkflowMixer):
 
 
 if __name__ == "__main__":
-    cmd_args = [
+    bids_args = [
         # bidsapp
         "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids'",
         "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives'",
@@ -252,12 +259,15 @@ if __name__ == "__main__":
         '--input_derivatives_dirs',
         "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
         '--bids_layout_db', "'./func_preprocessing_test/bids_database'",
+        # '--reset_db',
+        # '--ignore_derivatives_cache',
+
         '--in_file_base_bids_string', "'task-rs_bold.nii.gz'",
         '--in_file_subject', "'Nl311f9'",
         '--in_file_session', "'2020021001'",
-        '--in_file_run', "'01'",
+        '--in_file_run', "'02'",
         '--be4d_ants_be_antsarg_float',
-        '--be4d_brain_extract_method', 'BRAINSUITE',
+        '--be4d_brain_extract_method', 'NO_BRAIN_EXTRACTION',
         '--nipype_processing_dir', "'./func_preprocessing_test'",
         '--keep_unnecessary_outputs',
 
@@ -268,37 +278,4 @@ if __name__ == "__main__":
     ]
 
     tmp = MouseFuncPreprocessingBIDS()
-    tmp.run_bids(cmd_args)
-
-
-
-
-"""      
-  --tf_highpass_sigma TF_HIGHPASS_SIGMA
-                        highpass filter sigma (in volumes)
-  
-  --tf_lowpass_sigma TF_LOWPASS_SIGMA
-                        lowpass filter sigma (in volumes)
-"""
-
-
-"""
-Functional preprocessing/SUSAN:
-  
-  --smooth_brightness_threshold SMOOTH_BRIGHTNESS_THRESHOLD
-                        brightness threshold and should be greater than noise
-                        level and less than contrast of edges to be preserved.
-  --smooth_dimension SMOOTH_DIMENSION
-                        within-plane (2) or fully 3D (3)
-
-  --smooth_fwhm SMOOTH_FWHM
-                        fwhm of smoothing, in mm, gets converted using
-                        sqrt(8*log(2))
-
-  --smooth_usans SMOOTH_USANS
-                        determines whether the smoothing area (USAN) is to be
-                        found from secondary images (0, 1 or 2). A negative
-                        value for any brightness threshold will auto-set the
-                        threshold at 10 percent of the robust range
-
-"""
+    tmp.run_bids(bids_args)

@@ -1,6 +1,6 @@
 import argparse
 from workflows.CFMMWorkflow import CFMMWorkflow
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixer, BIDSInputExternalSearch, CMDLINE_VALUE
+from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE
 from workflows.CFMMAnts import AntsDefaultArguments, CFMMAntsRegistration
 from workflows.MouseBrainExtraction import MouseBrainExtraction
 from workflows.CFMMCommon import NipypeWorkflowArguments, delistify
@@ -184,7 +184,7 @@ class MouseAnatToAtlas(CFMMWorkflow):
         return wf
 
 
-class MouseAnatToAtlasBIDS(MouseAnatToAtlas, CFMMBIDSWorkflowMixer):
+class MouseAnatToAtlasBIDS(MouseAnatToAtlas, CFMMBIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         # can this be a function in bids mixer?
         super().__init__(*args, **kwargs)
@@ -207,7 +207,7 @@ class MouseAnatToAtlasBIDS(MouseAnatToAtlas, CFMMBIDSWorkflowMixer):
 
         self.in_file_mask_bids = BIDSInputExternalSearch(self,
                                                          'in_file_mask',
-                                                         dependent_iterable=self.in_file_bids,
+                                                         dependent_search=self.in_file_bids,
                                                          dependent_entities=['subject', 'session', 'run'],
                                                          create_base_bids_string=False,
                                                          entities_to_overwrite={
@@ -228,50 +228,29 @@ class MouseAnatToAtlasBIDS(MouseAnatToAtlas, CFMMBIDSWorkflowMixer):
 
 
 if __name__ == "__main__":
-    cmd_args = [
-        '--in_file',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/sub-Nl311f9/ses-2020021001/anat/sub-Nl311f9_ses-2020021001_acq-TurboRARE_run-01_T2w.nii.gz',
-        # for masking in_file through registration of template
-        '--be_ants_be_template',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz',
-        '--be_ants_be_template_probability_mask',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz',
-        # atlas to register using mask created by template
-        '--atlas', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_downsampled.nii.gz',
-        '--atlas_mask',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_downsampled_mask.nii.gz',
-        '--antsarg_float',
-        '--be_brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
-        '--nipype_processing_dir', './anat2atlas_test',
-        '--keep_unnecessary_outputs',
-    ]
-
-    cmd_args_bids = [
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives',
-        'participant',
+    bids_args = [
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids'",
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives'",
+        "'participant'",
         '--input_derivatives_dirs',
         "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
-        '--bids_layout_db', './anat2atlas_test/bids_database',
 
-        '--in_file_base_bids_string', 'acq-TurboRARE_T2w.nii.gz',
+        '--in_file_base_bids_string', "'acq-TurboRARE_T2w.nii.gz'",
         '--in_file_subject', "'Nl311f9'",
+        '--in_file_session', "'2020021001'",
 
         # for masking in_file through registration of template
         '--be_ants_be_template',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
         '--be_ants_be_template_probability_mask',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
         # atlas to register using mask created by template
-        '--atlas', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_downsampled.nii.gz',
+        '--atlas',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampled.nii.gz'",
         '--atlas_mask',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_downsampled_mask.nii.gz',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampledBrainMask.nii.gz'",
         '--antsarg_float',
         '--be_brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
-
-        '--nipype_processing_dir', './anat2atlas_test',
-        '--keep_unnecessary_outputs',
     ]
-
     tmp = MouseAnatToAtlasBIDS()
-    tmp.run(cmd_args_bids)
+    tmp.run_bids(bids_args)

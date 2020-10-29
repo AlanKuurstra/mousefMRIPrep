@@ -1,8 +1,7 @@
 from workflows.CFMMAnts import CFMMN4BiasFieldCorrection, CFMMAntsRegistration
 from workflows.CFMMBrainSuite import CFMMBse
 from workflows.BrainExtraction import BrainSuiteBrainExtraction, AntsBrainExtraction, BrainExtraction, \
-    BrainExtraction4D, BrainSuiteBrainExtractionBIDS, AntsBrainExtractionBIDS, BrainExtractionBIDS, \
-    BrainExtraction4DBIDS
+    BrainExtraction4D, BrainSuiteBrainExtractionBIDS, AntsBrainExtractionBIDS, BrainExtractionBIDS#BrainExtraction4DBIDS
 class MouseN4BiasFieldCorrection(CFMMN4BiasFieldCorrection):
     """
     Wrapper class for CFMMN4BiasFieldCorrection with default parameter values suitable for mouse brains.
@@ -168,29 +167,29 @@ class MouseBrainExtraction4D(BrainExtraction4D):
                                              }
                                              )
 
-class MouseBrainExtraction4DBIDS(BrainExtraction4DBIDS):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._remove_subcomponent('n4')
-        self._remove_subcomponent('bse')
-        self._remove_subcomponent('ants')
-        self.n4 = MouseN4BiasFieldCorrection(owner=self)
-        self.bse = MouseBrainSuiteBrainExtraction(owner=self, exclude_list=['in_file'],save_derivatives=False)
-        self.ants = MouseAntsBrainExtraction(owner=self,
-                                             exclude_list=['in_file','in_file_mask','brain_extract_method'],
-                                             replaced_parameters={
-                                                 'brain_extract_method': self.get_parameter('brain_extract_method'),
-                                             },
-                                             save_derivatives=False
-                                             )
-
-def print_component(component):
-    print(component)
-    for k, v in component._parameters.items():
-        print(f'  {k}, {id(v)}, {v.flagname}, {v.groupname}, {v.user_value}')
-    if hasattr(component, 'subcomponents'):
-        for subcomponent in component.subcomponents:
-            print_component(subcomponent)
+# class MouseBrainExtraction4DBIDS(BrainExtraction4DBIDS):
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self._remove_subcomponent('n4')
+#         self._remove_subcomponent('bse')
+#         self._remove_subcomponent('ants')
+#         self.n4 = MouseN4BiasFieldCorrection(owner=self)
+#         self.bse = MouseBrainSuiteBrainExtraction(owner=self, exclude_list=['in_file'],save_derivatives=False)
+#         self.ants = MouseAntsBrainExtraction(owner=self,
+#                                              exclude_list=['in_file','in_file_mask','brain_extract_method'],
+#                                              replaced_parameters={
+#                                                  'brain_extract_method': self.get_parameter('brain_extract_method'),
+#                                              },
+#                                              save_derivatives=False
+#                                              )
+#
+# def print_component(component):
+#     print(component)
+#     for k, v in component._parameters.items():
+#         print(f'  {k}, {id(v)}, {v.flagname}, {v.groupname}, {v.user_value}')
+#     if hasattr(component, 'subcomponents'):
+#         for subcomponent in component.subcomponents:
+#             print_component(subcomponent)
 
 
 if __name__ == "__main__":

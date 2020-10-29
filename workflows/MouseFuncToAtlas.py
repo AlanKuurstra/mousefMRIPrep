@@ -4,7 +4,7 @@ from workflows.MouseAnatToAtlas import MouseAnatToAtlas
 from workflows.CFMMAnts import get_node_ants_transform_concat_list
 from nipype.interfaces.ants import ApplyTransforms
 from nipype.pipeline import engine as pe
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixer, BIDSInputExternalSearch, CMDLINE_VALUE, BIDSInputWorkflow, \
+from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE, BIDSInputWorkflow, \
     BIDSDerivativesInputWorkflow
 from workflows.CFMMCommon import delistify
 from workflows.CFMMLogging import NipypeLogger as logger
@@ -137,7 +137,7 @@ class MouseFuncToAtlas(CFMMWorkflow):
 from workflows.DownsampleAtlas import get_node_dynamic_res_desc
 
 
-class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
+class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -148,48 +148,47 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
         self.bids._modify_parameter('analysis_level', 'choices', ['participant'])
 
         self.func_bids = BIDSInputExternalSearch(self,
-                                      'func',
-                                      entities_to_overwrite={'subject': CMDLINE_VALUE,
-                                                             'session': CMDLINE_VALUE,
-                                                             'run': CMDLINE_VALUE,
-                                                             'extension': ['.nii', '.nii.gz'],
-                                                             },
-                                      output_derivatives={
-                                          'func_to_atlas':'FuncToAtlas',
-                                          'func_to_atlas_composite_transform':'FuncToAtlasTransform',
-                                      }
-                                      )
+                                                 'func',
+                                                 entities_to_overwrite={'subject': CMDLINE_VALUE,
+                                                                        'session': CMDLINE_VALUE,
+                                                                        'run': CMDLINE_VALUE,
+                                                                        'extension': ['.nii', '.nii.gz'],
+                                                                        },
+                                                 output_derivatives={
+                                                     'func_to_atlas': 'FuncToAtlas',
+                                                     'func_to_atlas_composite_transform': 'FuncToAtlasTransform',
+                                                 }
+                                                 )
 
         self.func_mask_bids = BIDSInputExternalSearch(self,
-                                           'func_mask',
-                                           dependent_entities=['subject', 'session', 'run'],
-                                           create_base_bids_string=False,
-                                           entities_to_overwrite={
-                                               'desc': CMDLINE_VALUE,
-                                               'extension': ['.nii', '.nii.gz'],
-                                           },
-                                           )
+                                                      'func_mask',
+                                                      dependent_search=self.func_bids,
+                                                      dependent_entities=['subject', 'session', 'run'],
+                                                      create_base_bids_string=False,
+                                                      entities_to_overwrite={
+                                                          'desc': CMDLINE_VALUE,
+                                                          'extension': ['.nii', '.nii.gz'],
+                                                      },
+                                                      )
         self._modify_parameter('func_mask_desc', 'default', "'ManualBrainMask'")
 
         self.anat_bids = BIDSInputExternalSearch(self,
-                                      'anat',
-                                     dependent_iterable=self.func_bids,
-                                      dependent_entities=['subject', 'session'],
-                                      entities_to_overwrite={
-                                          'session': CMDLINE_VALUE,
-                                          'run': CMDLINE_VALUE,
-                                          'extension': ['.nii', '.nii.gz'],
-                                          'scope': 'self',
-                                      },
-                                      )
-
+                                                 'anat',
+                                                 dependent_search=self.func_bids,
+                                                 dependent_entities=['subject', 'session'],
+                                                 entities_to_overwrite={
+                                                     'run': CMDLINE_VALUE,
+                                                     'extension': ['.nii', '.nii.gz'],
+                                                     'scope': 'self',
+                                                 },
+                                                 )
 
         # although we could make anat_mask a derivative input like anat_to_atlas_composite_transform below, we want
         # it's parameters to be in the same place of the program help as anat - and so we bring it up the nested pipelines
         # with anat.
         self.anat_mask_bids = BIDSInputExternalSearch(self,
                                                       'anat_mask',
-                                                      dependent_iterable=self.anat_bids,
+                                                      dependent_search=self.anat_bids,
                                                       dependent_entities=['subject', 'session', 'run'],
                                                       create_base_bids_string=False,
                                                       entities_to_overwrite={
@@ -244,11 +243,11 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
         # the bids_original file connections are not.
         wf.connect([
             (inputnode, self.func2anat.workflow, [('func_original_file', 'inputnode.in_file_original_file'),
-                                                ('func_mask_original_file', 'inputnode.in_file_mask_original_file'),
+                                                  ('func_mask_original_file', 'inputnode.in_file_mask_original_file'),
                                                   ('anat_original_file', 'inputnode.anat_original_file'),
                                                   ('anat_mask_original_file', 'inputnode.anat_mask_original_file'),
-                                                ])
-            ])
+                                                  ])
+        ])
 
         bids_input_searches = wf.get_node('BIDSInputSearches')
         wf.connect(inputnode, 'func', bids_input_searches, f'{self.res_desc_node.name}.reference')
@@ -256,65 +255,38 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
         return wf
 
 
-
 if __name__ == "__main__":
-    cmd_args = [
-        # bidsapp
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives',
-        'participant',
+    bids_args = [
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids'",
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives'",
+        "'participant'",
         '--input_derivatives_dirs',
         "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
-        '--bids_layout_db', './func_reg_test/bids_database',
+        # '--reset_db',
+        # '--ignore_derivatives_cache',
 
-        '--anat_base_bids_string', 'acq-TurboRARE_T2w.nii.gz',
-
-        '--func_base_bids_string', 'task-rs_bold.nii.gz',
+        '--func_base_bids_string', "'task-rs_bold.nii.gz'",
         '--func_subject', "'Nl311f9'",
         '--func_session', "'2020021001'",
-        '--func_run', "'01'",
+        '--func_run', "'05'",
+
+        '--anat_base_bids_string', "'acq-TurboRARE_T2w.nii.gz'",
+        '--anat_run', "'01'",
+        '--anat_mask_desc',"'BrainMask'",
 
         '--func_antsarg_float',
         '--func_preproc_be4d_brain_extract_method', 'NO_BRAIN_EXTRACTION',
         '--func_preproc_skip_mc',
+        '--func_preproc_smooth_fwhm', '0.2',
+        '--func_preproc_smooth_brightness_threshold', '20.0',
+        '--func_preproc_tf_highpass_sigma', '33',
 
         '--atlas',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampled.nii.gz',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampled.nii.gz'",
         '--downsample',
-        '--nipype_processing_dir', './func_reg_test',
-        '--keep_unnecessary_outputs',
-    ]
-
-    cmd_args2 = [
-        '--func',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/sub-Nl311f9/ses-2020021001/func/sub-Nl311f9_ses-2020021001_task-rs_run-02_bold.nii.gz',
-        '--anat',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/sub-Nl311f9/ses-2020021001/anat/sub-Nl311f9_ses-2020021001_acq-TurboRARE_run-01_T2w.nii.gz',
-        '--atlas', '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_downsampled.nii.gz',
-        '--atlas_mask',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/atlases/AMBMC_model_downsampled_mask.nii.gz',
-        '--downsampled_atlas',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/sub-AMBMCc57bl6_desc-ModelDownsampledDownsampled0p3x0p3x0p55mm.nii.gz',
-        '--downsample_shift_transformation',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/sub-AMBMCc57bl6_desc-ModelDownsampledDownsampled0p3x0p3x0p55mmShiftTransformation.mat',
-
-        '--func_antsarg_float',
-        '--func_preproc_be4d_brain_extract_method', 'BRAINSUITE',
-        '--func_preproc_skip_mc',
-        '--func_preproc_tr', '1.5',
-        '--func_preproc_slice_timing',
-        '[0.012, 0.1087741935483871, 0.2055483870967742, 0.30232258064516127, 0.3990967741935484, 0.4958709677419355, 0.5926451612903225, 0.6894193548387096, 0.7861935483870969, 0.8829677419354839, 0.979741935483871, 1.076516129032258, 1.173290322580645, 1.2700645161290323, 1.3668387096774193, 1.4636129032258063, 0.06038709677419355, 0.15716129032258064, 0.25393548387096776, 0.3507096774193548, 0.44748387096774195, 0.544258064516129, 0.6410322580645161, 0.7378064516129031, 0.8345806451612904, 0.9313548387096774, 1.0281290322580643, 1.1249032258064517, 1.2216774193548388, 1.3184516129032258, 1.415225806451613]',
-
-        '--anat_antsarg_float',
-        '--anat_be_brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
-        '--anat_be_ants_be_template',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz',
-        '--anat_be_ants_be_template_probability_mask',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz',
-
-        '--nipype_processing_dir', './func_reg_test',
+        '--nipype_processing_dir', "'./func_reg_test'",
         '--keep_unnecessary_outputs',
     ]
 
     tmp = MouseFuncToAtlasBIDS()
-    tmp.run(cmd_args)
+    tmp.run_bids(bids_args)

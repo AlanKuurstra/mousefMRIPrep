@@ -1,6 +1,6 @@
 from workflows.CFMMWorkflow import CFMMWorkflow
 from nipype_interfaces.DownsampleAtlas import get_node_downsample_atlas
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixer, BIDSAppArguments, CMDLINE_VALUE
+from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, BIDSAppArguments, CMDLINE_VALUE
 from nipype_interfaces.DerivativesDatasink import get_derivatives_entities
 from workflows.CFMMCommon import get_fn_node
 
@@ -66,7 +66,7 @@ def get_node_dynamic_shift_desc(name='dynamic_desc'):
     node = get_fn_node(shift_desc,['desc'],name=name)
     return node
 
-class DownsampleAtlasBIDS(DownsampleAtlas,CFMMBIDSWorkflowMixer):
+class DownsampleAtlasBIDS(DownsampleAtlas,CFMMBIDSWorkflowMixin):
     def __init__(self,*args,**kwargs):
         super().__init__(*args,**kwargs)
         self.bids = BIDSAppArguments(owner=self)

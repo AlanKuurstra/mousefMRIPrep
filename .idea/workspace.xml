@@ -5,10 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/workflows/CFMMFSL.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/nipype_interfaces/DerivativesDatasink.py" beforeDir="false" afterPath="$PROJECT_DIR$/nipype_interfaces/DerivativesDatasink.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/BrainExtraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/BrainExtraction.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/CFMMBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/CFMMCommon.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMCommon.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/CFMMWorkflow.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMWorkflow.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/DownsampleAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/DownsampleAtlas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseAnatToAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseAnatToAtlas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixBidsCaching.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixBidsCaching.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAnat.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAnat.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,8 +75,8 @@
       <recent name="$PROJECT_DIR$/nipype_interfaces" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.MouseFuncPreprocessing">
-    <configuration name="CFMMFSL" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.MouseCorrelationMatrixBidsCaching">
+    <configuration name="MouseAnatToAtlas" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -80,7 +92,32 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/CFMMFSL.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseAnatToAtlas.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="MouseCorrelationMatrix" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="mousersfMRIPrep" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="ANTSPATH" value="/usr/lib/ants/" />
+        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
+        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
+        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
+      </envs>
+      <option name="SDK_HOME" value="$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/bin/python" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/workflows" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -94,7 +131,6 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
         <env name="ANTSPATH" value="/usr/lib/ants/" />
         <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
         <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
@@ -107,32 +143,6 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseCorrelationMatrixBidsCaching.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="MouseCorrelationMatrixFull" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <module name="mousersfMRIPrep" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-        <env name="ANTSPATH" value="/usr/lib/ants/" />
-        <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
-        <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
-        <env name="PATH" value="$PATH:/bin:/usr/lib/ants/:$USER_HOME$/Downloads/BrainSuite18a/bin:/usr/lib/fsl/5.0:/usr/bin:/usr/lib/afni/bin" />
-      </envs>
-      <option name="SDK_HOME" value="$PROJECT_DIR$/../../virtualenvs/mouse_resting_state/bin/python" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/workflows" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -166,12 +176,11 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="MouseFuncToAtlasFull" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="MouseFuncToAnat" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
         <env name="ANTSPATH" value="/usr/lib/ants/" />
         <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
         <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
@@ -183,7 +192,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/workflows/MouseFuncToAnat.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -219,19 +228,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.MouseCorrelationMatrixFull" />
       <item itemvalue="Python.MouseFuncPreprocessing" />
-      <item itemvalue="Python.MouseFuncToAtlasFull" />
+      <item itemvalue="Python.MouseFuncToAnat" />
+      <item itemvalue="Python.MouseAnatToAtlas" />
+      <item itemvalue="Python.MouseCorrelationMatrix" />
       <item itemvalue="Python.MouseCorrelationMatrixBidsCaching" />
-      <item itemvalue="Python.CFMMFSL" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.MouseFuncPreprocessing" />
-        <item itemvalue="Python.CFMMFSL" />
         <item itemvalue="Python.MouseCorrelationMatrixBidsCaching" />
-        <item itemvalue="Python.MouseCorrelationMatrixFull" />
-        <item itemvalue="Python.MouseFuncToAtlasFull" />
+        <item itemvalue="Python.MouseCorrelationMatrix" />
+        <item itemvalue="Python.MouseAnatToAtlas" />
+        <item itemvalue="Python.MouseFuncToAnat" />
+        <item itemvalue="Python.MouseFuncPreprocessing" />
       </list>
     </recent_temporary>
   </component>
@@ -338,7 +347,7 @@
       <workItem from="1603194080797" duration="26458000" />
       <workItem from="1603286217393" duration="23601000" />
       <workItem from="1603385786134" duration="67244000" />
-      <workItem from="1603807068449" duration="11501000" />
+      <workItem from="1603807068449" duration="53143000" />
     </task>
     <servers />
   </component>
@@ -359,52 +368,52 @@
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
     <state x="2983" y="477" width="424" height="484" key="FileChooserDialogImpl/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1600189095797" />
-    <state width="2514" height="419" key="GridCell.Tab.0.bottom" timestamp="1603816734086">
+    <state width="2514" height="419" key="GridCell.Tab.0.bottom" timestamp="1603983565593">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.0.bottom/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603816734086" />
+    <state width="2514" height="419" key="GridCell.Tab.0.bottom/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603983565593" />
     <state width="2514" height="363" key="GridCell.Tab.0.bottom/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.0.bottom/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.0.center" timestamp="1603816734086">
+    <state width="2514" height="419" key="GridCell.Tab.0.center" timestamp="1603983565593">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.0.center/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603816734086" />
+    <state width="2514" height="419" key="GridCell.Tab.0.center/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603983565593" />
     <state width="2514" height="363" key="GridCell.Tab.0.center/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.0.center/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.0.left" timestamp="1603816734086">
+    <state width="2514" height="419" key="GridCell.Tab.0.left" timestamp="1603983565593">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.0.left/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603816734086" />
+    <state width="2514" height="419" key="GridCell.Tab.0.left/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603983565593" />
     <state width="2514" height="363" key="GridCell.Tab.0.left/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.0.left/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.0.right" timestamp="1603816734086">
+    <state width="2514" height="419" key="GridCell.Tab.0.right" timestamp="1603983565593">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.0.right/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603816734086" />
+    <state width="2514" height="419" key="GridCell.Tab.0.right/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603983565593" />
     <state width="2514" height="363" key="GridCell.Tab.0.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.0.right/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.1.bottom" timestamp="1603816734086">
+    <state width="2514" height="419" key="GridCell.Tab.1.bottom" timestamp="1603983565593">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.1.bottom/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603816734086" />
+    <state width="2514" height="419" key="GridCell.Tab.1.bottom/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603983565593" />
     <state width="2514" height="363" key="GridCell.Tab.1.bottom/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.1.bottom/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583349" />
-    <state width="2514" height="419" key="GridCell.Tab.1.center" timestamp="1603816734086">
+    <state width="2514" height="419" key="GridCell.Tab.1.center" timestamp="1603983565593">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.1.center/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603816734086" />
+    <state width="2514" height="419" key="GridCell.Tab.1.center/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603983565593" />
     <state width="2514" height="363" key="GridCell.Tab.1.center/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.1.center/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.1.left" timestamp="1603816734086">
+    <state width="2514" height="419" key="GridCell.Tab.1.left" timestamp="1603983565593">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.1.left/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603816734086" />
+    <state width="2514" height="419" key="GridCell.Tab.1.left/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603983565593" />
     <state width="2514" height="363" key="GridCell.Tab.1.left/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.1.left/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state width="2514" height="419" key="GridCell.Tab.1.right" timestamp="1603816734086">
+    <state width="2514" height="419" key="GridCell.Tab.1.right" timestamp="1603983565593">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state width="2514" height="419" key="GridCell.Tab.1.right/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603816734086" />
+    <state width="2514" height="419" key="GridCell.Tab.1.right/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603983565593" />
     <state width="2514" height="363" key="GridCell.Tab.1.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.1.right/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
     <state x="2689" y="354" key="SettingsEditor" timestamp="1600198004407">
@@ -416,14 +425,14 @@
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
     <state width="1280" height="721" key="XDebugger.FullValuePopup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603383835633" />
-    <state x="2987" y="282" width="1294" height="783" key="find.popup" timestamp="1603744382482">
+    <state x="2987" y="282" width="1294" height="783" key="find.popup" timestamp="1603900403237">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state x="2987" y="282" width="1294" height="783" key="find.popup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603744382482" />
-    <state x="2864" y="365" width="672" height="676" key="search.everywhere.popup" timestamp="1603479241951">
+    <state x="2987" y="282" width="1294" height="783" key="find.popup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603900403237" />
+    <state x="2864" y="365" width="672" height="676" key="search.everywhere.popup" timestamp="1603918847098">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state x="2864" y="365" width="672" height="676" key="search.everywhere.popup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603479241951" />
+    <state x="2864" y="365" width="672" height="676" key="search.everywhere.popup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603918847098" />
     <state x="3504" y="365" width="672" height="676" key="search.everywhere.popup/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599751566438" />
     <state x="2925" y="633" width="540" height="172" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1603815411105">
       <screen x="1920" y="0" width="2560" height="1440" />
@@ -480,7 +489,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/workflows/CFMMBIDS.py</url>
-          <line>664</line>
+          <line>667</line>
           <option name="timeStamp" value="205" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -489,14 +498,19 @@
           <option name="timeStamp" value="216" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/workflows/CFMMBIDS.py</url>
-          <line>1003</line>
-          <option name="timeStamp" value="238" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file:///usr/lib/python3.6/argparse.py</url>
           <line>618</line>
           <option name="timeStamp" value="240" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workflows/CFMMBIDS.py</url>
+          <line>1019</line>
+          <option name="timeStamp" value="254" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/workflows/CFMMBIDS.py</url>
+          <line>988</line>
+          <option name="timeStamp" value="256" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -528,14 +542,14 @@
     <SUITE FILE_PATH="coverage/mousefMRIPrep$run.coverage" NAME="run Coverage Results" MODIFIED="1588097681174" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$scratch_15.coverage" NAME="scratch_15 Coverage Results" MODIFIED="1587422760184" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$APPLICATION_CONFIG_DIR$/scratches" />
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$initial_masks_for_model_probability_mask.coverage" NAME="initial_masks_for_model_probability_mask Coverage Results" MODIFIED="1585148720129" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
-    <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseAnatToAtlas.coverage" NAME="MouseAnatToAtlas Coverage Results" MODIFIED="1601566547639" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseAnatToAtlas.coverage" NAME="MouseAnatToAtlas Coverage Results" MODIFIED="1603983397128" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$wip_split_displacement.coverage" NAME="wip_split_displacement Coverage Results" MODIFIED="1584884239939" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$BoldToAtlasRegistration_wf.coverage" NAME="BoldToAtlasRegistration_wf Coverage Results" MODIFIED="1584373579375" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$test_nl_mc.coverage" NAME="test_nl_mc Coverage Results" MODIFIED="1585237680545" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$test_nl_mc.coverage" NAME="test_nl_mc Coverage Results" MODIFIED="1585577041303" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$BrainExtractionWorkflows.coverage" NAME="BrainExtractionWorkflows Coverage Results" MODIFIED="1584040963173" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseBrainExtraction.coverage" NAME="MouseBrainExtraction Coverage Results" MODIFIED="1601486999284" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
-    <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseFuncToAnat.coverage" NAME="MouseFuncToAnat Coverage Results" MODIFIED="1603117078196" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseFuncToAnat.coverage" NAME="MouseFuncToAnat Coverage Results" MODIFIED="1603902795943" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$downsampling_node.coverage" NAME="downsampling_node Coverage Results" MODIFIED="1595591370067" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/nipype_interfaces" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$CFMMFSL.coverage" NAME="CFMMFSL Coverage Results" MODIFIED="1603816697034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseCorrelationMatrix.coverage" NAME="MouseCorrelationMatrix Coverage Results" MODIFIED="1603470147902" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
@@ -550,7 +564,7 @@
     <SUITE FILE_PATH="coverage/mousefMRIPrep$fix_mouse_bids.coverage" NAME="fix_mouse_bids Coverage Results" MODIFIED="1587506418793" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
     <SUITE FILE_PATH="coverage/mousersfMRIPrep$tar2bids.coverage" NAME="tar2bids Coverage Results" MODIFIED="1584628704748" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$create_initial_masks.coverage" NAME="create_initial_masks Coverage Results" MODIFIED="1587574274476" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseFuncPreprocessing.coverage" NAME="MouseFuncPreprocessing Coverage Results" MODIFIED="1602952768535" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
+    <SUITE FILE_PATH="coverage/mousefMRIPrep$MouseFuncPreprocessing.coverage" NAME="MouseFuncPreprocessing Coverage Results" MODIFIED="1603822412711" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$downsampling.coverage" NAME="downsampling Coverage Results" MODIFIED="1595280400034" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$API2.coverage" NAME="API2 Coverage Results" MODIFIED="1598470484743" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/workflows" />
     <SUITE FILE_PATH="coverage/mousefMRIPrep$create_model_probability_mask.coverage" NAME="create_model_probability_mask Coverage Results" MODIFIED="1585798449589" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tools" />

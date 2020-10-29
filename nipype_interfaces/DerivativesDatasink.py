@@ -127,9 +127,11 @@ def get_node_derivatives_datasink(name='derivatives_datasink', mapnode=False):
         iterfield = ['derivatives_files_list', 'original_bids_file']
     else:
         iterfield = None
-    # if overwrite=True, the bids derivatives are re-saved and overwritten every single time (no caching).
-    # but then if the next workflow depends on the derivatives, the next workflow will always rerun
-    return get_fn_node(derivatives_datasink_fn, [], imports=None, name=name, overwrite=False,
+    # if overwrite=True, the bids derivatives are re-saved and overwritten every single time
+    # it's possible if another workflow depends on the derivatives and you overwrite them, the other workflow needs
+    # to be reprocessed. So if the first pipeline keeps rewriting the derivatives the second pipeline will always need
+    # to be recomputed.  Thus the first pipeline should first check to see if the derivatives exist before overwriting.
+    return get_fn_node(derivatives_datasink_fn, [], imports=None, name=name, overwrite=True,
                 mapnode=mapnode, iterfield=iterfield)
 
 def get_node_get_derivatives_entities(*args, name='get_derivatives_entities', **kwargs):

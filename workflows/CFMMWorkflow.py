@@ -6,7 +6,7 @@ from copy import deepcopy
 from nipype.interfaces import utility as niu
 from workflows.CFMMLogging import NipypeLogger as logger
 from workflows.CFMMConfigFile import CFMMConfig
-from workflows.CFMMCommon import NipypeRunArguments
+from workflows.CFMMCommon import NipypeRunEngine
 import configargparse
 from workflows.CFMMParameterGroup import CFMMParameterGroup
 from workflows.CFMMParameterGroup import CFMMParserGroups
@@ -432,6 +432,20 @@ class CFMMWorkflow(CFMMParameterGroup):
         wf.disconnect([(srcnode, x[0], [(srcnode_output_name, x[1])]) for x in connected])
         wf.connect([(new_srcnode, x[0], [(new_srcnode_output_name, x[1])]) for x in connected])
 
+    def outputnode_field_connected(self,field):
+        wf = self.workflow
+        outputnode = wf.get_node('outputnode')
+        for srcnode in wf._graph.predecessors(outputnode):
+            for edge in wf._graph.get_edge_data(srcnode,outputnode)["connect"]:
+                if edge[1] == field:
+                    return True
+        return False
+
+
+
+
+
+
     def validate_parameters(self):
         """
         Validate user inputs for arguments in all subcomponents.
@@ -441,14 +455,14 @@ class CFMMWorkflow(CFMMParameterGroup):
                 continue
             subcomponent.validate_parameters()
 
-    def run(self,dbg_args=None):
+    def run_setup(self, dbg_args=None):
         parser_groups = CFMMParserGroups(configargparse.ArgumentParser())
 
         config_file_obj = CFMMConfig()
         config_file_obj.populate_parser_groups(parser_groups)
 
-        nipype_run_arguments = NipypeRunArguments()
-        nipype_run_arguments.populate_parser_groups(parser_groups)
+        nipype_run_engine = NipypeRunEngine()
+        nipype_run_engine.populate_parser_groups(parser_groups)
 
 
         self.populate_parser_groups(parser_groups)
@@ -457,11 +471,15 @@ class CFMMWorkflow(CFMMParameterGroup):
         parsed_namespace = config_file_obj.parse_args(parser_groups, dbg_args)
         parsed_dict = vars(parsed_namespace)
 
-        nipype_run_arguments.populate_parameters(parsed_dict)
+        nipype_run_engine.populate_parameters(parsed_dict)
         self.populate_parameters(parsed_dict)
         self.validate_parameters()
 
         wf = self.create_workflow()
         #wf.write_graph(graph2use='flat')
-
-        nipype_run_arguments.run_workflow(wf)
+        return nipype_run_engine, wf
+    def run(self, dbg_args=None):
+        if hasattr(self,'bids'):
+            logger.warning('This pipeline has bids components. You should use run_bids() instead of run().')
+        nipype_run_engine, wf = self.run_setup(dbg_args)
+        nipype_run_engine.run_workflow(wf)

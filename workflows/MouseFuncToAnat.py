@@ -1,6 +1,6 @@
 import argparse
 from workflows.CFMMWorkflow import CFMMWorkflow
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixer, CMDLINE_VALUE, BIDSInputExternalSearch
+from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, CMDLINE_VALUE, BIDSInputExternalSearch
 from workflows.CFMMAnts import AntsDefaultArguments, CFMMAntsRegistration
 from workflows.MouseBrainExtraction import MouseBrainExtractionBIDS
 from workflows.CFMMCommon import NipypeWorkflowArguments, delistify
@@ -114,13 +114,14 @@ class MouseFuncToAnat(CFMMWorkflow):
             (inputnode, ants_reg, [('anat', 'fixed_image')]),
             (preproc_wf, outputnode, [('outputnode.mc_transform', 'mc_transform'),
                                       ('outputnode.preprocessed', 'preprocessed'),
-                                      ('outputnode.brain_mask', 'brain_mask'),
                                       ('outputnode.avg', 'avg')]),
             (preproc_wf, ants_reg, [('outputnode.avg', 'moving_image')]),
             (ants_reg, outputnode, [('warped_image', 'func_avg_to_anat'),
                                     ('composite_transform', 'func_to_anat_composite_transform'), ]),
 
         ])
+        if self.preproc.outputnode_field_connected('brain_mask'):
+            wf.connect([(preproc_wf, outputnode, [('outputnode.brain_mask', 'brain_mask'),])])
 
         if not self.get_parameter('no_mask_func2anat').user_value:
             wf.connect([
@@ -149,7 +150,7 @@ class MouseFuncToAnat(CFMMWorkflow):
         return wf
 
 
-class MouseFuncToAnatBIDS(MouseFuncToAnat, CFMMBIDSWorkflowMixer):
+class MouseFuncToAnatBIDS(MouseFuncToAnat, CFMMBIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         self.exclude_parameters(['slice_timing', 'tr', 'slice_encoding_direction', ])
         super().__init__(*args, **kwargs)
@@ -182,6 +183,7 @@ class MouseFuncToAnatBIDS(MouseFuncToAnat, CFMMBIDSWorkflowMixer):
 
         self.in_file_mask_bids = BIDSInputExternalSearch(self,
                                               'in_file_mask',
+                                                         dependent_search=self.in_file_bids,
                                               dependent_entities=['subject', 'session', 'run'],
                                               create_base_bids_string=False,
                                               entities_to_overwrite={'desc': CMDLINE_VALUE,
@@ -190,6 +192,7 @@ class MouseFuncToAnatBIDS(MouseFuncToAnat, CFMMBIDSWorkflowMixer):
 
         self.anat_bids = BIDSInputExternalSearch(self,
                                       'anat',
+                                                 dependent_search=self.in_file_bids,
                                       dependent_entities=['subject'],
                                       entities_to_overwrite={
                                           'session': CMDLINE_VALUE,
@@ -201,6 +204,7 @@ class MouseFuncToAnatBIDS(MouseFuncToAnat, CFMMBIDSWorkflowMixer):
 
         self.anat_mask_bids = BIDSInputExternalSearch(self,
                                            'anat_mask',
+                                                      dependent_search=self.anat_bids,
                                            dependent_entities=['subject', 'session', 'run'],
                                            create_base_bids_string=False,
                                            entities_to_overwrite={
@@ -228,54 +232,37 @@ class MouseFuncToAnatBIDS(MouseFuncToAnat, CFMMBIDSWorkflowMixer):
 
 
 if __name__ == "__main__":
-    cmd_args = [
+    bids_args = [
         # bidsapp
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives',
-        'participant',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids'",
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives'",
+        "'participant'",
         '--input_derivatives_dirs',
         "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
-        '--bids_layout_db', './func_reg_test/bids_database',
+        '--bids_layout_db', "'./func_preprocessing_test/bids_database'",
+        # '--reset_db',
+        # '--ignore_derivatives_cache',
 
-        '--in_file_base_bids_string', 'task-rs_bold.nii.gz',
+        '--in_file_base_bids_string', "'task-rs_bold.nii.gz'",
         '--in_file_subject', "'Nl311f9'",
         '--in_file_session', "'2020021001'",
-        # '--run_labels', '01',
+        '--in_file_run', "'02'",
 
-        #'--anat',
-        #"/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/MouseAnatToAtlas/sub-Nl311f9/ses-2020021001/anat/sub-Nl311f9_ses-2020021001_acq-TurboRARE_run-1_desc-N4Corrected_T2w.nii.gz",
-        #'--anat_mask',
-        #'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/MouseAnatToAtlas/sub-Nl311f9/ses-2020021001/anat/sub-Nl311f9_ses-2020021001_acq-TurboRARE_run-1_desc-ANTsBrainMask_T2w.nii',
+        '--anat_base_bids_string', "'acq-TurboRARE_T2w.nii.gz'",
+        '--anat_session', "'2020021001'",
+        '--anat_run', "'01'",
 
-        '--anat_base_bids_string', 'acq-TurboRARE_T2w.nii.gz',
-        '--anat_session',"'2020021001'",
-        '--anat_run',"'1'",
-        '--anat_mask_desc',"'ANTsBrainMask'",
-
-        '--antsarg_float',
-        '--preproc_be4d_brain_extract_method', 'BRAINSUITE',
-        '--preproc_skip_mc',
-        '--nipype_processing_dir', './func_reg_test',
+        '--preproc_be4d_ants_be_antsarg_float',
+        '--preproc_be4d_brain_extract_method', 'NO_BRAIN_EXTRACTION',
+        '--nipype_processing_dir', "'./func_preprocessing_test'",
         '--keep_unnecessary_outputs',
+
+        '--preproc_smooth_fwhm', '0.6',
+        '--preproc_smooth_brightness_threshold', '20.0',
+        '--preproc_tf_highpass_sigma', '33',
+        '--preproc_skip_mc',
     ]
 
-    cmd_args2 = [
-        # bidsapp
-        '--in_file',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/sub-Nl311f9/ses-2020021001/func/sub-Nl311f9_ses-2020021001_task-rs_run-02_bold.nii.gz',
-        '--anat',
-        "/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/MouseAnatToAtlas/sub-Nl311f9/ses-2020021001/anat/sub-Nl311f9_ses-2020021001_acq-TurboRARE_run-1_desc-N4Corrected_T2w.nii.gz",
-        '--anat_mask',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/MouseAnatToAtlas/sub-Nl311f9/ses-2020021001/anat/sub-Nl311f9_ses-2020021001_acq-TurboRARE_run-1_desc-ANTsBrainMask_T2w.nii',
-        '--antsarg_float',
-        '--preproc_tr', '1.5',
-        '--preproc_slice_timing',
-        '[0.012, 0.1087741935483871, 0.2055483870967742, 0.30232258064516127, 0.3990967741935484, 0.4958709677419355, 0.5926451612903225, 0.6894193548387096, 0.7861935483870969, 0.8829677419354839, 0.979741935483871, 1.076516129032258, 1.173290322580645, 1.2700645161290323, 1.3668387096774193, 1.4636129032258063, 0.06038709677419355, 0.15716129032258064, 0.25393548387096776, 0.3507096774193548, 0.44748387096774195, 0.544258064516129, 0.6410322580645161, 0.7378064516129031, 0.8345806451612904, 0.9313548387096774, 1.0281290322580643, 1.1249032258064517, 1.2216774193548388, 1.3184516129032258, 1.415225806451613]',
-        '--preproc_be4d_brain_extract_method', 'BRAINSUITE',
-        '--preproc_skip_mc',
-        '--nipype_processing_dir', './func_reg_test',
-        '--keep_unnecessary_outputs',
-    ]
 
     tmp = MouseFuncToAnatBIDS()
-    tmp.run(cmd_args)
+    tmp.run_bids(bids_args)

@@ -12,6 +12,7 @@ from workflows.CFMMLogging import NipypeLogger as logger
 from workflows.CFMMMapNode import CFMMMapNode
 from nipype.pipeline.engine import Node
 from inspect import signature
+from nipype.interfaces.base import Undefined
 
 def get_fn_interface(fn, output_names, imports=None):
     input_names = signature(fn).parameters.keys()
@@ -46,14 +47,17 @@ def get_fn_node(fn, output_names, *args, imports=None, mapnode=False, name=None,
 def listify(possible_list):
     return [possible_list] if type(possible_list) != list else possible_list
 
-def delistify(input_list):
-    if len(input_list) == 1:
+def delistify(input_list, length_0_return = Undefined):
+    if len(input_list) == 0:
+        # maybe the user wants [] or None instead of Undefined
+        return length_0_return
+    elif len(input_list) == 1:
         return input_list[0]
     else:
         return input_list
 
 def get_node_delistify(name='delistify'):
-    return get_fn_node(delistify,['output'],name=name)
+    return get_fn_node(delistify,['output'],name=name ,imports=['from nipype.interfaces.base import Undefined'])
 
 # if a connection is made on one of the inputs, but no upstream value is passed along, then the None value is still
 # included in the list. If list_length is not provided, can only guess the list length is equal to the the index
@@ -256,7 +260,7 @@ def get_node_existing_inputs_to_list(name='existing_inputs_to_list'):
 
 
 
-class NipypeRunArguments(CFMMParameterGroup):
+class NipypeRunEngine(CFMMParameterGroup):
     group_name = "Nipype Run Arguments"
 
     def _add_parameters(self):

@@ -18,7 +18,7 @@ from nipype_interfaces.ComputeCorrelationMatrix import CFMMComputeCorrelationMat
 from nipype_interfaces.ExtractLabels import ExractLabelMeans, get_node_read_label_mapping_file
 import nipype.pipeline.engine as pe
 from workflows.CFMMLogging import NipypeLogger as logger
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixer
+from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin
 class MouseCorrelationMatrix(CFMMWorkflow):
     group_name = 'Correlation Matrix'
     flag_prefix = 'corr_'
@@ -91,7 +91,7 @@ from workflows.CFMMCommon import delistify
 from workflows.CFMMBIDS import CMDLINE_VALUE, BIDSAppArguments, BIDSInputExternalSearch
 
 
-class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,CFMMBIDSWorkflowMixer):
+class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,CFMMBIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.add_bids_parameter_group()
@@ -119,7 +119,7 @@ class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,CFMMBIDSWorkflowMixer):
 
         self.func_mask_bids = BIDSInputExternalSearch(self,
                                                       'func_mask',
-                                                      dependent_iterable=self.func_bids,
+                                                      dependent_search=self.func_bids,
                                                       dependent_entities=['subject', 'session', 'run'],
                                                       create_base_bids_string=False,
                                                       entities_to_overwrite={
@@ -131,7 +131,7 @@ class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,CFMMBIDSWorkflowMixer):
 
         self.anat_bids = BIDSInputExternalSearch(self,
                                                  'anat',
-                                                 dependent_iterable=self.func_bids,
+                                                 dependent_search=self.func_bids,
                                                  dependent_entities=['subject','session'],
                                                  entities_to_overwrite={
                                                      'run': CMDLINE_VALUE,
@@ -142,7 +142,7 @@ class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,CFMMBIDSWorkflowMixer):
 
         self.anat_mask_bids = BIDSInputExternalSearch(self,
                                                       'anat_mask',
-                                                      dependent_iterable=self.anat_bids,
+                                                      dependent_search=self.anat_bids,
                                                       dependent_entities=['subject', 'session', 'run'],
                                                       create_base_bids_string=False,
                                                       entities_to_overwrite={

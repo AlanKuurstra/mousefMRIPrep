@@ -4,7 +4,7 @@ from workflows.MouseAnatToAtlas import MouseAnatToAtlas
 from workflows.CFMMAnts import get_node_ants_transform_concat_list
 from nipype.interfaces.ants import ApplyTransforms
 from nipype.pipeline import engine as pe
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixer, BIDSInputExternalSearch, CMDLINE_VALUE, BIDSInputWorkflow, \
+from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE, BIDSInputWorkflow, \
     BIDSDerivativesInputWorkflow
 from workflows.CFMMCommon import delistify
 from workflows.CFMMLogging import NipypeLogger as logger
@@ -148,7 +148,7 @@ class MouseFuncToAtlas(CFMMWorkflow):
 from workflows.DownsampleAtlas import get_node_dynamic_res_desc
 
 
-class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
+class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -173,6 +173,7 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
 
         self.func_mask_bids = BIDSInputExternalSearch(self,
                                                       'func_mask',
+                                                      dependent_search=self.func_bids,
                                                       dependent_entities=['subject', 'session', 'run'],
                                                       create_base_bids_string=False,
                                                       entities_to_overwrite={
@@ -184,7 +185,7 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
 
         self.anat_bids = BIDSInputExternalSearch(self,
                                                  'anat',
-                                                 dependent_iterable=self.func_bids,
+                                                 dependent_search=self.func_bids,
                                                  dependent_entities=['subject', 'session'],
                                                  entities_to_overwrite={
                                                      'session': CMDLINE_VALUE,
@@ -199,7 +200,7 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixer):
         # with anat.
         self.anat_mask_bids = BIDSInputExternalSearch(self,
                                                       'anat_mask',
-                                                      dependent_iterable=self.anat_bids,
+                                                      dependent_search=self.anat_bids,
                                                       dependent_entities=['subject', 'session', 'run'],
                                                       create_base_bids_string=False,
                                                       entities_to_overwrite={

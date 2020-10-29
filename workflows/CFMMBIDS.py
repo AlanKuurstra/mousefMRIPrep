@@ -11,7 +11,7 @@ from workflows.CFMMLogging import NipypeLogger as logger
 from workflows.CFMMWorkflow import inputnode_field
 from nipype_interfaces.DerivativesDatasink import get_derivatives_entities
 from collections import Counter
-from workflows.CFMMCommon import NipypeRunArguments
+from workflows.CFMMCommon import NipypeRunEngine
 import configargparse
 from workflows.CFMMParameterGroup import CFMMParameterGroup
 from workflows.CFMMParameterGroup import CFMMParserGroups
@@ -351,11 +351,12 @@ class CFMMBIDSInput():
         input_parameter = self.input_parameter
         owner = self.owner
         # add to the inputnode but don't make a cmdline parameter
+        # use the setter
         owner._inputnode_field_info.append(inputnode_field(f'{input_parameter}_original_file',
                                                            default_value=None,
-                                                           iterable=self.owner.get_inputnode_field(input_parameter).iterable))
+                                                           iterable=owner.get_inputnode_field(input_parameter).iterable))
 
-        input_parameter_flagname = owner.get_parameter(input_parameter).flagname if input_parameter not in self.owner.exclude_list else 'DOES NOT EXIST'
+        input_parameter_flagname = owner.get_parameter(input_parameter).flagname if input_parameter not in owner.exclude_list else 'DOES NOT EXIST'
         if self.create_base_bids_string:
             base_cmdline_param = f'{input_parameter}_base_bids_string'
             owner._add_parameter(base_cmdline_param,
@@ -408,7 +409,7 @@ class CFMMBIDSInput():
 
         self.owner_wf = None
         # putting derivatives nodes and bids search nodes in their own respective workflows
-        # cleans up the working directory (puts bids node caches in their own directory)
+        # cleans up the working directory (puts the bids node caches in their own directory)
         self.bids_search_wf = None
         self.derivatives_wf = None
         # either inputnode or bids_search node depending on if
@@ -422,7 +423,7 @@ class CFMMBIDSInput():
         owner = self.owner
         input_parameter = self.input_parameter
 
-        if input_parameter not in self.owner.exclude_list:
+        if input_parameter not in owner.exclude_list:
             entities_to_overwrite = self.entities_to_overwrite
             entities_to_extend = self.entities_to_extend
 
@@ -536,13 +537,12 @@ class CFMMBIDSInput():
 
 
 class BIDSInputExternalSearch(CFMMBIDSInput):
-    def __init__(self, input_parameter, *args, dependent_iterable=None, dependent_entities=[], **kwargs):
+    def __init__(self, input_parameter, *args, dependent_search=None, dependent_entities=[], **kwargs):
         super().__init__(input_parameter, *args, **kwargs)
-        self.dependent_iterable = dependent_iterable
-        self.dependent_file = None
+        self.dependent_search = dependent_search
         self.dependent_entities = dependent_entities
 
-    def _search(self):
+    def _search(self, dependent_file=None):
         # search is performed external to pipeline
         # no Nodes allowed in entities_to_overwrite or entities_to_extend
         owner = self.owner
@@ -563,8 +563,8 @@ class BIDSInputExternalSearch(CFMMBIDSInput):
         else:
             cmdline_dict = {}
 
-        if self.dependent_file:
-            dependent_file_dict = {k: v for k, v in parse_file_entities(self.dependent_file).items() if
+        if dependent_file is not None:
+            dependent_file_dict = {k: v for k, v in parse_file_entities(dependent_file).items() if
                                    k in self.dependent_entities}
         else:
             dependent_file_dict = {}
@@ -587,18 +587,17 @@ class BIDSInputExternalSearch(CFMMBIDSInput):
                     f"cannot use Node outputs.")
 
         return listify(
-            bids_search(self.owner.bids.bids_layout_db, base_dict, entities_to_remove, entities_to_overwrite,
+            bids_search(owner.bids.bids_layout_db, base_dict, entities_to_remove, entities_to_overwrite,
                         entities_to_extend))
 
     def traverse_nested_files(self, nested_file_list):
-        # set dependent_file and perform _search() for every nested file in nested_file_list
+        # set perform _search() for every nested file in nested_file_list
         newlist = []
         for elem in nested_file_list:
             if type(elem) == list:
                 newlist.append(self.traverse_nested_files(elem))
             else:
-                self.dependent_file = elem
-                newlist.append(self._search())
+                newlist.append(self._search(elem))
         return newlist
 
     def search(self):
@@ -610,8 +609,8 @@ class BIDSInputExternalSearch(CFMMBIDSInput):
         commandline_parameter = owner.get_parameter(input_parameter)
         if commandline_parameter.user_value:
             return listify(commandline_parameter.user_value)
-        if self.dependent_iterable:
-            dependent_files = self.dependent_iterable.search()
+        if self.dependent_search:
+            dependent_files = self.dependent_search.search()
             return self.traverse_nested_files(dependent_files)
         else:
             return self._search()
@@ -843,7 +842,7 @@ class BIDSDerivativesInputWorkflow(CFMMBIDSInput):
 
 
 
-class CFMMBIDSWorkflowMixer():
+class CFMMBIDSWorkflowMixin():
     def add_bids_parameter_group(self):
         # ensures the attribute name is always self.bids and we can access it in helper functions
         self.bids = BIDSAppArguments(owner=self)
@@ -932,16 +931,28 @@ class CFMMBIDSWorkflowMixer():
                     synchronized_iterables.setdefault(k, []).append(v)
         return synchronized_iterables
 
-    def check_bids_cache(self):
-        # perform bids searches
-        # synchronize the bids search results if iterable
-        # make sure it's just a flat list if not an iterable
-        # remove items from iterable list if derivatives exist
-        # if all derivatives exist return True ti indicate run_bids can skip running the workflow
 
+    def image_cached(self, inputnode_field, image):
+        for subcomponent in self.subcomponents:
+            if isinstance(subcomponent, BIDSInputExternalSearch) and \
+                    subcomponent.input_parameter not in self.exclude_list and \
+                    subcomponent.input_parameter == inputnode_field and \
+                    not subcomponent.disable_derivatives and \
+                    subcomponent.output_derivatives is not None:
+                for outputnode_field, derivative_desc in subcomponent.output_derivatives.items():
+                    print(inputnode_field, outputnode_field, self.outputnode_field_connected(outputnode_field))
+                    if self.outputnode_field_connected(outputnode_field) and \
+                            self.output_derivative_exists(image, derivative_desc) < 1:
+                        print(derivative_desc,'derivatives:', self.output_derivative_exists(image, derivative_desc))
+                        print("derivative doesn't exist")
+                        # Counter(bids_derivatives[inputnode_field_name].values())
+                        return False
+        return True
+
+
+    def check_bids_cache(self):
         bids_iterables = {}
         bids_non_iterables = {}
-        bids_derivatives = {}
 
         def flatten(l,output=None):
             output = [] if output is None else output
@@ -960,72 +971,58 @@ class CFMMBIDSWorkflowMixer():
                     bids_iterables[subcomponent.input_parameter] = bids_search_results
                 else:
                     bids_non_iterables[subcomponent.input_parameter] = flatten(bids_search_results)
-                if subcomponent.disable_derivatives:
-                    bids_derivatives[subcomponent.input_parameter] = None
-                else:
-                    bids_derivatives[subcomponent.input_parameter] = subcomponent.output_derivatives
+
 
         synchronized_iterables = self.synchronize_iterables(bids_iterables)
+        inputnode_field_names = list(synchronized_iterables.keys())
+        iterable_lists = list(synchronized_iterables.values())
+
+        # full iterables is the synchronized list with original_file fields added in
+        full_iterables = {}
+        for images in zip(*iterable_lists):
+            for inputnode_field_name, image in zip(inputnode_field_names, images):
+                full_iterables.setdefault(inputnode_field_name, []).append(image)
+                full_iterables.setdefault(f'{inputnode_field_name}_original_file', []).append(image)
 
         # remove cached results from iteration list
-        field_names = list(synchronized_iterables.keys())
-        iterable_lists = list(synchronized_iterables.values())
         reduced_iterables = {}
         for images in zip(*iterable_lists):
-            is_cached = True
-            for field_name, image in zip(field_names, images):
-                if bids_derivatives[field_name] is not None:
-                    # don't know derivative extension a priori. for now just count the number of derivatives
-                    # with the same description. Actually, I'm not sure you're allowed to have 2 derivatives
-                    # with the same name but different extensions so this is probably unnecessary. the reason it won't
-                    # work is that filename.pkl and filename.mat both need a sidecar and they'd have to share filename.json
-                    for derivative_desc, count in Counter(bids_derivatives[field_name].values()).items():
-                        num_derivs = self.output_derivative_exists(image, derivative_desc)
-                        if num_derivs != count:
-                            is_cached = False
-            if not is_cached:
-                for field_name, image in zip(field_names, images):
-                    reduced_iterables.setdefault(field_name, []).append(image)
-                    reduced_iterables.setdefault(f'{field_name}_original_file', []).append(image)
+            for inputnode_field_name, image in zip(inputnode_field_names, images):
+                if not self.image_cached(inputnode_field_name,image):
+                    # if one image in the iterable isn't cached, all images should be added to the reduced iterables
+                    for inputnode_field_name_add, image_add in zip(inputnode_field_names, images):
+                        reduced_iterables.setdefault(inputnode_field_name_add, []).append(image_add)
+                        reduced_iterables.setdefault(f'{inputnode_field_name_add}_original_file', []).append(image_add)
+                    break
             else:
-                logger.info(f"Derivatives found for inputs {[f'{f}:{i}' for f,i in zip(field_names,images)]}."
+                logger.info(f"Derivatives found for inputs {[f'{f}:{i}' for f,i in zip(inputnode_field_names,images)]}."
                             f"\n\t Skipping.")
 
-        # if all iterables are cached, check if non-iterable caches exist so we can skip the pipeline.
+        # if all iterables are cached, check if all non-iterables are cached too
         if reduced_iterables == {}:
             is_cached = True
-            for field_name, images in bids_non_iterables.items():
-                if bids_derivatives[field_name] is not None:
-                    for image in listify(images):
-                        for derivative_desc, count in Counter(bids_derivatives[field_name].values()).items():
-                            num_derivs = self.output_derivative_exists(image, derivative_desc)
-                            if num_derivs != count:
-                               is_cached = False
+            for inputnode_field_name, images in bids_non_iterables.items():
+                for image in listify(images):
+                    if not self.image_cached(inputnode_field_name, image):
+                        break
+                else:
+                    continue
+                break
+            else:
+                return True, bids_non_iterables, full_iterables, reduced_iterables
 
-
-            if is_cached:
-                return True, bids_non_iterables, synchronized_iterables, reduced_iterables
-
-        return False, bids_non_iterables, synchronized_iterables, reduced_iterables
+        return False, bids_non_iterables, full_iterables, reduced_iterables
 
     def run_bids(self, dbg_args=None):
-        parser_groups = CFMMParserGroups(configargparse.ArgumentParser())
+        nipype_run_engine, wf = self.run_setup(dbg_args)
 
-        config_file_obj = CFMMConfig()
-        config_file_obj.populate_parser_groups(parser_groups)
 
-        nipype_run_arguments = NipypeRunArguments()
-        nipype_run_arguments.populate_parser_groups(parser_groups)
-
-        self.populate_parser_groups(parser_groups)
-        #parser_groups.parser.print_help();stop
-
-        parsed_namespace = config_file_obj.parse_args(parser_groups, dbg_args)
-        parsed_dict = vars(parsed_namespace)
-
-        nipype_run_arguments.populate_parameters(parsed_dict)
-        self.populate_parameters(parsed_dict)
         is_cached, bids_non_iterables, bids_full_iterables, bids_reduced_iterables = self.check_bids_cache()
+        print(is_cached)
+        print(bids_non_iterables)
+        print(bids_full_iterables)
+        print(bids_reduced_iterables)
+
 
         if self.bids.get_parameter('ignore_derivatives_cache').user_value:
             is_cached = False
@@ -1033,9 +1030,6 @@ class CFMMBIDSWorkflowMixer():
         else:
             bids_iterables = bids_reduced_iterables
 
-        self.validate_parameters() # self.validate should probably check the bids search results in non_iterables and reduced_iterables
-        wf = self.create_workflow()
-        # wf.write_graph(graph2use='flat')
         if is_cached:
             logger.info(f'Nothing to run, finished {wf.name}')
         else:
@@ -1044,9 +1038,11 @@ class CFMMBIDSWorkflowMixer():
             for field, iterable_list in bids_iterables.items():
                 self.set_inputnode_iterable(inputnode, field, iterable_list)
             for field, non_iterable in bids_non_iterables.items():
+                print(field,delistify(non_iterable))
                 setattr(inputnode.inputs, field, delistify(non_iterable))
                 setattr(inputnode.inputs, f'{field}_original_file', delistify(non_iterable))
-            nipype_run_arguments.run_workflow(wf)
+            nipype_run_engine.run_workflow(wf)
+        print('')
 
     def connect_dynamic_derivatives_desc(self, wf, srcnode, srcnode_output_name, dynamic_node_names,
                                          dynamic_node_input):

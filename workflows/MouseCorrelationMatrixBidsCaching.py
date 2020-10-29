@@ -9,7 +9,7 @@ anat_args = [
     "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
 
     '--in_file_base_bids_string', "'acq-TurboRARE_T2w.nii.gz'",
-    '--in_file_subject', "['Nl311f9','Nl311f10','Nl247m1']",
+    '--in_file_subject', "['Nl311f9','Nl247m1']",
 
     # for masking in_file through registration of template
     '--be_ants_be_template',
@@ -24,6 +24,7 @@ anat_args = [
     '--antsarg_float',
     '--be_brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
 ]
+
 
 func_args = [
     "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids'",
@@ -50,6 +51,9 @@ func_args = [
     '--reg_func_antsarg_float',
     '--reg_func_preproc_be4d_brain_extract_method', "NO_BRAIN_EXTRACTION",
     '--reg_func_preproc_skip_mc',
+    '--reg_func_preproc_smooth_fwhm','0.6',
+    '--reg_func_preproc_smooth_brightness_threshold','20.0',
+    '--reg_func_preproc_tf_highpass_sigma', '33',
 
     '--nipype_processing_dir', "'./func_corrmtx_test'",
 ]
