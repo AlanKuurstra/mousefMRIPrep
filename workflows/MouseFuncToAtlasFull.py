@@ -25,17 +25,17 @@ class MouseFuncToAtlas(CFMMWorkflow):
     def _add_parameters(self):
         # how can we get the same help as the children?
         self._add_parameter('func',
-                            help='')
+                            help='Explicitly specify location of the input functional for atlas registration.')
         self._add_parameter('func_mask',
-                            help='')
+                            help='Explicitly specify location of the input functional mask for atlas registration.')
         self._add_parameter('anat',
-                            help='')
+                            help='Explicitly specify location of the anatomical image used for intermediate registration.')
         self._add_parameter('anat_mask',
-                            help='')
+                            help='Explicitly specify location of the anatomical mask used for intermediate registration.')
         self._add_parameter('atlas',
-                            help='')
+                            help='Explicitly specify location of the atlas to be registered to.')
         self._add_parameter('atlas_mask',
-                            help='')
+                            help='Explicitly specify location of the atlas mask.')
         self._add_parameter('skip_func2anat_reg',
                             action='store_true',
                             help=f'Assume functional and anatomical are already aligned. Do not apply functional to anatomical registration.',
@@ -56,14 +56,15 @@ class MouseFuncToAtlas(CFMMWorkflow):
 
         self._add_parameter('downsample_shift_transformation',
                             help=f'If the downsampled atlas is shifted with respect to the original atlas due to the '
-                                 f'algorithm used, then the user can provide a transformation file to apply the '
-                                 f'corresponding shift to the registered functional image.')
+                                 f'algorithm used (eg. bin downsampling), then the user can provide a transformation '
+                                 f'file to apply the corresponding shift to the registered functional image.')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.func2anat = MouseFuncToAnat(owner=self, exclude_list=['in_file', 'in_file_mask', 'anat', 'anat_mask'])
         self.anat2atlas = MouseAnatToAtlas(owner=self, exclude_list=['in_file', 'in_file_mask', 'atlas', 'atlas_mask'])
-        self.outputs = ['func_to_atlas', 'func_to_atlas_composite_transform']
+        self.outputs = ['func_to_atlas', 'func_to_atlas_composite_transform', 'func_avg_to_atlas',
+                        'func_brainmask_to_atlas']
 
     def create_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
@@ -100,6 +101,10 @@ class MouseFuncToAtlas(CFMMWorkflow):
         register_func_to_atlas.inputs.dimension = 3
         register_func_to_atlas.inputs.input_image_type = 3
 
+        register_func_avg_to_atlas = pe.Node(interface=ApplyTransforms(), name='register_func_avg_to_atlas', )
+        register_func_brainmask_to_atlas = pe.Node(interface=ApplyTransforms(),
+                                                   name='register_func_brainmask_to_atlas', )
+
         inputnode, outputnode, wf = self.get_io_and_workflow()
 
         wf.connect([
@@ -125,6 +130,13 @@ class MouseFuncToAtlas(CFMMWorkflow):
 
             (register_func_to_atlas, outputnode, [('output_image', 'func_to_atlas')]),
             (concat_transforms_func_to_atlas, outputnode, [('output_image', 'func_to_atlas_composite_transform')]),
+
+            (func2anat_wf, register_func_avg_to_atlas, [('outputnode.avg', 'input_image')]),
+            (concat_transforms_func_to_atlas, register_func_avg_to_atlas, [('output_image', 'transforms')]),
+            (register_func_avg_to_atlas, outputnode, [('output_image', 'func_avg_to_atlas')]),
+            (func2anat_wf, register_func_brainmask_to_atlas, [('outputnode.brain_mask', 'input_image')]),
+            (concat_transforms_func_to_atlas, register_func_brainmask_to_atlas, [('output_image', 'transforms')]),
+            (register_func_brainmask_to_atlas, outputnode, [('output_image', 'func_brainmask_to_atlas')]),
         ])
 
         if not self.get_parameter('skip_func2anat_reg').user_value:
@@ -137,10 +149,14 @@ class MouseFuncToAtlas(CFMMWorkflow):
             wf.connect([
                 (inputnode, concat_list_func_to_atlas, [('downsample_shift_transformation', 'apply_third')]),
                 (inputnode, register_func_to_atlas, [('downsampled_atlas', 'reference_image')]),
+                (inputnode, register_func_avg_to_atlas, [('downsampled_atlas', 'reference_image')]),
+                (inputnode, register_func_brainmask_to_atlas, [('downsampled_atlas', 'reference_image')]),
             ])
         else:
             wf.connect([
                 (inputnode, register_func_to_atlas, [('atlas', 'reference_image')]),
+                (inputnode, register_func_avg_to_atlas, [('atlas', 'reference_image')]),
+                (inputnode, register_func_brainmask_to_atlas, [('atlas', 'reference_image')]),
             ])
         return wf
 
@@ -168,6 +184,8 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixin):
                                                  output_derivatives={
                                                      'func_to_atlas': 'FuncToAtlas',
                                                      'func_to_atlas_composite_transform': 'FuncToAtlasTransform',
+                                                     'func_avg_to_atlas': 'FuncAvgToAtlas',
+                                                     'func_brainmask_to_atlas': 'FuncBrainMaskToAtlas',
                                                  }
                                                  )
 
@@ -220,17 +238,20 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixin):
                                                  entities_to_extend=[('desc', CMDLINE_VALUE)],
                                                  )
 
-        self.res_desc_node = get_node_dynamic_res_desc('res_desc')
+        #self.res_desc_node = get_node_dynamic_res_desc('res_desc')
         self.downsample_atlas_bids = BIDSDerivativesInputWorkflow(self,
                                                                   'downsampled_atlas',
                                                                   base_input='atlas',
-                                                                  base_input_derivative_desc=self.res_desc_node,
+                                                                  #base_input_derivative_desc=self.res_desc_node,
+                                                                  base_input_derivative_desc='BinDownsampled',
                                                                   base_input_derivative_extension=['.nii', '.nii.gz'],
                                                                   )
         self.downsample_atlas_shift_bids = BIDSDerivativesInputWorkflow(self,
                                                                         'downsample_shift_transformation',
-                                                                        base_input='downsampled_atlas',
-                                                                        base_input_derivative_desc='ShiftTransformation',
+                                                                        #base_input='downsampled_atlas',
+                                                                        base_input='atlas',
+                                                                        #base_input_derivative_desc='ShiftTransformation',
+                                                                        base_input_derivative_desc='BinDownsampleShift',
                                                                         base_input_derivative_extension=['.mat'],
                                                                         )
 
@@ -247,8 +268,13 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixin):
                 ('anat_mask_original_file', 'inputnode.anat_mask_original_file'),
             ])
         ])
-        bids_input_searches = wf.get_node('BIDSInputSearches')
-        wf.connect(inputnode, 'func', bids_input_searches, f'{self.res_desc_node.name}.reference')
+
+        # if we're using a node for the description in the bids search
+        # the node we use gleans information from the functional header to create the appropriate description
+        # thus we need to hook the functional image into the node so that it knows where to glean the information for
+        # the bids description.
+        #bids_input_searches = wf.get_node('BIDSInputSearches')
+        #wf.connect(inputnode, 'func', bids_input_searches, f'{self.res_desc_node.name}.reference')
         return wf
 
 

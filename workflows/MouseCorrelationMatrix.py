@@ -1,15 +1,3 @@
-# apps for container
-# tar2bids
-# fix orientation and slicetiming
-
-# create initial masks (either brainsuite or with model and probability mask)
-# create model and probability mask (either with create brainsuite initial masks or with manual masks).
-# downsample atlas to the same resolution as functional
-
-# we should do something different with atlas downsampling if hgihres atlas not same res as highres labels - need to make
-# sure the downsampled atlas is shifted the correct way.
-
-
 from workflows.CFMMWorkflow import CFMMWorkflow
 from workflows.MouseFuncToAtlas import MouseFuncToAtlas, MouseFuncToAtlasBIDS
 from nipype_interfaces.ComputeCorrelationMatrix import CFMMComputeCorrelationMatrix
@@ -28,11 +16,21 @@ class MouseCorrelationMatrixBIDS(CFMMWorkflow, CFMMBIDSWorkflowMixin):
 
     def _add_parameters(self):
         # how can we get the same help as the children?
-        self._add_parameter('func', help='', iterable=True)
-        self._add_parameter('func_mask', help='', iterable=True)
-        self._add_parameter('anat', iterable=True)
-        self._add_parameter('anat_mask', iterable=True)
-        self._add_parameter('label_mapping', help='', required=True, )
+        self._add_parameter('func',
+                            help='Explicitly specify location of the input functional for correlation matrix processing.',
+                            iterable=True)
+        self._add_parameter('func_mask',
+                            help='Explicitly specify location of the input functional mask for atlas registration.',
+                            iterable=True)
+        self._add_parameter('anat',
+                            help='Explicitly specify location of the anatomical image used for intermediate registration.',
+                            iterable=True)
+        self._add_parameter('anat_mask',
+                            help='Explicitly specify location of the anatomical mask used for intermediate registration.',
+                            iterable=True)
+        self._add_parameter('label_mapping',
+                            help='Location of text file mapping label names to integer value and label image.',
+                            required=True,)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -57,11 +55,11 @@ class MouseCorrelationMatrixBIDS(CFMMWorkflow, CFMMBIDSWorkflowMixin):
                                                                         'extension': ['.nii', '.nii.gz'],
                                                                         },
                                                  output_derivatives={
-                                                     'label_signals_mat': 'LabelSignals',
-                                                     'label_signals_pkl': 'LabelSignals',
-                                                     'corr_mtx_pkl': 'CorrelationMatrix',
-                                                     'corr_mtx_mat': 'CorrelationMatrix',
-                                                     'corr_mtx_png': 'CorrelationMatrix',
+                                                     'label_signals_mat': 'LabelSignalsMat',
+                                                     'label_signals_pkl': 'LabelSignalsPkl',
+                                                     'corr_mtx_pkl': 'CorrelationMatrixPkl',
+                                                     'corr_mtx_mat': 'CorrelationMatrixMat',
+                                                     'corr_mtx_png': 'CorrelationMatrixPng',
                                                      'corr_mtx_shift_png': 'CorrelationShiftMatrix',
                                                  }
                                                  )

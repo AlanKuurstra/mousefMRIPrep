@@ -41,10 +41,7 @@ class MouseFuncToAnatANTs(CFMMAntsRegistration):
         self._modify_parameter('collapse_output_transforms', 'default', "False")
 
         self._modify_parameter('metric', 'default', "[['MI'],['MI', 'CC']]")
-        """*********************************************************************************************************************************"""
-        # self._modify_parameter('number_of_iterations', 'default', "[[10000, 10000, 10000], [200, 200, 500]]")
-        self._modify_parameter('number_of_iterations', 'default', "[[1, 1, 1], [1, 1, 1]]")
-        """*********************************************************************************************************************************"""
+        self._modify_parameter('number_of_iterations', 'default', "[[10000, 10000, 10000], [200, 200, 500]]")
         # weight used if you do multimodal registration. Default is 1 (value ignored currently by ANTs)
         self._modify_parameter('metric_weight', 'default', "[[1],[0.5, 0.5]]")
         # radius for CC between 2-5
@@ -71,13 +68,13 @@ class MouseFuncToAnat(CFMMWorkflow):
 
     def _add_parameters(self):
         self._add_parameter('in_file',
-                            help='')
+                            help='Explicitly specify location of the input functional for anatomical registration.')
         self._add_parameter('in_file_mask',
-                            help='')
+                            help='Explicitly specify location of the input functional mask for anatomical registration.')
         self._add_parameter('anat',
-                            help='Specify location of the input file for brain extraction.')
+                            help='Explicitly specify location of the anatomical to be registered to.')
         self._add_parameter('anat_mask',
-                            help='Specify location of the input file for brain extraction.')
+                            help='Explicitly specify location of the anatomical mask.')
         self._add_parameter('no_mask_func2anat',
                             action='store_true',
                             help="Don't use masks during the functional to anatomical registration.")

@@ -10,7 +10,7 @@ from nipype.interfaces import utility as niu
 from nipype.interfaces.utility import Function
 from workflows.BrainExtraction import CFMMVolumesToAvg
 from niworkflows.interfaces.utils import CopyXForm
-from workflows.CFMMFSL import CFMMSpatialSmoothing, CFMMTemporalFilter
+from workflows.CFMMFSL import CFMMSpatialSmoothing, CFMMTemporalFilterPhysical
 from workflows.CFMMLogging import NipypeLogger as logger
 
 
@@ -23,14 +23,14 @@ class MouseFuncPreprocessing(CFMMWorkflow):
                             help='Explicitly specify location of the input file for functional preprocessing.',
                             )
         self._add_parameter('in_file_mask',
-                            help='',
+                            help='Explicitly specify location of the input file mask',
                             )
         self._add_parameter('slice_timing',
-                            help='',
+                            help='Time offsets from the volume acquisition onset for each slice. Used for slice timing correction.',
                             type=eval,
                             )
         self._add_parameter('tr',
-                            help='',
+                            help='Scan repetition time used in slice timing correction and temporal filtering.',
                             )
         self._add_parameter('slice_encoding_direction',
                             help='',
@@ -44,6 +44,10 @@ class MouseFuncPreprocessing(CFMMWorkflow):
                             action='store_true',
                             help=f'Do not perform slice timing correction.',
                             )
+        self._add_parameter('skip_ss',
+                            action='store_true',
+                            help=f'Do not perform spatial smoothing.',
+                            )
         self._add_parameter('skip_tf',
                             action='store_true',
                             help=f'Do not perform temporal filtering.',
@@ -51,13 +55,13 @@ class MouseFuncPreprocessing(CFMMWorkflow):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.nipype = NipypeWorkflowArguments(owner=self, exclude_list=['nthreads_mapnode', 'mem_gb_mapnode'])
         self.roi = CFMMVolumesToAvg(owner=self)
         self.mc = MouseMotionCorrection(owner=self, exclude_list=['in_file'], )
+        self.be = MouseBrainExtraction4D(owner=self, exclude_list=['in_file', 'in_file_mask'],)
         #stc
-        self.ss = CFMMSpatialSmoothing(owner=self, exclude_list=['in_file'])
-        self.tf = CFMMTemporalFilter(owner=self, exclude_list=['in_file'])
-        self.be = MouseBrainExtraction4D(owner=self, exclude_list=['in_file', 'in_file_mask'])
+        self.ss = CFMMSpatialSmoothing(owner=self, exclude_list=['in_file','USAN_image','USAN_image_mask'])
+        self.tf = CFMMTemporalFilterPhysical(owner=self, exclude_list=['in_file','tr'])
+
         self.outputs = ['preprocessed', 'avg', 'brain_mask', 'preprocessed_before_mc', 'mc_transform']
 
     def create_workflow(self, arg_dict=None):
@@ -66,22 +70,16 @@ class MouseFuncPreprocessing(CFMMWorkflow):
             self.populate_parameters(arg_dict)
             self.validate_parameters()
 
-        omp_nthreads = self.nipype.get_parameter('nthreads_node').user_value
-
-
         mc_wf = self.mc.create_workflow()
         mc_placeholder = pe.Node(niu.IdentityInterface(fields=['placeholder']), name='mc_placeholder')
-
+        be = self.be.create_workflow()
         stc = pe.Node(afni.TShift(outputtype='NIFTI_GZ'), name='stc')
-
-        spatial_smooth = self.ss.get_node(name='spatial_smooth') #spatial filtering can be disabled by 0 fwhm
-        temporal_filter = self.tf.get_node(name='temporal_filter')
-        tf_placeholder = pe.Node(niu.IdentityInterface(fields=['placeholder']), name='tf_placeholder')
-
         copy_xform = pe.Node(CopyXForm(), name='copy_xform')
         stc_placeholder = pe.Node(niu.IdentityInterface(fields=['placeholder']), name='stc_placeholder')
-
-        be_wf = self.be.create_workflow()
+        spatial_smooth = self.ss.create_workflow()
+        spatial_smooth_placeholder = pe.Node(niu.IdentityInterface(fields=['placeholder']), name='spatial_smooth_placeholder')
+        temporal_filter = self.tf.create_workflow()
+        tf_placeholder = pe.Node(niu.IdentityInterface(fields=['placeholder']), name='tf_placeholder')
 
         inputnode, outputnode, wf = self.get_io_and_workflow()
 
@@ -94,6 +92,13 @@ class MouseFuncPreprocessing(CFMMWorkflow):
             ])
         else:
             wf.connect(inputnode, 'in_file', mc_placeholder, 'placeholder')
+
+        # masking - required for susan to find the median value and can also be used during func to anat registration
+        wf.connect([
+            (mc_wf, be, [('outputnode.motion_corrected_output', 'inputnode.in_file')]),
+            (inputnode, be, [('in_file_mask', 'inputnode.in_file_mask')]),
+            ])
+
         # slice timing correction
         if not self.get_parameter('skip_stc').user_value:
             wf.connect([
@@ -109,37 +114,40 @@ class MouseFuncPreprocessing(CFMMWorkflow):
         else:
             wf.connect(mc_placeholder, 'placeholder', stc_placeholder, 'placeholder')
 
-        # spatialsmoothing (can be disabled with 0 fwhm)
-        # get the usan from the mean image (must supply mean image and the brightness threshold for the mean image)
-        # brightness threshold is 75% of the median value
-        wf.connect(stc_placeholder,'placeholder',spatial_smooth,'in_file')
+        if not self.get_parameter('skip_ss').user_value:
+            wf.connect([
+                (stc_placeholder, spatial_smooth, [('placeholder', 'inputnode.in_file')]),
+                (be, spatial_smooth, [('outputnode.out_file_n4_corrected', 'inputnode.USAN_image')]),
+                (be, spatial_smooth, [('outputnode.out_file_mask', 'inputnode.USAN_image_mask')]),
+                (spatial_smooth, spatial_smooth_placeholder, [('outputnode.smoothed_file', 'placeholder')]),
+            ])
+        else:
+            wf.connect(stc_placeholder, 'placeholder', spatial_smooth_placeholder, 'placeholder')
 
         # temporal filtering
         # cutoff fwhm: 100ms  TR: 1.5ms  so fwhm is 66.6 TRs and sigma should be (since it's hwhm) 33.3 TRs
         if not self.get_parameter('skip_tf').user_value:
             #The 'cutoff' is defined as the FWHM of the filter, so if you ask for 100s that means 50 Trs, so the sigma, or HWHM, is 25 TRs.
             wf.connect([
-                (spatial_smooth,temporal_filter, [('smoothed_file','in_file')]),
-                (temporal_filter, tf_placeholder, [('out_file', 'placeholder')]),
+                (inputnode, temporal_filter, [('tr', 'inputnode.tr')]),
+                (spatial_smooth_placeholder,temporal_filter, [('placeholder','inputnode.in_file')]),
+                (temporal_filter, tf_placeholder, [('outputnode.out_file', 'placeholder')]),
                 ])
         else:
-            wf.connect(spatial_smooth,'smoothed_file',tf_placeholder,'placeholder')
+            wf.connect(spatial_smooth_placeholder,'placeholder',tf_placeholder,'placeholder')
 
         wf.connect([
             # outputnode.preprocessed_before_mc needs to change if additional preprocessing steps are included
             # between inputnode.in_file and mc_wf.in_file
             (inputnode, outputnode, [('in_file', 'preprocessed_before_mc')]),
             (tf_placeholder, outputnode, [('placeholder', 'preprocessed')]),
-            (tf_placeholder, be_wf, [('placeholder', 'inputnode.in_file')]),
-            (inputnode, be_wf, [('in_file_mask', 'inputnode.in_file_mask')]),
         ])
         # only connect subworkflow results if they are connected -
         # pass on the non-connected signal for bids derivatives
         if self.be.outputnode_field_connected('out_file_mask'):
-            wf.connect([(be_wf, outputnode, [('outputnode.out_file_mask', 'brain_mask')])])
+            wf.connect([(be, outputnode, [('outputnode.out_file_mask', 'brain_mask')])])
         if self.be.outputnode_field_connected('out_file_n4_corrected'):
-            wf.connect([(be_wf, outputnode, [('outputnode.out_file_n4_corrected', 'avg')])])
-
+            wf.connect([(be, outputnode, [('outputnode.out_file_n4_corrected', 'avg')])])
         return wf
 
 
@@ -267,14 +275,16 @@ if __name__ == "__main__":
         '--in_file_session', "'2020021001'",
         '--in_file_run', "'02'",
         '--be4d_ants_be_antsarg_float',
-        '--be4d_brain_extract_method', 'NO_BRAIN_EXTRACTION',
+        '--be4dbrain_extract_method', 'BRAINSUITE',
+
+
+        '--smooth_fwhm','1.0',
+        '--smooth_dimension', '2',
+        '--tf_highpass_fwhm','100',
+        '--skip_mc',
+
         '--nipype_processing_dir', "'./func_preprocessing_test'",
         '--keep_unnecessary_outputs',
-
-        '--smooth_fwhm','0.6',
-        '--smooth_brightness_threshold','20.0',
-        '--tf_highpass_sigma','33',
-        '--skip_mc',
     ]
 
     tmp = MouseFuncPreprocessingBIDS()

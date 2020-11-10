@@ -1,7 +1,7 @@
 from workflows.CFMMAnts import CFMMN4BiasFieldCorrection, CFMMAntsRegistration
 from workflows.CFMMBrainSuite import CFMMBse
 from workflows.BrainExtraction import BrainSuiteBrainExtraction, AntsBrainExtraction, BrainExtraction, \
-    BrainExtraction4D, BrainSuiteBrainExtractionBIDS, AntsBrainExtractionBIDS, BrainExtractionBIDS#BrainExtraction4DBIDS
+    BrainExtraction4D, BrainExtractionBIDS, BrainExtraction4DBIDS
 class MouseN4BiasFieldCorrection(CFMMN4BiasFieldCorrection):
     """
     Wrapper class for CFMMN4BiasFieldCorrection with default parameter values suitable for mouse brains.
@@ -43,9 +43,7 @@ class MouseAntsRegistrationBE(CFMMAntsRegistration):
         # updateFieldVarianceInVoxelSpace - smooth the deformation computed on the "updated" gradient field before this is added to previous deformations to form the "total" gradient field
         # totalFieldVarianceInVoxelSpace - smooth the deformation computed on the "total" gradient field
         self._modify_parameter('transform_parameters', 'default', "[(0.1,), (0.1, 3.0, 0.0)]")
-        """*********************************************************************************************************************************"""
-        self._modify_parameter('number_of_iterations', 'default', "[[1, 0, 0], [0, 0, 0]]")
-        """*********************************************************************************************************************************"""
+        self._modify_parameter('number_of_iterations', 'default', "[[10, 5, 3], [10, 5, 3]]")
         # transform for each stage vs composite for entire warp
         self._modify_parameter('write_composite_transform', 'default', "True")
         # combines adjacent transforms when possible
@@ -98,19 +96,7 @@ class MouseBrainSuiteBrainExtraction(BrainSuiteBrainExtraction):
         self._remove_subcomponent('bse')
         self.bse = MouseBse(owner=self)
 
-class MouseBrainSuiteBrainExtractionBIDS(BrainSuiteBrainExtractionBIDS):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._remove_subcomponent('bse')
-        self.bse = MouseBse(owner=self)
-
 class MouseAntsBrainExtraction(AntsBrainExtraction):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._remove_subcomponent('ants_reg')
-        self.ants_reg = MouseAntsRegistrationBE(owner=self)
-
-class MouseAntsBrainExtractionBIDS(AntsBrainExtractionBIDS):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._remove_subcomponent('ants_reg')
@@ -137,19 +123,16 @@ class MouseBrainExtractionBIDS(BrainExtractionBIDS):
         self._remove_subcomponent('bse')
         self._remove_subcomponent('ants')
         self.n4 = MouseN4BiasFieldCorrection(owner=self)
-        self.bse = MouseBrainSuiteBrainExtractionBIDS(
+        self.bse = MouseBrainSuiteBrainExtraction(
             owner=self,
             exclude_list=['in_file'],
-            save_derivatives=False
         )
-
-        self.ants = MouseAntsBrainExtractionBIDS(
+        self.ants = MouseAntsBrainExtraction(
             owner=self,
             exclude_list=['in_file', 'in_file_mask'],
             replaced_parameters={
                 'brain_extract_method': self.get_parameter('brain_extract_method')
             },
-            save_derivatives=False
         )
 class MouseBrainExtraction4D(BrainExtraction4D):
     def __init__(self, *args, **kwargs):
@@ -167,93 +150,58 @@ class MouseBrainExtraction4D(BrainExtraction4D):
                                              }
                                              )
 
-# class MouseBrainExtraction4DBIDS(BrainExtraction4DBIDS):
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         self._remove_subcomponent('n4')
-#         self._remove_subcomponent('bse')
-#         self._remove_subcomponent('ants')
-#         self.n4 = MouseN4BiasFieldCorrection(owner=self)
-#         self.bse = MouseBrainSuiteBrainExtraction(owner=self, exclude_list=['in_file'],save_derivatives=False)
-#         self.ants = MouseAntsBrainExtraction(owner=self,
-#                                              exclude_list=['in_file','in_file_mask','brain_extract_method'],
-#                                              replaced_parameters={
-#                                                  'brain_extract_method': self.get_parameter('brain_extract_method'),
-#                                              },
-#                                              save_derivatives=False
-#                                              )
-#
-# def print_component(component):
-#     print(component)
-#     for k, v in component._parameters.items():
-#         print(f'  {k}, {id(v)}, {v.flagname}, {v.groupname}, {v.user_value}')
-#     if hasattr(component, 'subcomponents'):
-#         for subcomponent in component.subcomponents:
-#             print_component(subcomponent)
+class MouseBrainExtraction4DBIDS(BrainExtraction4DBIDS):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._remove_subcomponent('n4')
+        self._remove_subcomponent('bse')
+        self._remove_subcomponent('ants')
+        self.n4 = MouseN4BiasFieldCorrection(owner=self)
+        self.bse = MouseBrainSuiteBrainExtraction(owner=self, exclude_list=['in_file'])
+        self.ants = MouseAntsBrainExtraction(owner=self,
+                                             exclude_list=['in_file','in_file_mask','brain_extract_method'],
+                                             replaced_parameters={
+                                                 'brain_extract_method': self.get_parameter('brain_extract_method'),
+                                             }
+                                             )
+
+def print_component(component):
+    print(component)
+    for k, v in component._parameters.items():
+        print(f'  {k}, {id(v)}, {v.flagname}, {v.groupname}, {v.user_value}')
+    if hasattr(component, 'subcomponents'):
+        for subcomponent in component.subcomponents:
+            print_component(subcomponent)
 
 
 if __name__ == "__main__":
-    from workflows.CFMMCommon import NipypeRunArguments
-    from workflows.CFMMConfigFile import CFMMConfig
-    from workflows.CFMMLogging import NipypeLogger as logger
-    from workflows.CFMMBase import CFMMParserGroups
-    import configargparse
 
     cmd_args = [
         # bidsapp
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids',
-        '/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives',
-        'participant',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids'",
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives'",
+        "'participant'",
         '--input_derivatives_dirs',
         "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
-        '--bids_layout_db', './brain_extract_test/bids_database',
-        '--participant_label', 'Nl311f9',
-        '--session_labels', '2020021001',
-        '--run_labels', '01',
-        '--in_file','/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/sub-Nl311f9/ses-2020021001/func/sub-Nl311f9_ses-2020021001_task-rs_run-02_bold.nii.gz',
-        '--in_file_entities_labels_string', 'acq-TurboRARE_T2w.nii.gz',
-        #'--in_file_entities_labels_string', 'task-rs_bold.nii.gz',
-        '--ants_be_template_subject', 'AnatTemplate',
-        '--ants_be_template_probability_mask_subject', 'AnatTemplateProbabilityMask',
-        '--ants_be_template_desc', '0p15x0p15x0p55mm20200804',
-        '--ants_be_template_probability_mask_desc', '0p15x0p15x0p55mm20200804',
-        '--brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
-        '--nipype_processing_dir', './brain_extract_test',
-        '--keep_unnecessary_outputs',
+        '--bids_layout_db', "'./brain_extract_test/bids_database'",
+        '--reset_db',
+
+        #'--in_file_base_bids_string', "'acq-TurboRARE_T2w.nii.gz'",
+        '--in_file_base_bids_string', "'task-rs_bold.nii.gz'",
+        '--in_file_subject', "'Nl311f9'",
+        '--in_file_session', "'2020021001'",
+        #'--in_file_run', "['01']",
+
+        '--ants_be_template', "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
+        '--ants_be_template_probability_mask', "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
+
+        #'--brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
+        '--brain_extract_method', 'BRAINSUITE',
+        '--nipype_processing_dir', "'./brain_extract_test'",
     ]
 
-    parser_groups = CFMMParserGroups(configargparse.ArgumentParser())
-
-    config_file_obj = CFMMConfig()
-    config_file_obj.populate_parser_groups(parser_groups)
-
-    nipype_run_arguments = NipypeRunArguments()
-    nipype_run_arguments.populate_parser_groups(parser_groups)
-
     tmp = MouseBrainExtraction4DBIDS()
-    #print_component(tmp)
-    tmp.populate_parser_groups(parser_groups)
-    parser_groups.parser.print_help()
-
-
-
-    parsed_namespace = config_file_obj.parse_args(parser_groups, cmd_args)
-    parsed_dict = vars(parsed_namespace)
-
-    nipype_run_arguments.populate_parameters(parsed_dict)
-    tmp.populate_parameters(parsed_dict)
-    tmp.validate_parameters()
-
-    # print_component(tmp)
-
-    wf = tmp.create_workflow()
-    #wf.write_graph(graph2use='flat')
-
-    logger.info('Starting Program!')
-
-    nipype_run_arguments.run_workflow(wf)
-
-    logger.info('Finished Program!')
+    tmp.run_bids(cmd_args)
 
 
 

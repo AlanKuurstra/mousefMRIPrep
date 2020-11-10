@@ -1,15 +1,12 @@
 import os
 from nipype.pipeline import engine as pe
-from nipype.pipeline.engine import Workflow
-import hashlib
-from copy import deepcopy
 from nipype.interfaces import utility as niu
 from workflows.CFMMLogging import NipypeLogger as logger
 from workflows.CFMMConfigFile import CFMMConfig
 from workflows.CFMMCommon import NipypeRunEngine
-import configargparse
 from workflows.CFMMParameterGroup import CFMMParameterGroup
 from workflows.CFMMParameterGroup import CFMMParserGroups
+from workflows.CFMMArgumentParser import CFMMArgumentParser
 
 class inputnode_field():
     def __init__(self,field_name,default_value=None,iterable=False,default_value_from_commandline=False):
@@ -456,7 +453,7 @@ class CFMMWorkflow(CFMMParameterGroup):
             subcomponent.validate_parameters()
 
     def run_setup(self, dbg_args=None):
-        parser_groups = CFMMParserGroups(configargparse.ArgumentParser())
+        parser_groups = CFMMParserGroups(CFMMArgumentParser())
 
         config_file_obj = CFMMConfig()
         config_file_obj.populate_parser_groups(parser_groups)
@@ -466,7 +463,7 @@ class CFMMWorkflow(CFMMParameterGroup):
 
 
         self.populate_parser_groups(parser_groups)
-        # parser_groups.parser.print_help()
+        #parser_groups.parser.print_help();stop
 
         parsed_namespace = config_file_obj.parse_args(parser_groups, dbg_args)
         parsed_dict = vars(parsed_namespace)
@@ -476,7 +473,8 @@ class CFMMWorkflow(CFMMParameterGroup):
         self.validate_parameters()
 
         wf = self.create_workflow()
-        #wf.write_graph(graph2use='flat')
+        CFMMConfig.write_config_file(parser_groups.parser, parsed_namespace,
+                                     os.path.join(nipype_run_engine.nipype_dir, f'{wf.name}.config'))
         return nipype_run_engine, wf
     def run(self, dbg_args=None):
         if hasattr(self,'bids'):

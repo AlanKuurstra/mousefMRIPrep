@@ -7,12 +7,12 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces.utility import Function
 import logging
 from nipype import logging as nipype_logging
-from multiprocessing import cpu_count
 from workflows.CFMMLogging import NipypeLogger as logger
 from workflows.CFMMMapNode import CFMMMapNode
 from nipype.pipeline.engine import Node
 from inspect import signature
 from nipype.interfaces.base import Undefined
+from multiprocessing import cpu_count
 
 def get_fn_interface(fn, output_names, imports=None):
     input_names = signature(fn).parameters.keys()
@@ -117,8 +117,14 @@ def zip_inputs_to_list(
     locals_copy = locals().copy()
 
     parameters = list(locals_copy.values())
-    # locals dict keys are in reverse order
-    parameters.reverse()
+
+    from workflows.CFMMCommon import listify
+    # locals dict keys are in reverse order, and might not be a list
+    parameters_reversed=[]
+    for param in reversed(parameters):
+        param = listify(param) if param is not None else param
+        parameters_reversed.append(param)
+    parameters = parameters_reversed
 
     if list_length is None:
         list_length = 0
@@ -131,6 +137,7 @@ def zip_inputs_to_list(
         return []
 
     # how many elements in a single input? (get number of iterations for mapnode)
+
     input_length=0
     for input in parameters[:list_length]:
         if input is not None and len(input)>input_length:
@@ -355,12 +362,13 @@ class NipypeRunEngine(CFMMParameterGroup):
             pipeline_name = wf.name
             base_dir = os.path.join(self.nipype_dir, f'{pipeline_name}_workdir')
         wf.base_dir = base_dir
+        wf.write_graph(dotfilename=os.path.join(self.nipype_dir, f'{pipeline_name}_graph'), graph2use='flat')
 
         logger.info(f'Starting pipeline {wf.name} in {base_dir}')
 
 
         if plugin_args:
-            execGraph = wf.run(plugin, plugin_args=eval(plugin_args))
+            execGraph = wf.run(plugin, plugin_args=plugin_args)
         else:
             execGraph = wf.run(plugin)
         logger.info(f'Finished pipeline {wf.name}.')
@@ -401,10 +409,11 @@ class NipypeRunEngine(CFMMParameterGroup):
 #                             )
 
 def int_neg_gives_max_cpu(value):
+    value = int(value)
     return_value = value
     if value is None or value < 1:
         return_value = cpu_count()
-    return int(return_value)
+    return return_value
 
 
 class NipypeWorkflowArguments(CFMMParameterGroup):
@@ -412,20 +421,34 @@ class NipypeWorkflowArguments(CFMMParameterGroup):
     flag_prefix = "nipype_"
 
     def _add_parameters(self):
+        # https://nipype.readthedocs.io/en/0.12.1/users/resource_sched_profiler.html
         self._add_parameter('nthreads_node',
                             type=int_neg_gives_max_cpu,
                             default=-1,
-                            help="Number of threads for a single node. The default, -1, is to have as many threads as available cpus.")
+                            help=f"Number of threads required for a single node. When nipype is running nodes in "
+                                 f"parallel, any node in '{self.owner.group_name}' getting their resource estimation "
+                                 f"from this parameter will only be started if it can be supported by the currently "
+                                 f"available unused resources. The default, -1, is to start the node and use as many "
+                                 f"threads as available.")
         self._add_parameter('nthreads_mapnode',
                             type=int_neg_gives_max_cpu,
                             default=-1,
-                            help="Number of threads in every node of a mapnode. The default, -1, is to divide the available cpus between the number of running mapnode nodes.")
+                            help=f"Number of threads required in every node of a mapnode. When nipype is running nodes "
+                                 f"in parallel, any mapnode in '{self.owner.group_name}' getting their resource "
+                                 f"estimation from this parameter will only be able to start one of its child nodes if "
+                                 f"it can be supported by the currently available unused resources. The default, -1, "
+                                 f"is to run all child nodes and divide the available threads between them.")
         self._add_parameter('mem_gb_mapnode',
-                            default=10,
+                            default=3,
                             type=float,
-                            help="Maximum memory required by a mapnode.")
+                            help=f"The amount of memory required by every node of a mapnode. When nipype is running "
+                                 f"nodes in parallel, any mapnode in '{self.owner.group_name}' getting their resource "
+                                 f"estimation from this parameter will only be able to start one of its child nodes "
+                                 f"if it can be supported by the currently available unused resources. The default "
+                                 f"is 10Gb.")
 
         self._add_parameter('gzip_large_images',
                             action='store_true',
-                            help="If true, gzip large images. Gzip saves space but I/O operations take longer.")
+                            help=f"If true, any node in '{self.owner.group_name}' getting their extension from this "
+                                 f"parameter will gzip the output. Gzip saves space but I/O operations take longer.")
 

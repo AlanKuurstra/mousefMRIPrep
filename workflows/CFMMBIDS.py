@@ -1,21 +1,16 @@
 from bids import BIDSLayout
 import tempfile
 import os
-from workflows.CFMMParameterGroup import CFMMParameterGroup, CFMMCommandlineParameter
+from workflows.CFMMParameterGroup import CFMMCommandlineParameter
 from nipype.pipeline.engine import Node, Workflow
-from nipype.interfaces.utility import IdentityInterface
 from nipype_interfaces.DerivativesDatasink import get_node_derivatives_datasink
 from workflows.CFMMCommon import get_node_inputs_to_list, get_node_existing_inputs_to_list, get_fn_node, listify, \
     delistify
 from workflows.CFMMLogging import NipypeLogger as logger
 from workflows.CFMMWorkflow import inputnode_field
 from nipype_interfaces.DerivativesDatasink import get_derivatives_entities
-from collections import Counter
-from workflows.CFMMCommon import NipypeRunEngine
-import configargparse
 from workflows.CFMMParameterGroup import CFMMParameterGroup
-from workflows.CFMMParameterGroup import CFMMParserGroups
-from workflows.CFMMConfigFile import CFMMConfig
+from workflows.argparse_conversion_functions import label_eval
 
 # sentinel values for bids entities:
 # the file cannot have the entity
@@ -38,17 +33,16 @@ class IrrelevantClass():
         # the random ending is to avoid a clash with a potential string label 'IRRELEVANT' (eg. if any image ever
         # had _desc-IRRELEVANT and we switched from this sentinel to the string IRRELEVANT, nipype's hash for the node
         # would be the same even though an input had changed
-        return 'IRRELEVANT_;a89quj;;askdjoipqwr3jeklanjdflknsdlcvn.xz,mcv.laesj'
-
-
+        # return 'IRRELEVANT_;a89quj;;askdjoipqwr3jeklanjdflknsdlcvn.xz,mcv.laesj'
+        # actually __repr__ must match the commandline string used with the argparse action.type to implement it
+        return 'IRRELEVANT'
 IRRELEVANT = IrrelevantClass()
 
 
 class LeaveExistingClass():
     def __repr__(self):
-        return 'LEAVE_EXISTING_;a89quj;;askdjoipqwr3jeklanjdflknsdlcvn.xz,mcv.laesj'
-
-
+        #return 'LEAVE_EXISTING_;a89quj;;askdjoipqwr3jeklanjdflknsdlcvn.xz,mcv.laesj'
+        return 'LEAVE_EXISTING'
 LEAVE_EXISTING = LeaveExistingClass()
 
 
@@ -191,20 +185,6 @@ class BIDSAppArguments(CFMMParameterGroup):
 
         # slightly hacky
         self.get_parameter('bids_layout_db').user_value = self.bids_layout_db
-
-
-
-
-
-
-
-
-
-
-def label_eval(label):
-    from workflows.CFMMBIDS import IRRELEVANT, NOT_PRESENT, LEAVE_EXISTING
-    return eval(label)  # try locking down the globals and locals of eval
-
 
 def lists_to_dict(keys_list, values_list):
     return dict(zip(keys_list, values_list))
@@ -940,11 +920,8 @@ class CFMMBIDSWorkflowMixin():
                     not subcomponent.disable_derivatives and \
                     subcomponent.output_derivatives is not None:
                 for outputnode_field, derivative_desc in subcomponent.output_derivatives.items():
-                    print(inputnode_field, outputnode_field, self.outputnode_field_connected(outputnode_field))
                     if self.outputnode_field_connected(outputnode_field) and \
                             self.output_derivative_exists(image, derivative_desc) < 1:
-                        print(derivative_desc,'derivatives:', self.output_derivative_exists(image, derivative_desc))
-                        print("derivative doesn't exist")
                         # Counter(bids_derivatives[inputnode_field_name].values())
                         return False
         return True
@@ -1018,11 +995,6 @@ class CFMMBIDSWorkflowMixin():
 
 
         is_cached, bids_non_iterables, bids_full_iterables, bids_reduced_iterables = self.check_bids_cache()
-        print(is_cached)
-        print(bids_non_iterables)
-        print(bids_full_iterables)
-        print(bids_reduced_iterables)
-
 
         if self.bids.get_parameter('ignore_derivatives_cache').user_value:
             is_cached = False
@@ -1038,11 +1010,9 @@ class CFMMBIDSWorkflowMixin():
             for field, iterable_list in bids_iterables.items():
                 self.set_inputnode_iterable(inputnode, field, iterable_list)
             for field, non_iterable in bids_non_iterables.items():
-                print(field,delistify(non_iterable))
                 setattr(inputnode.inputs, field, delistify(non_iterable))
                 setattr(inputnode.inputs, f'{field}_original_file', delistify(non_iterable))
             nipype_run_engine.run_workflow(wf)
-        print('')
 
     def connect_dynamic_derivatives_desc(self, wf, srcnode, srcnode_output_name, dynamic_node_names,
                                          dynamic_node_input):

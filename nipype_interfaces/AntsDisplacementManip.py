@@ -101,7 +101,7 @@ class MergeDisplacement(BaseInterface):
 
     def _list_outputs(self):
         outputs = self.output_spec().get()
-        outputs['output_file'] = 'merged.nii.gz'
+        outputs['output_file'] = os.path.abspath('merged_displacement.nii.gz')
         return outputs
 
 

@@ -2,7 +2,7 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces.utility import Function
 from workflows.CFMMCommon import get_fn_node
 
-def downsample_atlas(highres_atlas, highres_label_list, lowres_functional,
+def downsample_atlas(highres_atlas, highres_label_list, target_voxel_sz,
                      output_lowres_atlas_path = None, output_lowres_label_path_list=None):
     import numpy as np
     import nibabel as nib
@@ -22,17 +22,14 @@ def downsample_atlas(highres_atlas, highres_label_list, lowres_functional,
         output_lowres_label_path_list=[]
         for highres_label in highres_label_list:
             name, ext = split_exts(highres_label)
+            # only want the basename, not full path. Don't want to save downsampled images in original atlas directory
+            name = os.path.basename(name)
             output_lowres_label_path_list.append(os.path.abspath(f'{name}_bin_downsampled{ext}'))
     assert (len(highres_label_list) == len(output_lowres_label_path_list))
     if output_lowres_atlas_path is None:
         output_lowres_atlas_path = os.path.abspath('atlas_downsampled.nii.gz')
     tmpdir = tempfile.TemporaryDirectory()
     highres_atlas_copy = os.path.join(tmpdir.name,'atlas_highres_copy.nii.gz')
-
-    # resolution to downsample to
-    func_low_obj = nib.load(lowres_functional)
-    # sform and qfrom defined. qform rotations ignored and only use sform which only has scaling.
-    target_voxel_sz = func_low_obj.header['pixdim'][1:4]
 
     atlas_already_downsampled = False
     lowres_label_map = {}
@@ -51,7 +48,7 @@ def downsample_atlas(highres_atlas, highres_label_list, lowres_functional,
         #fallback affine (offset comes from nibabel putting [0,0,0] voxel in center of image...also against nifti standard)
         orig_header_base_affine = label_high_obj.header.get_base_affine()
         #qform affine
-        orig_qform_affine,orig_qform_code = label_high_obj.get_qform(coded=True)
+        orig_qform_affine, orig_qform_code = label_high_obj.get_qform(coded=True)
         #sform affine
         orig_sform_affine, orig_sform_code = label_high_obj.get_sform(coded=True)
 
@@ -62,6 +59,8 @@ def downsample_atlas(highres_atlas, highres_label_list, lowres_functional,
 
         # floor to retain detail
         downsample_stride = np.floor(target_voxel_sz / voxel_sz_high).astype(int)
+        downsample_stride[downsample_stride<1]=1
+
         # kernel will be symmetric with respect to center voxel - use more voxels in the kernel's label histogram if necessary
         kernel_rad = np.ceil((downsample_stride - 1) / 2.0).astype(int)
 
@@ -72,7 +71,7 @@ def downsample_atlas(highres_atlas, highres_label_list, lowres_functional,
         first_downsampled_voxel=kernel_rad
 
         # how many low res voxels in each dim (taking into account padding due to strides)
-        dim_l = np.floor((dim_h - first_downsampled_voxel - kernel_rad) / downsample_stride).astype(int) + 1
+        dim_l = np.ceil((dim_h - first_downsampled_voxel - kernel_rad) / downsample_stride).astype(int)
 
         last_possible_downsampled_voxel= dim_h - (first_downsampled_voxel + (dim_l - 1) * downsample_stride + 1)
 
@@ -126,12 +125,14 @@ def downsample_atlas(highres_atlas, highres_label_list, lowres_functional,
             # transforms to the functional images.
             atlas_obj = nib.load(highres_atlas)
             qform_shifted = np.eye(4)
-            qform_shifted[:-1,-1] = -1*first_downsampled_voxel #ants respects the nifti standard with (0,0,0) voxel
+            #qform_shifted[:-1,-1] = -1*first_downsampled_voxel #ants respects the nifti standard with (0,0,0) voxel
+            qform_shifted[:-1, -1] = -1 * first_downsampled_voxel
 
             # DO NOT UPDATE QFORM USING THE HEADER OBJECT, MUST USE THE NIFTI IMAGE OBJECT TO UPDATE THE IMAGE AFFINE
             #atlas_obj.header.set_qform(qform_shifted,2) #BAD!! does not update atlas_obj._affine and also sometimes messes with sform
             atlas_obj.set_qform(qform_shifted,2)
             atlas_obj.set_sform(np.eye(4),0)
+
             atlas_obj.to_filename(highres_atlas_copy)
 
             # note: ants puts the qform_code as 1 (scanner anat) instead of 2 (aligned anat) which we are using

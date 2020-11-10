@@ -1,12 +1,11 @@
 import configargparse as argparse
 import os
+from workflows.argparse_conversion_functions import eval_with_handling
 
 class CFMMParserGroups():
     def __init__(self, parser):
         self.parser = parser
         self.parser_groups = {}
-
-
 
 class CFMMCommandlineParameter():
     def __init__(self, add_argument_inputs, flagname=None, groupname=None, optional=True, default_provider=None,
@@ -268,10 +267,8 @@ class CFMMParameterGroup():
                         print(parameter.add_argument_inputs)
                         print('adding eval type!')
                         print('')
-                    #ACTUALLY THIS SHOULD BE A CUSTOM FUNCTION THAT USES EVAL BUT GIVES A NICE USER ERROR IF IT FAILS
-                    # REMINDING THEM OF HOW THINGS NEED TO BE PUT ON THE COMMAND LINE. PYTHON OBJECTS INSIDE DOUBLE QUOTES.
-                    # STRING: "'STRING'", DOUBLE: "3.14", NONE: "NONE", STRING NONE: "'NONE'", DICTIONARY: "{'ONE':1,'TWO':2}"
-                    parameter.add_argument_inputs['type'] = eval
+
+                    parameter.add_argument_inputs['type'] = eval_with_handling
 
                 parameter.action = cfmm_parser_groups.parser_groups[parameter.groupname].add_argument(
                     f'{flag_dash}{parameter.flagname}', **parameter.add_argument_inputs)

@@ -4,7 +4,8 @@ from workflows.BrainExtraction import CFMMVolumesToAvg
 from nipype.interfaces.fsl.maths import MeanImage
 from nipype.pipeline import engine as pe
 from workflows.CFMMCommon import NipypeWorkflowArguments
-from nipype.interfaces.fsl import Split, Merge
+from nipype.interfaces.fsl import Split
+from workflows.CFMMFSL import MergeLarge
 from nipype.interfaces.utility import Function
 from nipype.interfaces.ants import ApplyTransforms
 from nipype_interfaces.AntsDisplacementManip import MergeDisplacement
@@ -49,6 +50,7 @@ class MotionCorrection(CFMMWorkflow):
 
         self.mc_ants_reg.get_parameter('float').default_provider = self.ants_args.get_parameter('float')
         self.mc_ants_reg.get_parameter('interpolation').default_provider = self.ants_args.get_parameter('interpolation')
+        self.mc_ants_reg.get_parameter('num_threads').default_provider = self.nipype.get_parameter('nthreads_node')
 
         self.outputs = ['motion_corrected_output','motion_correction_transform']
 
@@ -89,8 +91,10 @@ class MotionCorrection(CFMMWorkflow):
         combine_mc_displacements.inputs.output_image = 'motion_corr_transform.nii.gz'
         combine_mc_displacements.inputs.print_out_composite_warp_file = True
 
-        create_4d_mc_img = pe.Node(interface=Merge(), name='create_4d_mc_img', n_procs=nthreads_node,)
-        create_4d_mc_img.inputs.dimension = 't'
+        # shell command won't work with list of 600
+        #create_4d_mc_img = pe.Node(interface=Merge(), name='create_4d_mc_img', n_procs=nthreads_node,)
+        #create_4d_mc_img.inputs.dimension = 't'
+        create_4d_mc_img = pe.Node(interface=MergeLarge(), name='create_4d_mc_img', n_procs=nthreads_node, )
 
         create_4d_mc_displacement = pe.Node(interface=MergeDisplacement(), name='create_4d_mc_displacement',
                                             n_procs=nthreads_node)

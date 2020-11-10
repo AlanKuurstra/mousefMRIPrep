@@ -1,8 +1,8 @@
-import argparse
 from configargparse import *
 from configargparse import _ENV_VAR_SOURCE_KEY, _COMMAND_LINE_SOURCE_KEY, _CONFIG_FILE_SOURCE_KEY, _DEFAULTS_SOURCE_KEY
-from workflows.CFMMBase import convert_argparse_using_eval
 import inspect
+from workflows.argparse_conversion_functions import convert_argparse_using_eval, eval_with_handling,label_eval
+
 
 # NO INVESTIGATION HAS BEEN DONE WITH _ENV_VAR_SOURCE_KEY
 
@@ -29,16 +29,21 @@ def serialize_convert_argparse_using_eval(action,value):
     # The only way to reliably use "config files" is to pickle the parsed namespace,
     # But pickling is not human readable. The user would be saving command line options as
     # defaults, but would not be able to easily modify the config file after it's saved.
-    # To change the config file, the user would have to enter all the same command line
-    # arguments while modifying the specific ones they want to change and and then use
+    # With pickled configs, to make a change the user would have to enter all the same command line
+    # arguments while modifying the specific parameters they want to tweak and then use
     # the --write_config_file to pickle the parsed namespace again.
 
+
+    # why can't we just do conversion_function == convert_argparse_using_eval.convert()
+    # method is bound to the class?
+    # maybe we should have made a global function and then bound that to the class???
     conversion_function = action.type
     if inspect.ismethod(conversion_function):
         for cls in inspect.getmro(conversion_function.__self__.__class__):
             if cls == convert_argparse_using_eval:
                 value = fix_values_for_eval(value)
-    elif conversion_function==eval:
+                break
+    elif conversion_function in [eval_with_handling, label_eval, eval]:
         value = fix_values_for_eval(value)
     return value
 
@@ -84,9 +89,10 @@ class CFMMArgumentParser(ArgumentParser):
                             config_file_items[config_file_keys[0]] = value
             elif source.startswith(_CONFIG_FILE_SOURCE_KEY):
                 # ****************************************************************************
-                # AK: all values from the config file are strings (they are not converted through action.type yet)
-                # do not put through serialize_convert_argparse_using_eval, or all arguments will receive unnecessary
-                # string ""
+                # AK: all values whose source is a config file are strings (they are not converted
+                # through action.type yet).  So we do not need to put through serialize_convert_argparse_using_eval
+                # like we had to with values coming from the commandline. If we did put through
+                # serialize_convert_argparse_using_eval all arguments will receive unnecessary string markers ""
                 # ****************************************************************************
                 for key, (action, value) in settings.items():
                     config_file_items[key] = value
@@ -227,7 +233,10 @@ class CFMMArgumentParser(ArgumentParser):
                         for cls in inspect.getmro(conversion_function.__self__.__class__):
                             if cls == convert_argparse_using_eval:
                                 if type(value) == list:
-                                    value = '['+','.join(value)+']'
+                                    value = '[' + ','.join(value) + ']'
+                    elif conversion_function in [eval_with_handling, label_eval, eval]:
+                        if type(value) == list:
+                            value = '[' + ','.join(value) + ']'
                     # *******************************************************************************************
 
                     config_args += self.convert_item_to_command_line_arg(

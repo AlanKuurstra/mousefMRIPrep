@@ -9,8 +9,15 @@ class MouseAntsRegistrationMC(CFMMAntsRegistration):
         """
         Wrapper class for CFMMBse with default parameter values suitable for mouse brains.
         """
-        # THESE DEFAULTS HAVE NOT BEEN TESTED. TESTING NEEDS TO BE DONE TO ENSURE PARAMETER VALUES
-        # RESULT IN ACCURATE MOTION CORRECTION
+        # follow https://github.com/ANTsX/ANTs/blob/master/Scripts/antsMotionCorrExample
+        # could not use GaussianDisplacementField for non-linear because nipype has a bug:
+        # GaussianDisplacementField does output an inverse transform, but nipype expects one and produces
+        # ERROR:
+        # traits.trait_errors.TraitError: Each element of the 'reverse_transforms' trait of a RegistrationOutputSpec
+        # instance must be a pathlike object or string representing an existing file, but a value of
+        # '.../mc_ants_reg/mapflow/_mc_ants_reg356/output_1InverseWarp.nii.gz' <class 'str'> was specified.
+        # SyN does not expect an inverse transform and can be used instead.
+
         super()._add_parameters()
         # note: the type conversion function you provided to argparse is only called on string defaults
         # therefore a default of 3 will set the argument to 3 (both integers)
@@ -18,20 +25,29 @@ class MouseAntsRegistrationMC(CFMMAntsRegistration):
         # eval() function will convert the string to integer 3
         # it is important to to include two sets of quotes if the default value is supposed to be a string
         # so that after the eval function, it will still be a string
-        self._modify_parameter('output_transform_prefix', 'default', "'output_'")
+
+
         self._modify_parameter('dimension', 'default', 3)
-        self._modify_parameter('transforms', 'default', "['Affine', 'SyN']")
+
         # transform_parameters:
         # gradient step
         # updateFieldVarianceInVoxelSpace - smooth the deformation computed on the "updated" gradient field before this is added to previous deformations to form the "total" gradient field
         # totalFieldVarianceInVoxelSpace - smooth the deformation computed on the "total" gradient field
-        self._modify_parameter('transform_parameters', 'default', "[(0.005,),(0.005, 0.0, 0.0)]")
+        # self._modify_parameter('transforms', 'default', "['Affine', 'GaussianDisplacementField']")
+        # self._modify_parameter('transform_parameters', 'default', "[(0.005,),(0.5, 3.0, 0.5)]")
+        self._modify_parameter('transforms', 'default', "['Affine', 'SyN']")
+        self._modify_parameter('transform_parameters', 'default', "[(0.005,),(0.5, 3.0, 0.5)]")
+
 
         # transform for each stage vs composite for entire warp
         self._modify_parameter('write_composite_transform', 'default', "False")
 
-        self._modify_parameter('metric', 'default', "['CC'] * 2")
-        self._modify_parameter('number_of_iterations', 'default', "[[20],[20]]")
+        self._modify_parameter('metric', 'default', "['GC','CC']")
+
+        #self._modify_parameter('number_of_iterations', 'default', "[[20],[20]]")
+        self._modify_parameter('number_of_iterations', 'default', "[[20],[5]]")
+
+
         # weight used if you do multimodal registration. Default is 1 (value ignored currently by ANTs)
         self._modify_parameter('metric_weight', 'default', "[1,1]")
         # radius for CC between 2-5
@@ -39,7 +55,7 @@ class MouseAntsRegistrationMC(CFMMAntsRegistration):
         # not entirely sure why we don't need to specify sampling strategy and percentage for non-linear syn registration
         # but I'm just following ANTs examples
         self._modify_parameter('sampling_strategy', 'default', "['Regular',None]")
-        self._modify_parameter('sampling_percentage', 'default', "[0.2,None]")
+        self._modify_parameter('sampling_percentage', 'default', "[0.2, None]")
         self._modify_parameter('use_histogram_matching', 'default', "[True]*2")
 
         # use a negative number if you want to do all iterations and never exit
@@ -53,6 +69,7 @@ class MouseAntsRegistrationMC(CFMMAntsRegistration):
         self._modify_parameter('shrink_factors', 'default', "[[1],[1]]")
         # estimate the learning rate step size only at the beginning of each level. Does this override the value chosen in transform_parameters?
         self._modify_parameter('use_estimate_learning_rate_once', 'default', "[False] * 2")
+        self._modify_parameter('output_transform_prefix', 'default', "'output_'")
         self._modify_parameter('output_warped_image', 'default', "'output_warped_image.nii.gz'")
         self._modify_parameter('verbose', 'default', "True")
 

@@ -1,0 +1,9 @@
+nipype
+scipy
+numpy
+seaborn
+matplotlib
+nibabel
+pybids
+pydicom
+#GitPython

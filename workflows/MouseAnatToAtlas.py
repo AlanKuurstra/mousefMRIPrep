@@ -42,10 +42,7 @@ class MouseAnatToAtlasANTs(CFMMAntsRegistration):
                                "True")  # seems to be for initializing linear transforms only
 
         self._modify_parameter('metric', 'default', "['MI'] * 3 + [['MI', 'CC']]")
-        """*********************************************************************************************************************************"""
-        # self._modify_parameter('number_of_iterations', 'default', "[[10000, 10000, 10000]] * 3 + [[100, 100, 100, 300]]")
-        self._modify_parameter('number_of_iterations', 'default', "[[1, 0, 0]] * 3 + [[0, 0, 0, 0]]")
-        """*********************************************************************************************************************************"""
+        self._modify_parameter('number_of_iterations', 'default', "[[10000, 10000, 10000]] * 3 + [[100, 100, 100, 300]]")
         # weight used if you do multimodal registration. Default is 1 (value ignored currently by ANTs)
         self._modify_parameter('metric_weight', 'default', "[1] * 3 + [[0.5, 0.5]]")
         # radius for CC between 2-5
@@ -60,10 +57,7 @@ class MouseAnatToAtlasANTs(CFMMAntsRegistration):
         self._modify_parameter('convergence_threshold', 'default', "[1.e-9] * 4")
         # if the cost hasn't changed by convergence threshold in the last window size iterations, exit loop
         self._modify_parameter('convergence_window_size', 'default', "[20] * 3 + [5]")
-        """*********************************************************************************************************************************"""
-        # self._modify_parameter('smoothing_sigmas', 'default', "[[0.35, 0.2, 0.03]] * 3 + [[0.39, 0.3, 0.1, 0.03]]")
-        self._modify_parameter('smoothing_sigmas', 'default', "[[0.4, 0.3, 0.2]] * 3 + [[0.4, 0.3, 0.2, 0.15]]")
-        """*********************************************************************************************************************************"""
+        self._modify_parameter('smoothing_sigmas', 'default', "[[0.35, 0.2, 0.03]] * 3 + [[0.39, 0.3, 0.1, 0.03]]")
         # we use mm instead of vox because we don't have isotropic voxels
         self._modify_parameter('sigma_units', 'default', "['mm'] * 4  ")
         self._modify_parameter('shrink_factors', 'default', "[[3, 2, 1]] * 3 + [[3, 2, 1, 1]]")
@@ -120,13 +114,15 @@ class MouseAnatToAtlas(CFMMWorkflow):
 
     def _add_parameters(self):
         self._add_parameter('in_file',
-                            help='', iterable=True)
+                            help='Explicitly specify location of the input anatomical for atlas registration.',
+                            iterable=True)
         self._add_parameter('in_file_mask',
-                            help='', iterable=True)
+                            help='Explicitly specify location of the input anatomical mask for atlas registration.',
+                            iterable=True)
         self._add_parameter('atlas',
-                            help='')
+                            help='Explicitly specify location of the atlas to be registered to.')
         self._add_parameter('atlas_mask',
-                            help='')
+                            help='Explicitly specify location of the atlas mask.')
         self._add_parameter('no_mask_anat2atlas',
                             action='store_true',
                             help="Don't use masks during the anatomical to atlas registration.")
@@ -251,6 +247,7 @@ if __name__ == "__main__":
         "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampledBrainMask.nii.gz'",
         '--antsarg_float',
         '--be_brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
+        #'--be_brain_extract_method', 'BRAINSUITE',
     ]
     tmp = MouseAnatToAtlasBIDS()
     tmp.run_bids(bids_args)

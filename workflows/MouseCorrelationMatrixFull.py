@@ -1,17 +1,3 @@
-# apps for container
-# tar2bids
-# fix orientation and slicetiming
-
-# create initial masks (either brainsuite or with model and probability mask)
-# create model and probability mask (either with create brainsuite initial masks or with manual masks).
-# downsample atlas to the same resolution as functional
-
-# we should do something different with atlas downsampling if hgihres atlas not same res as highres labels - need to make
-# sure the downsampled atlas is shifted the correct way.
-
-
-
-
 from workflows.CFMMWorkflow import CFMMWorkflow
 from workflows.MouseFuncToAtlasFull import MouseFuncToAtlas, MouseFuncToAtlasBIDS
 from nipype_interfaces.ComputeCorrelationMatrix import CFMMComputeCorrelationMatrix
@@ -26,16 +12,20 @@ class MouseCorrelationMatrix(CFMMWorkflow):
     def _add_parameters(self):
         # how can we get the same help as the children?
         self._add_parameter('func',
-                            help='')
+                            help='Explicitly specify location of the input functional for correlation matrix processing.',
+                            iterable=True)
         self._add_parameter('func_mask',
-                            help='')
+                            help='Explicitly specify location of the input functional mask for atlas registration.',
+                            iterable=True)
         self._add_parameter('anat',
-                            help='')
+                            help='Explicitly specify location of the anatomical image used for intermediate registration.',
+                            iterable=True)
         self._add_parameter('anat_mask',
-                            help='')
+                            help='Explicitly specify location of the anatomical mask used for intermediate registration.',
+                            iterable=True)
         self._add_parameter('label_mapping',
-                            help='',
-                            required=True)
+                            help='Location of text file mapping label names to integer value and label image.',
+                            required=True,)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -108,11 +98,11 @@ class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,CFMMBIDSWorkflowMixin):
                                                                         'extension': ['.nii', '.nii.gz'],
                                                                         },
                                                  output_derivatives={
-                                                     'label_signals_mat': 'LabelSignals',
-                                                     'label_signals_pkl': 'LabelSignals',
-                                                     'corr_mtx_pkl': 'CorrelationMatrix',
-                                                     'corr_mtx_mat': 'CorrelationMatrix',
-                                                     'corr_mtx_png': 'CorrelationMatrix',
+                                                     'label_signals_mat': 'LabelSignalsMat',
+                                                     'label_signals_pkl': 'LabelSignalsPkl',
+                                                     'corr_mtx_pkl': 'CorrelationMatrixPkl',
+                                                     'corr_mtx_mat': 'CorrelationMatrixMat',
+                                                     'corr_mtx_png': 'CorrelationMatrixPng',
                                                      'corr_mtx_shift_png': 'CorrelationShiftMatrix',
                                                  }
                                                  )
@@ -172,43 +162,59 @@ class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,CFMMBIDSWorkflowMixin):
 
 if __name__ == "__main__":
     bids_args = [
+        # bids stuff
         "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids'",
         "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives'",
         "'participant'",
-        '--input_derivatives_dirs',
-        "['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
+        '--input_derivatives_dirs',"['/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives']",
 
+        # find functional
         '--func_base_bids_string', "'task-rs_bold.nii.gz'",
         '--func_subject', "'Nl311f9'",
         '--func_session', "'2020021001'",
         '--func_run', "'05'",
 
+        # find anatomical
         '--anat_base_bids_string', "'acq-TurboRARE_T2w.nii.gz'",
         '--anat_run', "'01'",
 
+        # functional preprocessing
         '--reg_func_antsarg_float',
-        '--reg_func_preproc_be4d_brain_extract_method', 'NO_BRAIN_EXTRACTION',
-        '--reg_func_preproc_skip_mc',
+        '--reg_func_preproc_be4d_brain_extract_method', 'BRAINSUITE',
+        '--reg_func_preproc_smooth_fwhm', '0.5',
+        '--reg_func_preproc_tf_highpass_fwhm', '100',
 
+        # anatomical preprocessing
         '--reg_anat_antsarg_float',
         '--reg_anat_be_brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
-        '--reg_anat_be_ants_be_template',
-        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
-        '--reg_anat_be_ants_be_template_probability_mask',
-        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
+        '--reg_anat_be_ants_be_template',"'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplate_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
+        '--reg_anat_be_ants_be_template_probability_mask',"'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
 
-
-        '--label_mapping',
-        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/label_mapping_host_0p3x0p3x0p55mm.txt'",
-        '--reg_atlas',
-        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampled.nii.gz'",
-        '--reg_atlas_mask',
-        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelDownsampledBrainMask.nii.gz'",
+        # registration atlas, high res and downsampled
+        '--reg_atlas',"'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelHalfRes.nii.gz'",
+        '--reg_atlas_mask',"'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/Atlases/sub-AMBMCc57bl6_desc-ModelHalfResBrainMask.nii.gz'",
         '--reg_downsample',
+        '--reg_downsampled_atlas',"'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/sub-AMBMCc57bl6/sub-AMBMCc57bl6_desc-ModelBinDownsampled.nii.gz'",
+        '--reg_downsample_shift_transformation',"'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/sub-AMBMCc57bl6/sub-AMBMCc57bl6_desc-ModelBinDownsampleShift.mat'",
 
-        '--nipype_processing_dir', "'./func_corrmtx_test'",
-        '--keep_unnecessary_outputs',
+        # correlation matrix options
+        '--label_mapping',
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/DownsampleAtlasBIDS/label_mapping_host.txt'",
+
+        # nipype stuff
+        '--nipype_processing_dir', "'/storage/akuurstr/Esmin_mouse_registration/test_full_pipeline2/'",
+        '--plugin',"'MultiProc'",
+        '--plugin_args',"{'n_procs' : 16, 'memory_gb' : 50}",
+
+        '--write_config_file'
+    ]
+
+    config_args = [
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids'",
+        "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives'",
+        "'participant'",
+        '--config_file',"'/softdev/akuurstr/python/modules/mousefMRIPrep/workflows/config.txt'",
     ]
 
     tmp = MouseCorrelationMatrixBIDS()
-    tmp.run_bids(bids_args)
+    tmp.run_bids(config_args)
