@@ -1,7 +1,6 @@
 from workflows.CFMMParameterGroup import CFMMParameterGroup
 from workflows.CFMMInterface import CFMMInterface
-from nipype.interfaces.ants import Registration, N4BiasFieldCorrection, ApplyTransforms, Atropos
-from niworkflows.interfaces.ants import ThresholdImage
+from nipype.interfaces.ants import Registration, N4BiasFieldCorrection, ApplyTransforms, Atropos, ThresholdImage
 from nipype.pipeline import engine as pe
 from nipype.interfaces.utility import Function
 

@@ -5,37 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/heudiconv_heuristics/cfmm_base.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/heudiconv_heuristics/cfmm_bruker_mouse_heudiconv_heuristic.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tools/cfmm_antsMultivariateTemplateConstruction_modified_for_mice.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tools/jcamp.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/workflows/argparse_conversion_functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/mousersfMRIPrep.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/mousersfMRIPrep.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nipype_interfaces/AntsDisplacementManip.py" beforeDir="false" afterPath="$PROJECT_DIR$/nipype_interfaces/AntsDisplacementManip.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/nipype_interfaces/DownsampleAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/nipype_interfaces/DownsampleAtlas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/BrainExtraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/BrainExtraction.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMArgumentParser.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMArgumentParser.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMCommon.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMCommon.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMConfigFile.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMConfigFile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMFSL.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMFSL.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMInterface.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMInterface.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMParameterGroup.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMParameterGroup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMWorkflow.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMWorkflow.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/DownsampleAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/DownsampleAtlas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MotionCorrection.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MotionCorrection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseAnatToAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseAnatToAtlas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrix.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixBidsCaching.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseCorrelationMatrixFull.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAnat.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAnat.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlasFull.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseMotionCorrection.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseMotionCorrection.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/CFMMAnts.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMAnts.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,6 +70,7 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
         <env name="ANTSPATH" value="/usr/lib/ants/" />
         <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
         <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
@@ -147,6 +122,7 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
         <env name="ANTSPATH" value="/usr/lib/ants/" />
         <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
         <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
@@ -368,7 +344,8 @@
       <workItem from="1604524189485" duration="24000" />
       <workItem from="1604524543250" duration="1047000" />
       <workItem from="1604525625230" duration="39528000" />
-      <workItem from="1604933182716" duration="43452000" />
+      <workItem from="1604933182716" duration="45166000" />
+      <workItem from="1605037653225" duration="2328000" />
     </task>
     <servers />
   </component>
@@ -449,10 +426,10 @@
     <state width="2514" height="568" key="GridCell.Tab.1.right/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1604956484488" />
     <state width="2514" height="363" key="GridCell.Tab.1.right/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599772568020" />
     <state width="2514" height="363" key="GridCell.Tab.1.right/75.27.4405.1413@75.27.4405.1413" timestamp="1600112583348" />
-    <state x="2211" y="292" key="SettingsEditor" timestamp="1605033571358">
+    <state x="2211" y="292" key="SettingsEditor" timestamp="1605040259228">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state x="2211" y="292" key="SettingsEditor/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1605033571358" />
+    <state x="2211" y="292" key="SettingsEditor/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1605040259228" />
     <state x="3329" y="354" key="SettingsEditor/75.27.2485.1413/2560.0.2560.1440@2560.0.2560.1440" timestamp="1599149447814" />
     <state width="1280" height="721" key="XDebugger.FullValuePopup" timestamp="1603383835633">
       <screen x="1920" y="0" width="2560" height="1440" />

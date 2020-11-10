@@ -272,7 +272,7 @@ def bids_search(bids_layout_db,
     entities_labels_dict = extend_dict(entities_labels_dict, entity_list, label_list)
 
     layout = bids_layout_db.get_layout()
-    bids_search = layout.get(**entities_labels_dict, drop_invalid_filters=False)
+    bids_search = layout.get(**entities_labels_dict, invalid_filters='allow')
     bids_search = [x.path for x in bids_search]
     input_length = len(bids_search)
     # if input_length == 0:
