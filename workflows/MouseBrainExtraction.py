@@ -196,7 +196,9 @@ if __name__ == "__main__":
         '--ants_be_template_probability_mask', "'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
 
         #'--brain_extract_method', 'REGISTRATION_WITH_INITIAL_BRAINSUITE_MASK',
-        '--brain_extract_method', 'BRAINSUITE',
+        #'--brain_extract_method', 'BRAINSUITE',
+        '--brain_extract_method', 'USER_PROVIDED_MASK',
+        '--in_file_mask',"'/storage/akuurstr/Esmin_mouse_registration/mouse_scans/bids/derivatives/TemplatesAndProbabilityMasks/sub-AnatTemplateProbabilityMask_acq-TurboRARE_desc-0p15x0p15x0p55mm20200804_T2w.nii.gz'",
         '--nipype_processing_dir', "'./brain_extract_test'",
     ]
 

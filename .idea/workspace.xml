@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/BrainExtraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/BrainExtraction.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +62,7 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.MouseCorrelationMatrixFull">
+  <component name="RunManager" selected="Python.MouseBrainExtraction">
     <configuration name="DownsampleAtlas" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="mousersfMRIPrep" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -94,7 +94,6 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
         <env name="ANTSPATH" value="/usr/lib/ants/" />
         <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
         <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
@@ -228,11 +227,11 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.MouseBrainExtraction" />
         <item itemvalue="Python.MouseCorrelationMatrixFull" />
         <item itemvalue="Python.MouseCorrelationMatrixBidsCaching" />
         <item itemvalue="Python.DownsampleAtlas" />
         <item itemvalue="Python.scratch_30" />
-        <item itemvalue="Python.MouseBrainExtraction" />
       </list>
     </recent_temporary>
   </component>
@@ -345,7 +344,7 @@
       <workItem from="1604525625230" duration="39528000" />
       <workItem from="1604933182716" duration="45166000" />
       <workItem from="1605037653225" duration="2680000" />
-      <workItem from="1605043266899" duration="6865000" />
+      <workItem from="1605043266899" duration="8388000" />
     </task>
     <servers />
   </component>

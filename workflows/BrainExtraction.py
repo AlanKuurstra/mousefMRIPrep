@@ -311,7 +311,7 @@ class BrainExtraction(CFMMWorkflow):
             ])
 
         elif brain_extraction_method == BrainExtractMethod.USER_PROVIDED_MASK:
-            apply_mask = pe.Node(ApplyMask(), name='apply_mask')
+            apply_mask = CFMMMapNode(ApplyMask(), name='apply_mask',iterfield=['in_file', 'mask_file'])
             wf.connect([
                 (inputnode, apply_mask, [('in_file_mask', 'mask_file')]),
                 (n4, apply_mask, [('output_image', 'in_file')]),
