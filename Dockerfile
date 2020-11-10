@@ -147,7 +147,8 @@ RUN chmod +x /code/bin/downsample_atlas.py
 RUN chmod +x /code/bin/anat2atlas.py
 RUN chmod +x /code/bin/correlation_matrix.py
 
-ENV PATH=/code:$PATH
+ENV PATH=/code:/code/bin:$PATH
+ENV PYTHONPATH=/code:$PYTHONPATH
 
 WORKDIR /code
 RUN chmod +x run.py
