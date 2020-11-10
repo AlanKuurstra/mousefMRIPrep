@@ -7,7 +7,7 @@
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/anat2atlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/bin/anat2atlas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -345,7 +345,7 @@
       <workItem from="1604525625230" duration="39528000" />
       <workItem from="1604933182716" duration="45166000" />
       <workItem from="1605037653225" duration="2680000" />
-      <workItem from="1605043266899" duration="2916000" />
+      <workItem from="1605043266899" duration="6865000" />
     </task>
     <servers />
   </component>

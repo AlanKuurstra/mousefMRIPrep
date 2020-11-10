@@ -123,6 +123,14 @@ ENV PATH=$ANTSPATH:$PATH
 # consider upgrading to ANTs 2.3.0 with NeuroDocker builds, would have to chnage the masks connections
 #=============================================
 
+#=============================================
+# install graphviz for outputing visualizations of pipeline graphs
+#=============================================
+RUN apt-get update && apt-get install -y graphviz=2.40.1-2 && \
+apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#=============================================
+
+
 # Unless otherwise specified each process should only use one thread - nipype
 # will handle parallelization
 ENV MKL_NUM_THREADS=1 \
