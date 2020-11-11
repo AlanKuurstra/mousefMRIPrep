@@ -1,3 +1,5 @@
+import bids
+bids.config.set_option('extension_initial_dot', True)
 from bids import BIDSLayout
 import tempfile
 import os

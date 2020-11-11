@@ -9,7 +9,13 @@ from workflows.MouseMotionCorrection import MouseMotionCorrection
 from nipype.interfaces import utility as niu
 from nipype.interfaces.utility import Function
 from workflows.BrainExtraction import CFMMVolumesToAvg
-from niworkflows.interfaces.utils import CopyXForm
+import warnings
+with warnings.catch_warnings():
+    # niworkflows uses bids.BIDSLayout in a way that is going to be removed in the future
+    # UserWarning: The ability to pass arguments to BIDSLayout that control indexing is likely to be removed
+    # it's okay for now, so we suppress the warning
+    warnings.simplefilter('ignore')
+    from niworkflows.interfaces.utils import CopyXForm
 from workflows.CFMMFSL import CFMMSpatialSmoothing, CFMMTemporalFilterPhysical
 from workflows.CFMMLogging import NipypeLogger as logger
 
