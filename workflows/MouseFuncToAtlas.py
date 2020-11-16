@@ -6,6 +6,7 @@ from nipype.interfaces.ants import ApplyTransforms
 from nipype.pipeline import engine as pe
 from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE, BIDSInputWorkflow, \
     BIDSDerivativesInputWorkflow
+from nipype.interfaces.fsl import ApplyMask
 from workflows.CFMMCommon import delistify
 from workflows.CFMMLogging import NipypeLogger as logger
 import argparse
@@ -30,6 +31,9 @@ class MouseFuncToAtlas(CFMMWorkflow):
                             help='Explicitly specify location of the input functional mask for atlas registration.')
         self._add_parameter('anat',
                             help='Explicitly specify location of the anatomical image used for intermediate registration.')
+        self._add_parameter('transform_anat_mask',
+                            action='store_true',
+                            help='Output a copy of the anatomical mask in atlas space.')
         self._add_parameter('anat_mask',
                             help='Explicitly specify location of the anatomical mask used for intermediate registration.')
         self._add_parameter('anat_to_atlas_composite_transform',
@@ -60,7 +64,9 @@ class MouseFuncToAtlas(CFMMWorkflow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.func2anat = MouseFuncToAnat(owner=self, exclude_list=['in_file', 'in_file_mask', 'anat', 'anat_mask'])
-        self.outputs = ['func_to_atlas', 'func_to_atlas_composite_transform', 'func_avg_to_atlas', 'func_brainmask_to_atlas']
+        self.outputs = ['func_to_atlas', 'func_to_atlas_composite_transform', 'func_avg_to_atlas',
+                        'func_brainmask_to_atlas', 'anat_to_atlas', 'anat_brainmask_to_atlas',
+                        'anat_brainextracted_to_atlas']
 
     def create_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
@@ -99,6 +105,15 @@ class MouseFuncToAtlas(CFMMWorkflow):
         register_func_avg_to_atlas = pe.Node(interface=ApplyTransforms(), name='register_func_avg_to_atlas', )
         register_func_brainmask_to_atlas = pe.Node(interface=ApplyTransforms(), name='register_func_brainmask_to_atlas', )
 
+        concat_list_anat_to_atlas = get_node_ants_transform_concat_list(name='concat_list_anat_to_atlas')
+        register_anat_to_atlas = pe.Node(interface=ApplyTransforms(), name='register_anat_to_atlas', )
+
+        # perhaps we should brain extract in atlas space and then transform
+        # perhaps we should use an atlas brain mask
+        register_anat_brainmask_to_atlas = pe.Node(interface=ApplyTransforms(interpolation='NearestNeighbor'), name='register_anat_brainmask_to_atlas', )
+        register_anat_brainmask_to_atlas
+        apply_mask = pe.Node(ApplyMask(), name='apply_mask')
+
         inputnode, outputnode, wf = self.get_io_and_workflow()
 
         wf.connect([
@@ -124,6 +139,11 @@ class MouseFuncToAtlas(CFMMWorkflow):
             (func2anat_wf, register_func_brainmask_to_atlas, [('outputnode.brain_mask', 'input_image')]),
             (concat_transforms_func_to_atlas, register_func_brainmask_to_atlas, [('output_image', 'transforms')]),
             (register_func_brainmask_to_atlas, outputnode, [('output_image', 'func_brainmask_to_atlas')]),
+
+            (inputnode, concat_list_anat_to_atlas, [('anat_to_atlas_composite_transform', 'apply_second')]),
+            (inputnode, register_anat_to_atlas, [('anat', 'input_image')]),
+            (concat_list_anat_to_atlas, register_anat_to_atlas, [('transforms', 'transforms')]),
+            (register_anat_to_atlas, outputnode, [('output_image', 'anat_to_atlas')]),
         ])
 
         if not self.get_parameter('skip_func2anat_reg').user_value:
@@ -135,15 +155,29 @@ class MouseFuncToAtlas(CFMMWorkflow):
         if self.get_parameter('downsample').user_value:
             wf.connect([
                 (inputnode, concat_list_func_to_atlas, [('downsample_shift_transformation', 'apply_third')]),
+                (inputnode, concat_list_anat_to_atlas, [('downsample_shift_transformation', 'apply_third')]),
                 (inputnode, register_func_to_atlas, [('downsampled_atlas', 'reference_image')]),
                 (inputnode, register_func_avg_to_atlas, [('downsampled_atlas', 'reference_image')]),
                 (inputnode, register_func_brainmask_to_atlas, [('downsampled_atlas', 'reference_image')]),
+                (inputnode, register_anat_to_atlas, [('downsampled_atlas', 'reference_image')]),
+                (inputnode, register_anat_brainmask_to_atlas, [('downsampled_atlas', 'reference_image')]),
             ])
         else:
             wf.connect([
                 (inputnode, register_func_to_atlas, [('atlas', 'reference_image')]),
                 (inputnode, register_func_avg_to_atlas, [('atlas', 'reference_image')]),
                 (inputnode, register_func_brainmask_to_atlas, [('atlas', 'reference_image')]),
+                (inputnode, register_anat_to_atlas, [('atlas', 'reference_image')]),
+                (inputnode, register_anat_brainmask_to_atlas, [('atlas', 'reference_image')]),
+            ])
+        if self.get_parameter('transform_anat_mask').user_value:
+            wf.connect([
+                (inputnode, register_anat_brainmask_to_atlas, [('anat_mask', 'input_image')]),
+                (concat_list_anat_to_atlas, register_anat_brainmask_to_atlas, [('transforms', 'transforms')]),
+                (register_anat_brainmask_to_atlas, outputnode, [('output_image', 'anat_brainmask_to_atlas')]),
+                (register_anat_to_atlas, apply_mask, [('output_image', 'in_file')]),
+                (register_anat_brainmask_to_atlas, apply_mask, [('output_image', 'mask_file')]),
+                (apply_mask, outputnode, [('out_file', 'anat_brainextracted_to_atlas')]),
             ])
         return wf
 
@@ -194,10 +228,17 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixin):
                                                  dependent_entities=['subject', 'session'],
                                                  entities_to_overwrite={
                                                      'run': CMDLINE_VALUE,
+                                                     'desc': CMDLINE_VALUE,
                                                      'extension': ['.nii', '.nii.gz'],
                                                      'scope': 'self',
                                                  },
+                                                 output_derivatives={
+                                                     'anat_to_atlas': 'AnatToAtlas',
+                                                     'anat_brainmask_to_atlas': 'AnatBrainMaskToAtlas',
+                                                     'anat_brainextracted_to_atlas': 'AnatBrainExtractedToAtlas',
+                                                 }
                                                  )
+
 
         # although we could make anat_mask a derivative input like anat_to_atlas_composite_transform below, we want
         # it's parameters to be in the same place of the program help as anat - and so we bring it up the nested pipelines
@@ -295,6 +336,7 @@ if __name__ == "__main__":
 
         '--anat_base_bids_string', "'acq-TurboRARE_T2w.nii.gz'",
         '--anat_run', "'01'",
+        '--anat_desc', "'01'",
         '--anat_mask_desc',"'BrainMask'",
 
         '--func_antsarg_float',

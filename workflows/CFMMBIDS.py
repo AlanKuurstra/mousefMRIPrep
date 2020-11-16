@@ -974,8 +974,7 @@ class CFMMBIDSWorkflowMixin():
                         reduced_iterables.setdefault(f'{inputnode_field_name_add}_original_file', []).append(image_add)
                     break
             else:
-                logger.info(f"Derivatives found for inputs {[f'{f}:{i}' for f,i in zip(inputnode_field_names,images)]}."
-                            f"\n\t Skipping.")
+                logger.info(f"Derivatives found for inputs {[f'{f}:{i}' for f,i in zip(inputnode_field_names,images)]}.")
 
         # if all iterables are cached, check if all non-iterables are cached too
         if reduced_iterables == {}:

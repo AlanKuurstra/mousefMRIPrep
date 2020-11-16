@@ -7,8 +7,7 @@
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/workflows/CFMMBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseBrainExtraction.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncPreprocessing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,6 +94,7 @@
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
         <env name="ANTSPATH" value="/usr/lib/ants/" />
         <env name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH:/usr/lib/fsl/5.0/" />
         <env name="ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS" value="16" />
@@ -345,7 +345,9 @@
       <workItem from="1604933182716" duration="45166000" />
       <workItem from="1605037653225" duration="2680000" />
       <workItem from="1605043266899" duration="8496000" />
-      <workItem from="1605065454683" duration="2592000" />
+      <workItem from="1605065454683" duration="2892000" />
+      <workItem from="1605185909147" duration="916000" />
+      <workItem from="1605197811048" duration="11745000" />
     </task>
     <servers />
   </component>
@@ -435,10 +437,10 @@
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
     <state width="1280" height="721" key="XDebugger.FullValuePopup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1603383835633" />
-    <state x="2695" y="405" width="1294" height="783" key="find.popup" timestamp="1605127110118">
+    <state x="2081" y="54" width="2050" height="1347" key="find.popup" timestamp="1605283626738">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
-    <state x="2695" y="405" width="1294" height="783" key="find.popup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1605127110118" />
+    <state x="2081" y="54" width="2050" height="1347" key="find.popup/75.27.1845.1053/1920.0.2560.1440@1920.0.2560.1440" timestamp="1605283626738" />
     <state x="2864" y="365" width="672" height="676" key="search.everywhere.popup" timestamp="1603918847098">
       <screen x="1920" y="0" width="2560" height="1440" />
     </state>
