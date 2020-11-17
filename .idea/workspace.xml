@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7475f4cb-be97-4179-a4a5-7b44d12de1e7" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/CFMMBIDS.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/CFMMBIDS.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" beforeDir="false" afterPath="$PROJECT_DIR$/workflows/MouseFuncToAtlas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/ci-workflow.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/ci-workflow.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -347,7 +345,7 @@
       <workItem from="1605043266899" duration="8496000" />
       <workItem from="1605065454683" duration="2892000" />
       <workItem from="1605185909147" duration="916000" />
-      <workItem from="1605197811048" duration="11745000" />
+      <workItem from="1605197811048" duration="13639000" />
     </task>
     <servers />
   </component>

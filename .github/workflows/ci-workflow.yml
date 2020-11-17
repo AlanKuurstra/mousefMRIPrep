@@ -51,15 +51,15 @@ jobs:
         run: |
           # include registry, convert to all lower case, remove /refs/heads/ from branch name
           # this is pretty simple and there are probably other repository and branch names that would break docker
-          # also note the format to make env variables global to other steps: echo::set-env name={name}:{value}
+          # also note the use of $GITHUB_ENV to make env variables global to other steps
           reformat(){
             echo "$1" | tr '[:upper:]' '[:lower:]' | sed -e "s/refs\/heads\///g" | sed -e "s/refs\/tags\///g"
           }
-          echo ::set-env name=DOCKER_IMAGE_TESTING_BRANCH::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_BRANCH})
-          echo ::set-env name=DOCKER_IMAGE_TESTING_LAST::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_LAST})
+          echo "DOCKER_IMAGE_TESTING_BRANCH=$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_BRANCH})" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_TESTING_LAST=$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_LAST})" >> $GITHUB_ENV
           # note that we don't add the github registry keyword to dockerhub tags
-          echo ::set-env name=DOCKER_IMAGE_LATEST_DOCKERHUB::$(reformat ${DOCKER_IMAGE_LATEST_DOCKERHUB})
-          echo ::set-env name=DOCKER_IMAGE_TAG_DOCKERHUB::$(reformat ${DOCKER_IMAGE_TAG_DOCKERHUB})
+          echo "DOCKER_IMAGE_LATEST_DOCKERHUB=$(reformat ${DOCKER_IMAGE_LATEST_DOCKERHUB})" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_TAG_DOCKERHUB=$(reformat ${DOCKER_IMAGE_TAG_DOCKERHUB})" >> $GITHUB_ENV
 
       - name: login to github package registry
         run: |
@@ -127,6 +127,7 @@ jobs:
 #          reformat(){
 #            echo "$1" | tr '[:upper:]' '[:lower:]' | sed -e "s/refs\/heads\///g" | sed -e "s/refs\/tags\///g"
 #          }
+           # set-env is deprecated.
 #          echo ::set-env name=TEST_IMAGE_BRANCH::$(reformat ${REGISTRY}/${TEST_IMAGE_BRANCH})
 #          echo ::set-env name=TEST_IMAGE_LATEST::$(reformat ${REGISTRY}/${TEST_IMAGE_LATEST})
 #          echo ::set-env name=BIDSAPP_IMAGE_LATEST::$(reformat ${REGISTRY}/${BIDSAPP_IMAGE_LATEST})
@@ -174,15 +175,15 @@ jobs:
         run: |
           # include registry, convert to all lower case, remove /refs/heads/ from branch name
           # this is pretty simple and there are probably other repository and branch names that would break docker
-          # also note the format to make env variables global to other steps: echo::set-env name={name}:{value}
+          # also note the use of $GITHUB_ENV to make env variables global to other steps
           reformat(){
             echo "$1" | tr '[:upper:]' '[:lower:]' | sed -e "s/refs\/heads\///g" | sed -e "s/refs\/tags\///g"
           }
-          echo ::set-env name=DOCKER_IMAGE_TESTING_BRANCH::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_BRANCH})
-          echo ::set-env name=DOCKER_IMAGE_TESTING_LAST::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_LAST})
+          echo "DOCKER_IMAGE_TESTING_BRANCH=$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_BRANCH})" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_TESTING_LAST=$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_LAST})" >> $GITHUB_ENV
           # note that we don't add the github registry keyword to dockerhub tags
-          echo ::set-env name=DOCKER_IMAGE_LATEST_DOCKERHUB::$(reformat ${DOCKER_IMAGE_LATEST_DOCKERHUB})
-          echo ::set-env name=DOCKER_IMAGE_TAG_DOCKERHUB::$(reformat ${DOCKER_IMAGE_TAG_DOCKERHUB})
+          echo "DOCKER_IMAGE_LATEST_DOCKERHUB=$(reformat ${DOCKER_IMAGE_LATEST_DOCKERHUB})" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_TAG_DOCKERHUB=$(reformat ${DOCKER_IMAGE_TAG_DOCKERHUB})" >> $GITHUB_ENV
 
       - name: login to github package registry
         run: |
@@ -221,15 +222,15 @@ jobs:
         run: |
           # include registry, convert to all lower case, remove /refs/heads/ from branch name
           # this is pretty simple and there are probably other repository and branch names that would break docker
-          # also note the format to make env variables global to other steps: echo::set-env name={name}:{value}
+          # also note the use of $GITHUB_ENV to make env variables global to other steps
           reformat(){
             echo "$1" | tr '[:upper:]' '[:lower:]' | sed -e "s/refs\/heads\///g" | sed -e "s/refs\/tags\///g"
           }
-          echo ::set-env name=DOCKER_IMAGE_TESTING_BRANCH::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_BRANCH})
-          echo ::set-env name=DOCKER_IMAGE_TESTING_LAST::$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_LAST})
+          echo "DOCKER_IMAGE_TESTING_BRANCH=$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_BRANCH})" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_TESTING_LAST=$(reformat ${REGISTRY}/${DOCKER_IMAGE_TESTING_LAST})" >> $GITHUB_ENV
           # note that we don't add the github registry keyword to dockerhub tags
-          echo ::set-env name=DOCKER_IMAGE_LATEST_DOCKERHUB::$(reformat ${DOCKER_IMAGE_LATEST_DOCKERHUB})
-          echo ::set-env name=DOCKER_IMAGE_TAG_DOCKERHUB::$(reformat ${DOCKER_IMAGE_TAG_DOCKERHUB})
+          echo "DOCKER_IMAGE_LATEST_DOCKERHUB=$(reformat ${DOCKER_IMAGE_LATEST_DOCKERHUB})" >> $GITHUB_ENV
+          echo "DOCKER_IMAGE_TAG_DOCKERHUB=$(reformat ${DOCKER_IMAGE_TAG_DOCKERHUB})" >> $GITHUB_ENV
 
 
       - name: login to github package registry
