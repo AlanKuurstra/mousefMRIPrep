@@ -1,20 +1,15 @@
 from workflows.CFMMAnts import AntsDefaultArguments, CFMMApplyTransforms, CFMMThresholdImage, CFMMAntsRegistration, \
     CFMMN4BiasFieldCorrection
-from workflows.CFMMWorkflow import CFMMWorkflow
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE
+from cfmm.workflow import Workflow
+from cfmm.bids_parameters import BIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE
 from workflows.CFMMBrainSuite import CFMMBse
-from workflows.CFMMBIDS import BIDSAppArguments
 from workflows.CFMMEnums import BrainExtractMethod
-from workflows.CFMMCommon import get_node_existing_inputs_to_list
-from nipype.pipeline import engine as pe
 from nipype.interfaces.fsl import ImageMaths, CopyGeom, ApplyMask, Reorient2Std
-from workflows.CFMMCommon import NipypeWorkflowArguments, get_node_delistify
-from workflows.CFMMLogging import NipypeLogger as logger
-from workflows.CFMMInterface import CFMMInterface
+from cfmm.CFMMCommon import NipypeWorkflowArguments, get_node_delistify
+from cfmm.logging import NipypeLogger as logger
+from cfmm.interface import Interface
 from nipype.interfaces.fsl import ExtractROI
-from nipype.interfaces.fsl.maths import MeanImage
-from workflows.CFMMMapNode import CFMMMapNode
-from nipype.interfaces.utility import Function
+from cfmm.mapnode import MapNode
 
 
 # Iteration of brain extraction classes was accomplished using mapnodes.
@@ -23,7 +18,7 @@ from nipype.interfaces.utility import Function
 # to normal nodes (since normal nodes want a single item, not a list of a single item). Thus we delist singleton lists.
 
 
-class BrainSuiteBrainExtraction(CFMMWorkflow):
+class BrainSuiteBrainExtraction(Workflow):
     group_name = 'BrainSuite Brain Extraction'
     flag_prefix = 'bs_be_'
 
@@ -54,7 +49,7 @@ class BrainSuiteBrainExtraction(CFMMWorkflow):
             self.validate_parameters()
 
         # bse segfaults on some orientations - however it doesn't happen if the image is in std orientation
-        reorient2std = CFMMMapNode(interface=Reorient2Std(), name='reorient2std', iterfield=['in_file'])
+        reorient2std = MapNode(interface=Reorient2Std(), name='reorient2std', iterfield=['in_file'])
 
         bse = self.get_subcomponent(CFMMBse.group_name).get_node(name='BSE', mapnode=True, iterfield=['inputMRIFile'])
 
@@ -64,15 +59,15 @@ class BrainSuiteBrainExtraction(CFMMWorkflow):
 
         # should actually flip back to original orientation.
 
-        fix_bse_orientation = CFMMMapNode(interface=CopyGeom(), name='fixBSEOrientation',
-                                          iterfield=['in_file', 'dest_file'])
+        fix_bse_orientation = MapNode(interface=CopyGeom(), name='fixBSEOrientation',
+                                      iterfield=['in_file', 'dest_file'])
 
 
         # brainsuite outputs mask value as 255, change it to 1
-        fix_bse_value = CFMMMapNode(interface=ImageMaths(), name='fixBSEValue', iterfield=['in_file'])
+        fix_bse_value = MapNode(interface=ImageMaths(), name='fixBSEValue', iterfield=['in_file'])
         fix_bse_value.inputs.op_string = '-div 255'
 
-        apply_mask = CFMMMapNode(ApplyMask(), name='apply_mask', iterfield=['in_file', 'mask_file'])
+        apply_mask = MapNode(ApplyMask(), name='apply_mask', iterfield=['in_file', 'mask_file'])
         inputnode, outputnode, wf = self.get_io_and_workflow()
         delist_out_file_brain_extracted = get_node_delistify(name='delist_out_file_brain_extracted')
         delist_out_file_mask = get_node_delistify(name='delist_out_file_mask')
@@ -99,7 +94,7 @@ class BrainSuiteBrainExtraction(CFMMWorkflow):
         return wf
 
 
-class AntsBrainExtraction(CFMMWorkflow):
+class AntsBrainExtraction(Workflow):
     group_name = 'ANTs Brain Extraction'
     flag_prefix = 'ants_be_'
 
@@ -167,8 +162,8 @@ class AntsBrainExtraction(CFMMWorkflow):
         apply_transform = self.apply_transform.get_node('apply_transform', mapnode=True,
                                                         iterfield=['transforms', 'reference_image'])
         thr_brainmask = self.thresh.get_node('thr_brainmask', mapnode=True, iterfield=['input_image'])
-        apply_mask = CFMMMapNode(ApplyMask(), name='apply_mask', iterfield=['in_file', 'mask_file'],
-                                 n_procs=omp_nthreads)
+        apply_mask = MapNode(ApplyMask(), name='apply_mask', iterfield=['in_file', 'mask_file'],
+                             n_procs=omp_nthreads)
 
         inputnode, outputnode, wf = self.get_io_and_workflow()
         delist_out_file_brain_extracted = get_node_delistify(name='delist_out_file_brain_extracted')
@@ -213,7 +208,7 @@ class AntsBrainExtraction(CFMMWorkflow):
         return wf
 
 
-class BrainExtraction(CFMMWorkflow):
+class BrainExtraction(Workflow):
     group_name = 'Brain Extraction'
     flag_prefix = 'be_'
 
@@ -311,7 +306,7 @@ class BrainExtraction(CFMMWorkflow):
             ])
 
         elif brain_extraction_method == BrainExtractMethod.USER_PROVIDED_MASK:
-            apply_mask = CFMMMapNode(ApplyMask(), name='apply_mask',iterfield=['in_file', 'mask_file'])
+            apply_mask = MapNode(ApplyMask(), name='apply_mask', iterfield=['in_file', 'mask_file'])
             wf.connect([
                 (inputnode, apply_mask, [('in_file_mask', 'mask_file')]),
                 (n4, apply_mask, [('output_image', 'in_file')]),
@@ -321,7 +316,7 @@ class BrainExtraction(CFMMWorkflow):
         return wf
 
 
-class CFMMExtractROI(CFMMInterface):
+class CFMMExtractROI(Interface):
     group_name = 'ExtractROI'
     flag_prefix = 'roi_'
 
@@ -373,7 +368,7 @@ class BrainExtraction4D(BrainExtraction):
         return wf
 
 
-class BrainExtractionBIDS(BrainExtraction, CFMMBIDSWorkflowMixin):
+class BrainExtractionBIDS(BrainExtraction, BIDSWorkflowMixin):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -421,7 +416,7 @@ class BrainExtractionBIDS(BrainExtraction, CFMMBIDSWorkflowMixin):
         return wf
 
 
-class BrainExtraction4DBIDS(BrainExtraction4D, CFMMBIDSWorkflowMixin):
+class BrainExtraction4DBIDS(BrainExtraction4D, BIDSWorkflowMixin):
 
     def __init__(self, *args, save_derivatives=True, **kwargs):
         super().__init__(*args, **kwargs)

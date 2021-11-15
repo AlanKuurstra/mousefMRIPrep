@@ -1,4 +1,4 @@
-from workflows.CFMMParameterGroup import CFMMParameterGroup
+from cfmm.commandline.parameter_group import ParameterGroup
 from nipype import config
 import tempfile
 import os
@@ -7,8 +7,8 @@ from nipype.pipeline import engine as pe
 from nipype.interfaces.utility import Function
 import logging
 from nipype import logging as nipype_logging
-from workflows.CFMMLogging import NipypeLogger as logger
-from workflows.CFMMMapNode import CFMMMapNode
+from cfmm.logging import NipypeLogger as logger
+from cfmm.mapnode import MapNode
 from nipype.pipeline.engine import Node
 from inspect import signature
 from nipype.interfaces.base import Undefined
@@ -30,11 +30,11 @@ def get_fn_node(fn, output_names, *args, imports=None, mapnode=False, name=None,
     if name is None:
         name = fn.__name__
     if mapnode:
-        node = CFMMMapNode(*args,
-                           interface=interface,
-                           name=name,
-                           **kwargs
-                           )
+        node = MapNode(*args,
+                       interface=interface,
+                       name=name,
+                       **kwargs
+                       )
     else:
         node = Node(*args,
                     interface=interface,
@@ -118,7 +118,7 @@ def zip_inputs_to_list(
 
     parameters = list(locals_copy.values())
 
-    from workflows.CFMMCommon import listify
+    from cfmm.CFMMCommon import listify
     # locals dict keys are in reverse order, and might not be a list
     parameters_reversed=[]
     for param in reversed(parameters):
@@ -267,7 +267,7 @@ def get_node_existing_inputs_to_list(name='existing_inputs_to_list'):
 
 
 
-class NipypeRunEngine(CFMMParameterGroup):
+class NipypeRunEngine(ParameterGroup):
     group_name = "Nipype Run Arguments"
 
     def _add_parameters(self):
@@ -377,7 +377,7 @@ class NipypeRunEngine(CFMMParameterGroup):
 
 
 #
-# class NipypeWorkflowArguments(CFMMParameterGroup):
+# class NipypeWorkflowArguments(ParameterGroup):
 #     group_name = "Nipype Workflow Arguments"
 #     flag_prefix = "nipype_"
 #
@@ -416,7 +416,7 @@ def int_neg_gives_max_cpu(value):
     return return_value
 
 
-class NipypeWorkflowArguments(CFMMParameterGroup):
+class NipypeWorkflowArguments(ParameterGroup):
     group_name = "Nipype Workflow Arguments"
     flag_prefix = "nipype_"
 

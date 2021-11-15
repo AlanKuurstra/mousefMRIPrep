@@ -1,11 +1,11 @@
-from workflows.CFMMParameterGroup import CFMMParameterGroup
-from workflows.CFMMInterface import CFMMInterface
-from nipype.interfaces.ants import Registration, N4BiasFieldCorrection, ApplyTransforms, Atropos, ThresholdImage
+from cfmm.commandline.parameter_group import ParameterGroup
+from cfmm.interface import Interface
+from nipype.interfaces.ants import Registration, N4BiasFieldCorrection, ApplyTransforms, ThresholdImage
 from nipype.pipeline import engine as pe
 from nipype.interfaces.utility import Function
 
 
-class AntsDefaultArguments(CFMMParameterGroup):
+class AntsDefaultArguments(ParameterGroup):
     group_name = "ANTs Default Arguments"
     flag_prefix = 'antsarg_'
 
@@ -29,10 +29,10 @@ class AntsDefaultArguments(CFMMParameterGroup):
                 if type(subcomponent) == type(self):
                     upstream_ants_default_arguments = subcomponent
         if upstream_ants_default_arguments:
-            self.provide_node_defaults(upstream_ants_default_arguments, self)
+            self.copy_node_defaults(upstream_ants_default_arguments, self)
 
 
-class CFMMN4BiasFieldCorrection(CFMMInterface):
+class CFMMN4BiasFieldCorrection(Interface):
     group_name = 'N4 Correction'
     flag_prefix = 'n4_'
 
@@ -46,7 +46,7 @@ class CFMMN4BiasFieldCorrection(CFMMInterface):
                                'Distance between spline knots. Should be appropriate for object size.')
 
 
-class CFMMAntsRegistration(CFMMInterface):
+class CFMMAntsRegistration(Interface):
     group_name = 'ANTs Registration'
     flag_prefix = 'antsreg_'
 
@@ -57,7 +57,7 @@ class CFMMAntsRegistration(CFMMInterface):
         super()._add_parameters()
 
 
-class CFMMApplyTransforms(CFMMInterface):
+class CFMMApplyTransforms(Interface):
     group_name = 'Apply Transforms'
     flag_prefix = 'applytf_'
 
@@ -75,7 +75,7 @@ class CFMMApplyTransforms(CFMMInterface):
         # apply_transform.inputs.transforms = composite_transform
 
 
-class CFMMThresholdImage(CFMMInterface):
+class CFMMThresholdImage(Interface):
     group_name = "Threshold Image"
     flag_prefix = 'thresh_'
 
@@ -103,7 +103,7 @@ def ants_transform_concat_list(apply_first=None,
                                apply_tenth=None,
                                ):
     # ApplyTransforms wants transforms listed in reverse order of application
-    from workflows.CFMMCommon import existing_inputs_to_list
+    from cfmm.CFMMCommon import existing_inputs_to_list
     list = existing_inputs_to_list(apply_first,
                                    apply_second,
                                    apply_third,

@@ -1,53 +1,52 @@
+"""
+configargparse stores parameters to a config file and reads them back in assuming normal argparse typing will be done.
+However, we are changing the argparse type function to use eval (to accommodate nipype traits).
+So where configargparse stores the python list ['str1','str2'] in the config file as the string [str1,str2],
+we need to the list to be stored as "['str1','str2']"
+"""
+import inspect
+
 from configargparse import *
 from configargparse import _ENV_VAR_SOURCE_KEY, _COMMAND_LINE_SOURCE_KEY, _CONFIG_FILE_SOURCE_KEY, _DEFAULTS_SOURCE_KEY
-import inspect
-from workflows.argparse_conversion_functions import convert_argparse_using_eval, eval_with_handling,label_eval
+
+from cfmm.commandline.argparse_type_functions import eval_with_trait_validation, eval_with_handling, label_eval
 
 
 # NO INVESTIGATION HAS BEEN DONE WITH _ENV_VAR_SOURCE_KEY
 
 def fix_values_for_eval(value):
+    # fix for eval() type conversion
     if type(value) == list:
-        # fix for configarparse
-
-        # if this is not used, a list of strings ['str1','str2'] will be stored as the string [str1,str2] under the
-        # assumption that the string will be read from the config file and once again stored as the list of strings
-        # ['mm','mm'].  However, we are tweaking lists from actions belonging to nipype nodes - and if we encounter
-        # a list from a nipype action, we read it in as a string of a list (ie. "[mm,mm]"). But this is incorrect and
-        # will fail when it's passed to the action.type conversion which uses the eval().
-        # We need to read it in as the string "['mm','mm']", where the string quotes of mm have been left.
-        # For this reason we can't use the list to string conversion provdied by configargparse.  Instead we convert
-        # the list to a string ourselves so we can ensure it will be valid for eval() and then
-        # configargparse treats it as a string value (ie. it does nothing) rather than a list (ie. incorrectly converts)
         value = repr(value)
     elif type(value) == str:
-        # fix for eval() conversion
         value = f"'{value}'"
     return value
 
-def serialize_convert_argparse_using_eval(action,value):
-    # The only way to reliably use "config files" is to pickle the parsed namespace,
-    # But pickling is not human readable. The user would be saving command line options as
-    # defaults, but would not be able to easily modify the config file after it's saved.
-    # With pickled configs, to make a change the user would have to enter all the same command line
-    # arguments while modifying the specific parameters they want to tweak and then use
-    # the --write_config_file to pickle the parsed namespace again.
 
-
-    # why can't we just do conversion_function == convert_argparse_using_eval.convert()
-    # method is bound to the class?
-    # maybe we should have made a global function and then bound that to the class???
+def serialize_for_eval(action, value):
     conversion_function = action.type
     if inspect.ismethod(conversion_function):
         for cls in inspect.getmro(conversion_function.__self__.__class__):
-            if cls == convert_argparse_using_eval:
+            if cls == eval_with_trait_validation:
                 value = fix_values_for_eval(value)
                 break
     elif conversion_function in [eval_with_handling, label_eval, eval]:
         value = fix_values_for_eval(value)
     return value
 
-class CFMMArgumentParser(ArgumentParser):
+
+class ArgumentParser(ArgumentParser):
+    def __init__(self, *args, **kwargs):
+        self.argument_groups = {}
+        super().__init__(*args, **kwargs)
+
+    def add_argument_group(self, *args, **kwargs):
+        argument_group = super().add_argument_group(*args, **kwargs)
+        title = kwargs['title'] if 'title' in kwargs else False
+        if title:
+            self.argument_groups[title] = argument_group
+        return argument_group
+
     def get_items_for_config_file_output(self, source_to_settings,
                                          parsed_namespace):
         """Converts the given settings back to a dictionary that can be passed
@@ -67,16 +66,16 @@ class CFMMArgumentParser(ArgumentParser):
                 for action in self._actions:
                     config_file_keys = self.get_possible_config_keys(action)
                     if config_file_keys and not action.is_positional_arg and \
-                        already_on_command_line(existing_command_line_args,
-                                                action.option_strings,
-                                                self.prefix_chars):
+                            already_on_command_line(existing_command_line_args,
+                                                    action.option_strings,
+                                                    self.prefix_chars):
                         value = getattr(parsed_namespace, action.dest, None)
                         if value is not None:
                             if isinstance(value, bool):
                                 value = str(value).lower()
                             # ****************************************************************************
                             # AK: ensure nipype lists and strings are saved properly
-                            value = serialize_convert_argparse_using_eval(action,value)
+                            value = serialize_for_eval(action, value)
                             # ****************************************************************************
                             config_file_items[config_file_keys[0]] = value
 
@@ -90,9 +89,9 @@ class CFMMArgumentParser(ArgumentParser):
             elif source.startswith(_CONFIG_FILE_SOURCE_KEY):
                 # ****************************************************************************
                 # AK: all values whose source is a config file are strings (they are not converted
-                # through action.type yet).  So we do not need to put through serialize_convert_argparse_using_eval
+                # through action.type yet).  So we do not need to put through serialize_for_eval
                 # like we had to with values coming from the commandline. If we did put through
-                # serialize_convert_argparse_using_eval all arguments will receive unnecessary string markers ""
+                # serialize_for_eval all arguments will receive unnecessary extra string markers ""
                 # ****************************************************************************
                 for key, (action, value) in settings.items():
                     config_file_items[key] = value
@@ -104,13 +103,13 @@ class CFMMArgumentParser(ArgumentParser):
                         if value is not None:
                             # ****************************************************************************
                             # AK: ensure nipype lists and strings are saved properly
-                            value = serialize_convert_argparse_using_eval(action,value)
+                            value = serialize_for_eval(action, value)
                             # ****************************************************************************
                             config_file_items[config_file_keys[0]] = value
         return config_file_items
 
-    def parse_known_args(self, args = None, namespace = None,
-                         config_file_contents = None, env_vars = os.environ):
+    def parse_known_args(self, args=None, namespace=None,
+                         config_file_contents=None, env_vars=os.environ):
         """Supports all the same args as the ArgumentParser.parse_args(..),
         as well as the following additional args.
 
@@ -143,9 +142,9 @@ class CFMMArgumentParser(ArgumentParser):
             for a in self._actions:
                 config_file_keys = self.get_possible_config_keys(a)
                 if config_file_keys and not (a.env_var or a.is_positional_arg
-                    or a.is_config_file_arg or a.is_write_out_config_file_arg or
-                    isinstance(a, argparse._VersionAction) or
-                    isinstance(a, argparse._HelpAction)):
+                                             or a.is_config_file_arg or a.is_write_out_config_file_arg or
+                                             isinstance(a, argparse._VersionAction) or
+                                             isinstance(a, argparse._HelpAction)):
                     stripped_config_file_key = config_file_keys[0].strip(
                         self.prefix_chars)
                     a.env_var = (self._auto_env_var_prefix +
@@ -155,8 +154,8 @@ class CFMMArgumentParser(ArgumentParser):
         env_var_args = []
         nargs = False
         actions_with_env_var_values = [a for a in self._actions
-            if not a.is_positional_arg and a.env_var and a.env_var in env_vars
-                and not already_on_command_line(args, a.option_strings, self.prefix_chars)]
+                                       if not a.is_positional_arg and a.env_var and a.env_var in env_vars
+                                       and not already_on_command_line(args, a.option_strings, self.prefix_chars)]
         for action in actions_with_env_var_values:
             key = action.env_var
             value = env_vars[key]
@@ -177,17 +176,17 @@ class CFMMArgumentParser(ArgumentParser):
         if env_var_args:
             self._source_to_settings[_ENV_VAR_SOURCE_KEY] = OrderedDict(
                 [(a.env_var, (a, env_vars[a.env_var]))
-                    for a in actions_with_env_var_values])
+                 for a in actions_with_env_var_values])
 
         # before parsing any config files, check if -h was specified.
         supports_help_arg = any(
             a for a in self._actions if isinstance(a, argparse._HelpAction))
         skip_config_file_parsing = supports_help_arg and (
-            "-h" in args or "--help" in args)
+                "-h" in args or "--help" in args)
 
         # prepare for reading config file(s)
         known_config_keys = {config_key: action for action in self._actions
-            for config_key in self.get_possible_config_keys(action)}
+                             for config_key in self.get_possible_config_keys(action)}
 
         # open the config file(s)
         config_streams = []
@@ -219,19 +218,20 @@ class CFMMArgumentParser(ArgumentParser):
                 else:
                     action = None
                     discard_this_key = self._ignore_unknown_config_file_keys or \
-                        already_on_command_line(
-                            args,
-                            [self.get_command_line_key_for_unknown_config_file_setting(key)],
-                            self.prefix_chars)
+                                       already_on_command_line(
+                                           args,
+                                           [self.get_command_line_key_for_unknown_config_file_setting(key)],
+                                           self.prefix_chars)
 
                 if not discard_this_key:
                     # *******************************************************************************************
                     # AK: could probably do this in convert_item_to_command_line_arg function,
-                    # but I'm not sure yet if it will be necessary with env var settings env_var_args
+                    # but I'm not sure yet if it will be necessary with env_var_args
+
                     conversion_function = action.type
                     if inspect.ismethod(conversion_function):
                         for cls in inspect.getmro(conversion_function.__self__.__class__):
-                            if cls == convert_argparse_using_eval:
+                            if cls == eval_with_trait_validation:
                                 if type(value) == list:
                                     value = '[' + ','.join(value) + ']'
                     elif conversion_function in [eval_with_handling, label_eval, eval]:
@@ -241,12 +241,12 @@ class CFMMArgumentParser(ArgumentParser):
 
                     config_args += self.convert_item_to_command_line_arg(
                         action, key, value)
-                    source_key = "%s|%s" %(_CONFIG_FILE_SOURCE_KEY, stream.name)
+                    source_key = "%s|%s" % (_CONFIG_FILE_SOURCE_KEY, stream.name)
                     if source_key not in self._source_to_settings:
                         self._source_to_settings[source_key] = OrderedDict()
                     self._source_to_settings[source_key][key] = (action, value)
                     if (action and action.nargs or
-                        isinstance(action, argparse._AppendAction)):
+                            isinstance(action, argparse._AppendAction)):
                         nargs = True
 
             if nargs:
@@ -258,7 +258,7 @@ class CFMMArgumentParser(ArgumentParser):
         default_settings = OrderedDict()
         for action in self._actions:
             cares_about_default_value = (not action.is_positional_arg or
-                action.nargs in [OPTIONAL, ZERO_OR_MORE])
+                                         action.nargs in [OPTIONAL, ZERO_OR_MORE])
             if (already_on_command_line(args, action.option_strings, self.prefix_chars) or
                     not cares_about_default_value or
                     action.default is None or
@@ -285,4 +285,3 @@ class CFMMArgumentParser(ArgumentParser):
         output_file_paths = [a for a in output_file_paths if a is not None]
         self.write_config_file(namespace, output_file_paths, exit_after=True)
         return namespace, unknown_args
-

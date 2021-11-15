@@ -1,16 +1,12 @@
-from workflows.CFMMWorkflow import CFMMWorkflow
-from workflows.MouseFuncToAtlas import MouseFuncToAtlas, MouseFuncToAtlasBIDS
+from cfmm.workflow import Workflow
+from workflows.MouseFuncToAtlas import MouseFuncToAtlasBIDS
 from nipype_interfaces.ComputeCorrelationMatrix import CFMMComputeCorrelationMatrix
 from nipype_interfaces.ExtractLabels import ExractLabelMeans, get_node_read_label_mapping_file
 import nipype.pipeline.engine as pe
-from workflows.CFMMLogging import NipypeLogger as logger
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE
-from workflows.MouseAnatToAtlas import MouseAnatToAtlasBIDS
-from workflows.CFMMCommon import delistify
-from bids.layout.layout import parse_file_entities
+from cfmm.bids_parameters import BIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE
 
 
-class MouseCorrelationMatrixBIDS(CFMMWorkflow, CFMMBIDSWorkflowMixin):
+class MouseCorrelationMatrixBIDS(Workflow, BIDSWorkflowMixin):
     group_name = 'Correlation Matrix'
     flag_prefix = 'corr_'
 

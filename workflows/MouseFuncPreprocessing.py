@@ -1,9 +1,8 @@
 from workflows.MouseBrainExtraction import MouseBrainExtraction4D
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, CMDLINE_VALUE
-from workflows.CFMMWorkflow import CFMMWorkflow
-from workflows.CFMMBIDS import BIDSInputExternalSearch
+from cfmm.bids_parameters import BIDSWorkflowMixin, CMDLINE_VALUE
+from cfmm.workflow import Workflow
+from cfmm.bids_parameters import BIDSInputExternalSearch
 from nipype.pipeline import engine as pe
-from workflows.CFMMCommon import NipypeWorkflowArguments, delistify
 import nipype.interfaces.afni as afni
 from workflows.MouseMotionCorrection import MouseMotionCorrection
 from nipype.interfaces import utility as niu
@@ -15,12 +14,11 @@ with warnings.catch_warnings():
     # UserWarning: The ability to pass arguments to BIDSLayout that control indexing is likely to be removed
     # it's okay for now, so we suppress the warning
     warnings.simplefilter('ignore')
-    from niworkflows.interfaces.utils import CopyXForm
+    from niCFMM.Interfaces.utils import CopyXForm
 from workflows.CFMMFSL import CFMMSpatialSmoothing, CFMMTemporalFilterPhysical
-from workflows.CFMMLogging import NipypeLogger as logger
 
 
-class MouseFuncPreprocessing(CFMMWorkflow):
+class MouseFuncPreprocessing(Workflow):
     group_name = 'Functional preprocessing'
     flag_prefix = 'preproc_'
 
@@ -160,7 +158,7 @@ class MouseFuncPreprocessing(CFMMWorkflow):
 def get_param_from_json_fn(filename, parameter, type_conversion=None, default_value=None):
     # A value to return if the specified key does not exist.
     import json
-    from workflows.CFMMLogging import NipypeLogger as logger
+    from cfmm.logging import NipypeLogger as logger
     if type(filename) == list:
         filename = filename[0]
     with open(filename) as f:
@@ -195,7 +193,7 @@ def get_sidecar_node(*args, **kwargs):
                                              function=get_sidecar), **kwargs)
 
 
-class MouseFuncPreprocessingBIDS(MouseFuncPreprocessing, CFMMBIDSWorkflowMixin):
+class MouseFuncPreprocessingBIDS(MouseFuncPreprocessing, BIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         self.exclude_parameters(['slice_timing', 'tr', 'slice_encoding_direction', ])
         super().__init__(*args, **kwargs)

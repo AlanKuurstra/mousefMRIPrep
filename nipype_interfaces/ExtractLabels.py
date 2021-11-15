@@ -1,6 +1,6 @@
 import nibabel as nib
 import numpy as np
-from workflows.CFMMCommon import get_fn_node
+from cfmm.CFMMCommon import get_fn_node
 import pickle
 import scipy.io as sio
 import os
@@ -11,8 +11,8 @@ from nipype.interfaces.base import (
     File,
     traits,
 )
-from workflows.CFMMLogging import NipypeLogger as logger
-from workflows.CFMMInterface import CFMMInterface
+from cfmm.logging import NipypeLogger as logger
+from cfmm.interface import Interface
 
 def read_label_mapping_file(label_mapping_file, downsample_mapping=None):
     import re
@@ -113,7 +113,7 @@ class ExractLabelMeans(BaseInterface):
 def get_node_read_label_mapping_file(name='read_label_mapping_file'):
     return get_fn_node(read_label_mapping_file,['label_mapping'],name=name)
 
-# class CFMMExractLabelMeans(CFMMInterface):
+# class CFMMExractLabelMeans(Interface):
 #     group_name = 'Extract Label Mean Signal'
 #     flag_prefix = 'sig_'
 #     def __init__(self, *args, **kwargs):

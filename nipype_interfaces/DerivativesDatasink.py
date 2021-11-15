@@ -1,6 +1,6 @@
 #https://bids-specification.readthedocs.io/en/derivatives/05-derivatives/01-introduction.html
 
-from workflows.CFMMCommon import get_fn_node
+from cfmm.CFMMCommon import get_fn_node
 
 def get_derivatives_entities(original_bids_file, derivatives_description):
     from bids.layout.layout import parse_file_entities

@@ -3,16 +3,16 @@ bids.config.set_option('extension_initial_dot', True)
 from bids import BIDSLayout
 import tempfile
 import os
-from workflows.CFMMParameterGroup import CFMMCommandlineParameter
+from cfmm.commandline.parameter_group import CommandlineParameter
 from nipype.pipeline.engine import Node, Workflow
 from nipype_interfaces.DerivativesDatasink import get_node_derivatives_datasink
-from workflows.CFMMCommon import get_node_inputs_to_list, get_node_existing_inputs_to_list, get_fn_node, listify, \
+from cfmm.CFMMCommon import get_node_inputs_to_list, get_node_existing_inputs_to_list, get_fn_node, listify, \
     delistify
-from workflows.CFMMLogging import NipypeLogger as logger
-from workflows.CFMMWorkflow import inputnode_field
+from cfmm.logging import NipypeLogger as logger
+from cfmm.workflow import inputnode_field
 from nipype_interfaces.DerivativesDatasink import get_derivatives_entities
-from workflows.CFMMParameterGroup import CFMMParameterGroup
-from workflows.argparse_conversion_functions import label_eval
+from cfmm.commandline.parameter_group import ParameterGroup
+from cfmm.commandline.argparse_type_functions import label_eval
 
 # sentinel values for bids entities:
 # the file cannot have the entity
@@ -86,7 +86,7 @@ class BIDSLayoutDB():
         return str(self.__dict__)
 
 
-class BIDSAppArguments(CFMMParameterGroup):
+class BIDSAppArguments(ParameterGroup):
     group_name = "BIDS Arguments"
 
     def __init__(self, *args, **kwargs):
@@ -99,7 +99,7 @@ class BIDSAppArguments(CFMMParameterGroup):
             super()._add_parameter(parameter_name, *args, **kwargs)
         else:
             if parameter_name not in self.exclude_list + list(self._parameters.keys()):
-                self._parameters[parameter_name] = CFMMCommandlineParameter(None)
+                self._parameters[parameter_name] = CommandlineParameter()
 
     def _modify_parameter(self, *args, **kwargs):
         if self.owner == self.get_toplevel_owner():
@@ -248,8 +248,7 @@ def bids_search(bids_layout_db,
                 entities_to_overwrite,
                 entities_to_extend, ):
     # order of operation: remove, overwrite, extend
-    from workflows.CFMMLogging import NipypeLogger as logger
-    from workflows.CFMMBIDS import IRRELEVANT, extend_dict
+    from cfmm.bids_parameters import IRRELEVANT, extend_dict
     # by default we want to find an original file, not a derivative
     entities_labels_dict = {'desc': None}
     entities_labels_dict.update(base_entities_dict)
@@ -293,7 +292,7 @@ def bids_search_override(input_parameter,
                          entities_to_overwrite,
                          entities_to_extend,
                          ):
-    from workflows.CFMMBIDS import bids_search
+    from cfmm.bids_parameters import bids_search
     # only do bids search if input_parameter is not given by upstream
 
     if input_parameter is None and input_parameter_original_file is None:
@@ -325,8 +324,8 @@ def get_node_bids_search_override(name=None, output_names=('input_parameter', 'i
     return get_fn_node(bids_search_override, output_names=output_names, name=name, overwrite=True)
 
 
-class CFMMBIDSInput():
-    # this is a subcomponent that doesn't subclass CFMMParameterGroup
+class BIDSInput():
+    # this is a subcomponent that doesn't subclass ParameterGroup
     # instead, it adds parameters (for the bids search) to the owner's parameter group
     # it mimics a CMMParameterGroup
     def _add_parameters(self):
@@ -511,14 +510,14 @@ class CFMMBIDSInput():
                                      derivatives_wf,
                                      f'{derivatives_datasink.name}.original_bids_file')
 
-    def populate_parser_groups(self, cfmm_parser_groups):
+    def populate_parser(self, cfmm_parser_groups):
         pass
 
     def validate_parameters(self):
         pass
 
 
-class BIDSInputExternalSearch(CFMMBIDSInput):
+class BIDSInputExternalSearch(BIDSInput):
     def __init__(self, input_parameter, *args, dependent_search=None, dependent_entities=[], **kwargs):
         super().__init__(input_parameter, *args, **kwargs)
         self.dependent_search = dependent_search
@@ -598,7 +597,7 @@ class BIDSInputExternalSearch(CFMMBIDSInput):
             return self._search()
 
 
-class BIDSInputWorkflow(CFMMBIDSInput):
+class BIDSInputWorkflow(BIDSInput):
     def __init__(self, *args, base_input=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.base_input = base_input
@@ -724,7 +723,7 @@ class BIDSInputWorkflow(CFMMBIDSInput):
 from nipype_interfaces.DerivativesDatasink import get_node_get_derivatives_entities
 
 
-class BIDSDerivativesInputWorkflow(CFMMBIDSInput):
+class BIDSDerivativesInputWorkflow(BIDSInput):
     def __init__(self,
                  owner,
                  input_parameter,
@@ -824,17 +823,17 @@ class BIDSDerivativesInputWorkflow(CFMMBIDSInput):
 
 
 
-class CFMMBIDSWorkflowMixin():
+class BIDSWorkflowMixin():
     def add_bids_parameter_group(self):
         # ensures the attribute name is always self.bids and we can access it in helper functions
         self.bids = BIDSAppArguments(owner=self)
 
     def add_bids_to_workflow(self, wf):
-        # set CFMMBIDSInput workflow for adding bids related nodes to workflow
+        # set BIDSInput workflow for adding bids related nodes to workflow
         # adding derivatives node
         # inserting bids searches into the workflow if some of the search parameters come from results in the workflow
         for subcomponent in self.subcomponents:
-            if isinstance(subcomponent, CFMMBIDSInput):
+            if isinstance(subcomponent, BIDSInput):
                 subcomponent.owner_wf = wf
         self.inject_bids_search()
         self.add_derivatives()
@@ -851,7 +850,7 @@ class CFMMBIDSWorkflowMixin():
         # puts all subcomponents bids derivatives nodes in the same directory
         derivatives_wf = Workflow(name='BIDSDerivatives')
         for subcomponent in self.subcomponents:
-            if isinstance(subcomponent, CFMMBIDSInput):
+            if isinstance(subcomponent, BIDSInput):
                 subcomponent.derivatives_wf = derivatives_wf
                 subcomponent.add_derivatives()
 

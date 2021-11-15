@@ -1,14 +1,12 @@
-from workflows.CFMMInterface import CFMMInterface
-from nipype.interfaces.fsl import TemporalFilter, SUSAN, ImageStats, BinaryMaths,Reorient2Std
-import argparse
-from workflows.CFMMWorkflow import CFMMWorkflow
-from workflows.CFMMCommon import get_fn_node
-from nipype.pipeline.engine import Node
+from cfmm.interface import Interface
+from nipype.interfaces.fsl import TemporalFilter, SUSAN, ImageStats
+from cfmm.workflow import Workflow
+from cfmm.CFMMCommon import get_fn_node
 
 tmp = ImageStats()
 tmp.inputs.traits()
 
-class bptf(CFMMInterface):
+class bptf(Interface):
     group_name = 'fslmaths -bptf'
     flag_prefix = 'bptf_'
     def __init__(self, *args, **kwargs):
@@ -20,7 +18,7 @@ def convert_fwhm_s_to_sigma_volumes(tr,lowpass_fwhm=None, highpass_fwhm=None):
     highpass_sigma = highpass_fwhm/float(tr) / 2 if highpass_fwhm else Undefined
     return lowpass_sigma, highpass_sigma
 
-class CFMMTemporalFilterPhysical(CFMMWorkflow):
+class CFMMTemporalFilterPhysical(Workflow):
     group_name = 'Temporal Filter'
     flag_prefix = 'tf_'
 
@@ -80,7 +78,7 @@ class CFMMTemporalFilterPhysical(CFMMWorkflow):
 # # it happens outside the pipeline
 # # it does not allow users to pass in tr,or fwhm, through pipeline connections
 # # those parameters are only available from the commandline
-# class CFMMTemporalFilter2(CFMMInterface):
+# class CFMMTemporalFilter2(Interface):
 #     # uses fslmaths -bptf
 #     group_name = 'fslmaths -bptf'
 #     flag_prefix = 'tf_'
@@ -122,7 +120,7 @@ class CFMMTemporalFilterPhysical(CFMMWorkflow):
 
 
 
-class CFMMSUSAN(CFMMInterface):
+class CFMMSUSAN(Interface):
     group_name = 'SUSAN'
     flag_prefix = 'susan_'
     def __init__(self, *args, **kwargs):
@@ -165,8 +163,8 @@ def calculate_bt(bt=None, USAN_image=None,USAN_image_mask=None, bt_percentile=50
         return bt_fraction_of_percentile*np.percentile(usan_img,bt_percentile)
     else:
         return bt
-from workflows.CFMMCommon import get_node_inputs_to_list
-class CFMMSpatialSmoothing(CFMMWorkflow):
+from cfmm.CFMMCommon import get_node_inputs_to_list
+class CFMMSpatialSmoothing(Workflow):
     group_name = 'SUSAN'
     flag_prefix = 'smooth_'
     def _add_parameters(self):
@@ -291,7 +289,7 @@ class MergeLarge(BaseInterface):
 
 if __name__ == '__main__':
 
-    from workflows.CFMMWorkflow import CFMMParserGroups
+    from cfmm.workflow import ParserGroups
     import configargparse
 
 
@@ -302,9 +300,9 @@ if __name__ == '__main__':
         '--dimension','2',
     ]
 
-    parser_groups = CFMMParserGroups(configargparse.ArgumentParser())
+    parser_groups = ParserGroups(configargparse.ArgumentParser())
     tmp = CFMMSpatialSmoothing()
-    tmp.populate_parser_groups(parser_groups)
+    tmp.populate_parser(parser_groups)
     parser_groups.parser.print_help()
     par_dict = vars(parser_groups.parser.parse_args(cmd))
     tmp.populate_parameters(par_dict)
@@ -325,7 +323,7 @@ if __name__ == '__main__':
 
         parser_groups = CFMMParserGroups(configargparse.ArgumentParser())
         tmp = CFMMTemporalFilterPhysical()
-        tmp.populate_parser_groups(parser_groups)
+        tmp.populate_parser(parser_groups)
         parser_groups.parser.print_help()
         par_dict = vars(parser_groups.parser.parse_args(cmd))
         tmp.populate_parameters(par_dict)
@@ -335,10 +333,10 @@ if __name__ == '__main__':
 
     if 0:
         import configargparse
-        from workflows.CFMMParameterGroup import CFMMParserGroups
+        from cfmm.commandline.parameter_group import ParserGroups
 
-        parser_groups = CFMMParserGroups(configargparse.ArgumentParser())
+        parser_groups = ParserGroups(configargparse.ArgumentParser())
         tmp = CFMMSpatialSmoothing()
-        tmp.populate_parser_groups(parser_groups)
+        tmp.populate_parser(parser_groups)
 
         parser_groups.parser.print_help()

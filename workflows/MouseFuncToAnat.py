@@ -1,13 +1,13 @@
 import argparse
-from workflows.CFMMWorkflow import CFMMWorkflow
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, CMDLINE_VALUE, BIDSInputExternalSearch
+from cfmm.workflow import Workflow
+from cfmm.bids_parameters import BIDSWorkflowMixin, CMDLINE_VALUE, BIDSInputExternalSearch
 from workflows.CFMMAnts import AntsDefaultArguments, CFMMAntsRegistration
 from workflows.MouseBrainExtraction import MouseBrainExtractionBIDS
-from workflows.CFMMCommon import NipypeWorkflowArguments, delistify
+from cfmm.CFMMCommon import NipypeWorkflowArguments, delistify
 from nipype.pipeline import engine as pe
 from nipype.interfaces.utility import Function
 from workflows.MouseFuncPreprocessing import MouseFuncPreprocessing, MouseFuncPreprocessingBIDS
-from workflows.CFMMLogging import NipypeLogger as logger
+from cfmm.logging import NipypeLogger as logger
 
 
 class MouseFuncToAnatANTs(CFMMAntsRegistration):
@@ -62,7 +62,7 @@ class MouseFuncToAnatANTs(CFMMAntsRegistration):
         self._modify_parameter('output_warped_image', 'default', "'output_warped_image.nii.gz'")
 
 
-class MouseFuncToAnat(CFMMWorkflow):
+class MouseFuncToAnat(Workflow):
     group_name = 'Functional Preprocessing and Registration'
     flag_prefix = 'func_'
 
@@ -147,7 +147,7 @@ class MouseFuncToAnat(CFMMWorkflow):
         return wf
 
 
-class MouseFuncToAnatBIDS(MouseFuncToAnat, CFMMBIDSWorkflowMixin):
+class MouseFuncToAnatBIDS(MouseFuncToAnat, BIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         self.exclude_parameters(['slice_timing', 'tr', 'slice_encoding_direction', ])
         super().__init__(*args, **kwargs)

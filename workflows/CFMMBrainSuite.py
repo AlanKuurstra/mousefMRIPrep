@@ -1,7 +1,7 @@
-from workflows.CFMMInterface import CFMMInterface
+from cfmm.interface import Interface
 from nipype.interfaces.brainsuite import Bse
 
-class CFMMBse(CFMMInterface):
+class CFMMBse(Interface):
     group_name = "BrainSuite BSE"
     flag_prefix = 'bse_'
     def __init__(self, *args, **kwargs):

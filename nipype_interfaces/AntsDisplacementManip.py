@@ -14,7 +14,7 @@ from nipype.interfaces.base import (
 from tools.split_exts import split_exts
 import numpy as np
 import subprocess
-from workflows.CFMMLogging import NipypeLogger as logger
+from cfmm.logging import NipypeLogger as logger
 
 
 class SplitDisplacementInputSpec(CommandLineInputSpec):

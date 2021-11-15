@@ -1,15 +1,16 @@
 from workflows.CFMMAnts import AntsDefaultArguments, CFMMAntsRegistration
-from workflows.CFMMWorkflow import CFMMWorkflow
+from cfmm.workflow import Workflow
 from workflows.BrainExtraction import CFMMVolumesToAvg
 from nipype.interfaces.fsl.maths import MeanImage
 from nipype.pipeline import engine as pe
-from workflows.CFMMCommon import NipypeWorkflowArguments
+from cfmm.CFMMCommon import NipypeWorkflowArguments
 from nipype.interfaces.fsl import Split
 from workflows.CFMMFSL import MergeLarge
 from nipype.interfaces.utility import Function
 from nipype.interfaces.ants import ApplyTransforms
 from nipype_interfaces.AntsDisplacementManip import MergeDisplacement
-from workflows.CFMMMapNode import CFMMMapNode
+
+
 # cutom nipype interface to antsMotionCorr
 # https://github.com/rwblair/nipype/blob/add_antsMotionCorr/nipype/interfaces/ants/preprocess.py
 # doesn't expose ANTs nonlinear registration capabilities
@@ -33,7 +34,7 @@ def reverse_list(forward_list):
 # can't encapsulate an entire workflow in a mapnode
 # can't encapsulate the individual nodes in mapnodes because one of the nodes already is a mapnode and we can't
 # make a mapnode of mapnodes
-class MotionCorrection(CFMMWorkflow):
+class MotionCorrection(Workflow):
     group_name = 'Motion Correction'
     flag_prefix = 'mc_'
 

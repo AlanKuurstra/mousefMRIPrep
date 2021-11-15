@@ -1,9 +1,9 @@
 import argparse
-from workflows.CFMMWorkflow import CFMMWorkflow
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE
+from cfmm.workflow import Workflow
+from cfmm.bids_parameters import BIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE
 from workflows.CFMMAnts import AntsDefaultArguments, CFMMAntsRegistration
 from workflows.MouseBrainExtraction import MouseBrainExtraction
-from workflows.CFMMCommon import NipypeWorkflowArguments, delistify
+from cfmm.CFMMCommon import NipypeWorkflowArguments, delistify
 from nipype.pipeline import engine as pe
 from nipype.interfaces.utility import Function
 
@@ -94,7 +94,7 @@ def get_atlas_smallest_dim_spacing(atlas_file_location):
     return np.array(nib.load(atlas_file_location).header['pixdim'][1:4]).min()
 
 
-class MouseAnatToAtlas(CFMMWorkflow):
+class MouseAnatToAtlas(Workflow):
     group_name = 'Anat Preprocessing and Registration'
     flag_prefix = 'anat_'
 
@@ -180,7 +180,7 @@ class MouseAnatToAtlas(CFMMWorkflow):
         return wf
 
 
-class MouseAnatToAtlasBIDS(MouseAnatToAtlas, CFMMBIDSWorkflowMixin):
+class MouseAnatToAtlasBIDS(MouseAnatToAtlas, BIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         # can this be a function in bids mixer?
         super().__init__(*args, **kwargs)

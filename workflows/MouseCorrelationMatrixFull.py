@@ -1,11 +1,10 @@
-from workflows.CFMMWorkflow import CFMMWorkflow
+from cfmm.workflow import Workflow
 from workflows.MouseFuncToAtlasFull import MouseFuncToAtlas, MouseFuncToAtlasBIDS
 from nipype_interfaces.ComputeCorrelationMatrix import CFMMComputeCorrelationMatrix
 from nipype_interfaces.ExtractLabels import ExractLabelMeans, get_node_read_label_mapping_file
 import nipype.pipeline.engine as pe
-from workflows.CFMMLogging import NipypeLogger as logger
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin
-class MouseCorrelationMatrix(CFMMWorkflow):
+from cfmm.bids_parameters import BIDSWorkflowMixin
+class MouseCorrelationMatrix(Workflow):
     group_name = 'Correlation Matrix'
     flag_prefix = 'corr_'
 
@@ -76,12 +75,10 @@ class MouseCorrelationMatrix(CFMMWorkflow):
         return wf
 
 
-
-from workflows.CFMMCommon import delistify
-from workflows.CFMMBIDS import CMDLINE_VALUE, BIDSAppArguments, BIDSInputExternalSearch
+from cfmm.bids_parameters import CMDLINE_VALUE, BIDSInputExternalSearch
 
 
-class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,CFMMBIDSWorkflowMixin):
+class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,BIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.add_bids_parameter_group()

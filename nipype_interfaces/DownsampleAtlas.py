@@ -1,6 +1,4 @@
-from nipype.pipeline import engine as pe
-from nipype.interfaces.utility import Function
-from workflows.CFMMCommon import get_fn_node
+from cfmm.CFMMCommon import get_fn_node
 
 def downsample_atlas(highres_atlas, highres_label_list, target_voxel_sz,
                      output_lowres_atlas_path = None, output_lowres_label_path_list=None):
@@ -10,7 +8,7 @@ def downsample_atlas(highres_atlas, highres_label_list, target_voxel_sz,
     import os
     from tools.split_exts import split_exts
     import tempfile
-    from workflows.CFMMLogging import NipypeLogger as logger
+    from cfmm.logging import NipypeLogger as logger
 
     if type(highres_label_list) == str:
         highres_label_list = [highres_label_list]

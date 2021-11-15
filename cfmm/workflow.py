@@ -1,12 +1,12 @@
 import os
 from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as niu
-from workflows.CFMMLogging import NipypeLogger as logger
-from workflows.CFMMConfigFile import CFMMConfig
-from workflows.CFMMCommon import NipypeRunEngine
-from workflows.CFMMParameterGroup import CFMMParameterGroup
-from workflows.CFMMParameterGroup import CFMMParserGroups
-from workflows.CFMMArgumentParser import CFMMArgumentParser
+from cfmm.logging import NipypeLogger as logger
+from cfmm.configfile import Config
+from cfmm.CFMMCommon import NipypeRunEngine
+from cfmm.commandline.parameter_group import ParameterGroup
+#from cfmm.parameter_group import ParserGroups
+from cfmm.commandline.argument_parser import ArgumentParser
 
 class inputnode_field():
     def __init__(self,field_name,default_value=None,iterable=False,default_value_from_commandline=False):
@@ -21,10 +21,10 @@ class inputnode_field():
         self.iterable = iterable
         self.default_value_from_commandline = default_value_from_commandline
 
-class CFMMWorkflow(CFMMParameterGroup):
+class Workflow(ParameterGroup):
     """
     Class for managing a nipype workflow with commandline arguments. Manages a list self.subcomponents of
-    CFMMParserArguments subclasses (eg. a CFMMInterface or a CFMMWorkflow used as a subworkflow) which will have their
+    CFMMParserArguments subclasses (eg. a Interface or a Workflow used as a subworkflow) which will have their
     commandline arguments displayed in this workflow's help.
 
     :ivar pipeline_name: initial value:
@@ -67,18 +67,18 @@ class CFMMWorkflow(CFMMParameterGroup):
         self.pipeline_version = pipeline_version
         super().__init__(*args, **kwargs)
 
-    def get_toplevel_owner(self):
-        """
-        Traverse the composition chain and return first instance without a owner.
-        :return: toplevel_owner
-        """
-
-        current_child = self
-        current_owner = current_child.owner
-        while current_owner is not None:
-            current_child = current_owner
-            current_owner = current_owner.owner
-        return current_child
+    # def get_toplevel_owner(self):
+    #     """
+    #     Traverse the composition chain and return first instance without a owner.
+    #     :return: toplevel_owner
+    #     """
+    #
+    #     current_child = self
+    #     current_owner = current_child.owner
+    #     while current_owner is not None:
+    #         current_child = current_owner
+    #         current_owner = current_owner.owner
+    #     return current_child
 
     def _add_parameter(self, parameter_name, *args, add_to_inputnode=True, iterable=False,**kwargs):
         """
@@ -180,10 +180,10 @@ class CFMMWorkflow(CFMMParameterGroup):
             subcomponent = self.get_subcomponent(subcomponent_chain)
         return subcomponent.get_parameter(parameter_name)
 
-    def populate_parser_groups(self, cfmm_parser_groups):
-        super().populate_parser_groups(cfmm_parser_groups)
+    def populate_parser(self, parser):
+        super().populate_parser(parser)
         for subcomponent in self.subcomponents:
-            subcomponent.populate_parser_groups(cfmm_parser_groups)
+            subcomponent.populate_parser(parser)
 
     def populate_parameters(self, parsed_args_dict):
         """
@@ -324,7 +324,7 @@ class CFMMWorkflow(CFMMParameterGroup):
         """
         Create a nipype workflow with same name as self.pipeline_name and store in self.workflow. If a
         NipypeWorkflowArguments subcomponent exists, set the workflow base_dir using the parameter value.
-        If being called inside a subclass' :func:`CFMMWorkflow.get_workflow` after super().get_workflow(), overwrite
+        If being called inside a subclass' :func:`Workflow.get_workflow` after super().get_workflow(), overwrite
         should be True. This ensures that the subclass call to get_base_workflow will overwrite the self.workflow
         stored by super().get_workflow()'s call to get_base_workflow.
         :param overwrite: Overwrite existing self.workflow
@@ -453,19 +453,17 @@ class CFMMWorkflow(CFMMParameterGroup):
             subcomponent.validate_parameters()
 
     def run_setup(self, dbg_args=None):
-        parser_groups = CFMMParserGroups(CFMMArgumentParser())
+        parser = ArgumentParser()
 
-        config_file_obj = CFMMConfig()
-        config_file_obj.populate_parser_groups(parser_groups)
+        config_file_obj = Config()
+        config_file_obj.populate_parser(parser)
 
         nipype_run_engine = NipypeRunEngine()
-        nipype_run_engine.populate_parser_groups(parser_groups)
+        nipype_run_engine.populate_parser(parser)
 
+        self.populate_parser(parser)
 
-        self.populate_parser_groups(parser_groups)
-        #parser_groups.parser.print_help();stop
-
-        parsed_namespace = config_file_obj.parse_args(parser_groups, dbg_args)
+        parsed_namespace = config_file_obj.parse_args(parser, dbg_args)
         parsed_dict = vars(parsed_namespace)
 
         nipype_run_engine.populate_parameters(parsed_dict)
@@ -473,8 +471,8 @@ class CFMMWorkflow(CFMMParameterGroup):
         self.validate_parameters()
 
         wf = self.create_workflow()
-        CFMMConfig.write_config_file(parser_groups.parser, parsed_namespace,
-                                     os.path.join(nipype_run_engine.nipype_dir, f'{wf.name}.config'))
+        Config.write_config_file(parser, parsed_namespace,
+                                 os.path.join(nipype_run_engine.nipype_dir, f'{wf.name}.config'))
         return nipype_run_engine, wf
     def run(self, dbg_args=None):
         if hasattr(self,'bids'):

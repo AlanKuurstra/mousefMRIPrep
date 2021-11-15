@@ -12,8 +12,8 @@ from nipype.interfaces.base import (
     File,
     traits,
 )
-from workflows.CFMMInterface import CFMMInterface
-from workflows.CFMMLogging import NipypeLogger as logger
+from cfmm.interface import Interface
+from cfmm.logging import NipypeLogger as logger
 
 def comput_correlation_matrix(label_signals, shift_interval_s=None, max_shift_s=None, tr=1, search_for_neg_corr=False):
     if shift_interval_s is None:
@@ -187,7 +187,7 @@ class ComputeCorrelationMatrix(BaseInterface):
 
         return outputs
 
-class CFMMComputeCorrelationMatrix(CFMMInterface):
+class CFMMComputeCorrelationMatrix(Interface):
     group_name = 'Compute Correlation Matrix'
     flag_prefix = 'corrmtx_'
     def __init__(self, *args, **kwargs):

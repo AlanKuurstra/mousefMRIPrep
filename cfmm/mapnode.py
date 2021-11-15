@@ -4,7 +4,7 @@ from nipype.pipeline.engine.nodes import flatten,ensure_list,Node,deepcopy,op,In
     _node_runner, str2bool,_save_resultfile,glob,shutil, logger
 import hashlib
 
-class CFMMMapNode(MapNode):
+class MapNode(MapNode):
     def _get_cfmm_node_name(self,index):
         hash_id = hashlib.md5()
         for field in self.iterfield:

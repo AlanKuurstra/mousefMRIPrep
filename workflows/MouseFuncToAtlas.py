@@ -1,17 +1,14 @@
-from workflows.CFMMWorkflow import CFMMWorkflow
+from cfmm.workflow import Workflow
 from workflows.MouseFuncToAnat import MouseFuncToAnat, MouseFuncToAnatBIDS
-from workflows.MouseAnatToAtlas import MouseAnatToAtlas
 from workflows.CFMMAnts import get_node_ants_transform_concat_list
 from nipype.interfaces.ants import ApplyTransforms
 from nipype.pipeline import engine as pe
-from workflows.CFMMBIDS import CFMMBIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE, BIDSInputWorkflow, \
+from cfmm.bids_parameters import BIDSWorkflowMixin, BIDSInputExternalSearch, CMDLINE_VALUE, BIDSInputWorkflow, \
     BIDSDerivativesInputWorkflow
 from nipype.interfaces.fsl import ApplyMask
-from workflows.CFMMCommon import delistify
-from workflows.CFMMLogging import NipypeLogger as logger
 import argparse
 
-class MouseFuncToAtlas(CFMMWorkflow):
+class MouseFuncToAtlas(Workflow):
     group_name = 'Functional to Atlas Registration'
     flag_prefix = 'reg_'
 
@@ -182,10 +179,7 @@ class MouseFuncToAtlas(CFMMWorkflow):
         return wf
 
 
-from workflows.DownsampleAtlas import get_node_dynamic_res_desc
-
-
-class MouseFuncToAtlasBIDS(MouseFuncToAtlas, CFMMBIDSWorkflowMixin):
+class MouseFuncToAtlasBIDS(MouseFuncToAtlas, BIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
