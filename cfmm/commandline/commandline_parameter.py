@@ -76,7 +76,10 @@ class CommandlineParameter:
         if self.flagname in parsed_args_dict.keys():
             self.user_value = parsed_args_dict[self.flagname]
         else:
-            self.user_value = self.default_provider.populate_user_value(parsed_args_dict)
+            try:
+                self.user_value = self.default_provider.populate_user_value(parsed_args_dict)
+            except Exception as e:
+                print(e)
         return self.user_value
 
     def __str__(self):

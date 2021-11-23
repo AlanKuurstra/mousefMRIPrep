@@ -130,7 +130,7 @@ class MouseAnatToAtlas(Workflow):
     def create_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
         if arg_dict is not None:
-            self.populate_parameters(arg_dict)
+            self.populate_user_value(arg_dict)
             self.validate_parameters()
 
         be_workflow = self.be.create_workflow()

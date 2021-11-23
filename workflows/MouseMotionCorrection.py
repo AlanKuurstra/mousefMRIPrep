@@ -76,7 +76,7 @@ class MouseAntsRegistrationMC(CFMMAntsRegistration):
 class MouseMotionCorrection(MotionCorrection):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._remove_subcomponent('mc_ants_reg')
+        self._remove_subcomponent_attribute('mc_ants_reg')
         self.mc_ants_reg = MouseAntsRegistrationMC(owner=self)
         self.mc_ants_reg.get_parameter('float').default_provider = self.ants_args.get_parameter('float')
         self.mc_ants_reg.get_parameter('interpolation').default_provider = self.ants_args.get_parameter('interpolation')

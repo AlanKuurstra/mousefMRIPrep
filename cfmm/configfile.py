@@ -1,8 +1,8 @@
-from cfmm.commandline.parameter_group import ParameterGroup
+from cfmm.commandline.parameter_group import HierarchicalParameterGroup
 import os
 from cfmm.logging import NipypeLogger as logger
 
-class Config(ParameterGroup):
+class Config(HierarchicalParameterGroup):
     group_name = "Config File Options"
     def __init__(self,*args,**kwargs):
         return super().__init__(*args,**kwargs)
@@ -19,7 +19,7 @@ class Config(ParameterGroup):
 
     def parse_args(self, parser, *args, **kwargs):
         arg_namespace = parser.parse_args(*args, **kwargs)
-        self.populate_parameters(vars(arg_namespace))
+        self.populate_user_value(vars(arg_namespace))
         write_config_file = self.get_parameter('write_config_file')
         if write_config_file.user_value:
             config_path = os.path.abspath(write_config_file.user_value)

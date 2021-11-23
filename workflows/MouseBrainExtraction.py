@@ -93,21 +93,21 @@ class MouseBse(CFMMBse):
 class MouseBrainSuiteBrainExtraction(BrainSuiteBrainExtraction):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._remove_subcomponent('bse')
+        self._remove_subcomponent_attribute('bse')
         self.bse = MouseBse(owner=self)
 
 class MouseAntsBrainExtraction(AntsBrainExtraction):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._remove_subcomponent('ants_reg')
+        self._remove_subcomponent_attribute('ants_reg')
         self.ants_reg = MouseAntsRegistrationBE(owner=self)
 
 class MouseBrainExtraction(BrainExtraction):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._remove_subcomponent('n4')
-        self._remove_subcomponent('bse')
-        self._remove_subcomponent('ants')
+        self._remove_subcomponent_attribute('n4')
+        self._remove_subcomponent_attribute('bse')
+        self._remove_subcomponent_attribute('ants')
         self.n4 = MouseN4BiasFieldCorrection(owner=self)
         self.bse = MouseBrainSuiteBrainExtraction(owner=self, exclude_list=['in_file'])
         self.ants = MouseAntsBrainExtraction(owner=self,
@@ -119,9 +119,9 @@ class MouseBrainExtraction(BrainExtraction):
 class MouseBrainExtractionBIDS(BrainExtractionBIDS):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._remove_subcomponent('n4')
-        self._remove_subcomponent('bse')
-        self._remove_subcomponent('ants')
+        self._remove_subcomponent_attribute('n4')
+        self._remove_subcomponent_attribute('bse')
+        self._remove_subcomponent_attribute('ants')
         self.n4 = MouseN4BiasFieldCorrection(owner=self)
         self.bse = MouseBrainSuiteBrainExtraction(
             owner=self,
@@ -137,9 +137,9 @@ class MouseBrainExtractionBIDS(BrainExtractionBIDS):
 class MouseBrainExtraction4D(BrainExtraction4D):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._remove_subcomponent('n4')
-        self._remove_subcomponent('bse')
-        self._remove_subcomponent('ants')
+        self._remove_subcomponent_attribute('n4')
+        self._remove_subcomponent_attribute('bse')
+        self._remove_subcomponent_attribute('ants')
         self.n4 = MouseN4BiasFieldCorrection(owner=self)
 
         self.bse = MouseBrainSuiteBrainExtraction(owner=self,exclude_list=['in_file'])
@@ -153,9 +153,9 @@ class MouseBrainExtraction4D(BrainExtraction4D):
 class MouseBrainExtraction4DBIDS(BrainExtraction4DBIDS):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._remove_subcomponent('n4')
-        self._remove_subcomponent('bse')
-        self._remove_subcomponent('ants')
+        self._remove_subcomponent_attribute('n4')
+        self._remove_subcomponent_attribute('bse')
+        self._remove_subcomponent_attribute('ants')
         self.n4 = MouseN4BiasFieldCorrection(owner=self)
         self.bse = MouseBrainSuiteBrainExtraction(owner=self, exclude_list=['in_file'])
         self.ants = MouseAntsBrainExtraction(owner=self,

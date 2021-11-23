@@ -305,7 +305,7 @@ if __name__ == '__main__':
     tmp.populate_parser(parser_groups)
     parser_groups.parser.print_help()
     par_dict = vars(parser_groups.parser.parse_args(cmd))
-    tmp.populate_parameters(par_dict)
+    tmp.populate_user_value(par_dict)
     tmp2 = tmp.create_workflow()
     result = tmp2.run()
 
@@ -326,7 +326,7 @@ if __name__ == '__main__':
         tmp.populate_parser(parser_groups)
         parser_groups.parser.print_help()
         par_dict = vars(parser_groups.parser.parse_args(cmd))
-        tmp.populate_parameters(par_dict)
+        tmp.populate_user_value(par_dict)
         tmp2 = tmp.create_workflow()
         result = tmp2.run()
 

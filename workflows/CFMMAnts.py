@@ -1,11 +1,11 @@
-from cfmm.commandline.parameter_group import ParameterGroup
+from cfmm.commandline.parameter_group import HierarchicalParameterGroup
 from cfmm.interface import Interface
 from nipype.interfaces.ants import Registration, N4BiasFieldCorrection, ApplyTransforms, ThresholdImage
 from nipype.pipeline import engine as pe
 from nipype.interfaces.utility import Function
 
 
-class AntsDefaultArguments(ParameterGroup):
+class AntsDefaultArguments(HierarchicalParameterGroup):
     group_name = "ANTs Default Arguments"
     flag_prefix = 'antsarg_'
 
@@ -21,11 +21,11 @@ class AntsDefaultArguments(ParameterGroup):
         # get values from upstream if not specified on commandline
         # this works if the parent sets their AntsDefaultArguments before other pieces
         # should maybe make an ANTSWorkflow class which has an __init__ ensuring this
-        current_component = self.owner
+        curr_component = self.owner
         upstream_ants_default_arguments = None
-        while current_component.owner is not None and upstream_ants_default_arguments is None:
-            current_component = current_component.owner
-            for subcomponent in current_component.subcomponents:
+        while curr_component.owner is not None and upstream_ants_default_arguments is None:
+            curr_component = curr_component.owner
+            for subcomponent in curr_component.subcomponents:
                 if type(subcomponent) == type(self):
                     upstream_ants_default_arguments = subcomponent
         if upstream_ants_default_arguments:

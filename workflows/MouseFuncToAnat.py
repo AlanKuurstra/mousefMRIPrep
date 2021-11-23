@@ -97,7 +97,7 @@ class MouseFuncToAnat(Workflow):
     def create_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
         if arg_dict is not None:
-            self.populate_parameters(arg_dict)
+            self.populate_user_value(arg_dict)
             self.validate_parameters()
 
         preproc_wf = self.preproc.create_workflow()
@@ -157,7 +157,7 @@ class MouseFuncToAnatBIDS(MouseFuncToAnat, BIDSWorkflowMixin):
         # easier to use MouseFuncPreprocessing existing BIDS component because it takes care of removing
         # tr, slice encoding direction, and slice timings with information from the sidecar file
         # this is unusual behaviour
-        self._remove_subcomponent('preproc')
+        self._remove_subcomponent_attribute('preproc')
         self.preproc = MouseFuncPreprocessingBIDS(owner=self,
                                                   exclude_list=['in_file', 'in_file_mask'],
                                                   )

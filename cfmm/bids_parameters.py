@@ -9,9 +9,9 @@ from nipype_interfaces.DerivativesDatasink import get_node_derivatives_datasink
 from cfmm.CFMMCommon import get_node_inputs_to_list, get_node_existing_inputs_to_list, get_fn_node, listify, \
     delistify
 from cfmm.logging import NipypeLogger as logger
-from cfmm.workflow import inputnode_field
+from cfmm.workflow import InputnodeField
 from nipype_interfaces.DerivativesDatasink import get_derivatives_entities
-from cfmm.commandline.parameter_group import ParameterGroup
+from cfmm.commandline.parameter_group import HierarchicalParameterGroup
 from cfmm.commandline.argparse_type_functions import label_eval
 
 # sentinel values for bids entities:
@@ -86,7 +86,7 @@ class BIDSLayoutDB():
         return str(self.__dict__)
 
 
-class BIDSAppArguments(ParameterGroup):
+class BIDSAppArguments(HierarchicalParameterGroup):
     group_name = "BIDS Arguments"
 
     def __init__(self, *args, **kwargs):
@@ -141,7 +141,7 @@ class BIDSAppArguments(ParameterGroup):
                             help='Run the pipeline even if derivatives already exist.',
                             )
 
-    def populate_parameters(self, arg_dict):
+    def populate_user_value(self, arg_dict):
         # only one workflow can have positional bids arguments for bids app
         # populate bids parameters using top level parent bids arguments
 
@@ -324,7 +324,7 @@ def get_node_bids_search_override(name=None, output_names=('input_parameter', 'i
     return get_fn_node(bids_search_override, output_names=output_names, name=name, overwrite=True)
 
 
-class BIDSInput():
+class BIDSInput:
     # this is a subcomponent that doesn't subclass ParameterGroup
     # instead, it adds parameters (for the bids search) to the owner's parameter group
     # it mimics a CMMParameterGroup
@@ -333,9 +333,9 @@ class BIDSInput():
         owner = self.owner
         # add to the inputnode but don't make a cmdline parameter
         # use the setter
-        owner._inputnode_field_info.append(inputnode_field(f'{input_parameter}_original_file',
-                                                           default_value=None,
-                                                           iterable=owner.get_inputnode_field(input_parameter).iterable))
+        owner._inputnode_fields[f'{input_parameter}_original_file'] = InputnodeField(f'{input_parameter}_original_file',
+                                                      default_value=None,
+                                                      iterable=owner.get_inputnode_field(input_parameter).iterable)
 
         input_parameter_flagname = owner.get_parameter(input_parameter).flagname if input_parameter not in owner.exclude_list else 'DOES NOT EXIST'
         if self.create_base_bids_string:
@@ -397,10 +397,10 @@ class BIDSInput():
         self.bids_search_node = None
 
         self.group_name = f'{input_parameter}_bids_input'
-        owner.add_subcomponent(self)
+        owner.add_subgroup(self)
         self._add_parameters()
 
-    def populate_parameters(self, parsed_args_dict):
+    def populate_user_value(self, parsed_args_dict):
         owner = self.owner
         input_parameter = self.input_parameter
 
@@ -823,7 +823,9 @@ class BIDSDerivativesInputWorkflow(BIDSInput):
 
 
 
-class BIDSWorkflowMixin():
+class BIDSWorkflowMixin:
+
+    #switch to cached property
     def add_bids_parameter_group(self):
         # ensures the attribute name is always self.bids and we can access it in helper functions
         self.bids = BIDSAppArguments(owner=self)

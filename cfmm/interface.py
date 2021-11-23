@@ -3,10 +3,10 @@ from nipype.pipeline import engine as pe
 
 from cfmm.commandline.argparse_type_functions import eval_with_trait_validation
 from cfmm.mapnode import MapNode
-from cfmm.commandline.parameter_group import ParameterGroup
+from cfmm.commandline.parameter_group import HierarchicalParameterGroup
 
 
-class Interface(ParameterGroup):
+class Interface(HierarchicalParameterGroup):
     """
     Class for exposing a nipype interface's input traits to the commandline.
     """
@@ -63,7 +63,7 @@ class Interface(ParameterGroup):
         :return: nipype interface
         """
         if parsed_args_dict is not None:
-            self.populate_parameters(parsed_args_dict)
+            self.populate_user_value(parsed_args_dict)
 
         keyword_arguments = {name: parameter.user_value for name, parameter in self._parameters.items()}
         nipype_interface = self.interface(**keyword_arguments)

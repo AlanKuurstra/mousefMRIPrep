@@ -4,7 +4,7 @@ from functools import lru_cache
 from cfmm.commandline.commandline_parameter import CommandlineParameter
 
 
-class ParameterGroup:
+class HierarchicalParameterGroup:
     """
     Base class for hierarchical groups of CommandlineParameters.
     Facilitates adding a group of parameters to an ArgumentParser() for commandline representation.
@@ -14,11 +14,12 @@ class ParameterGroup:
 
     def __init__(self,
                  group_name=None,
-                 owner=None,
                  flag_prefix=None,
                  flag_suffix=None,
                  exclude_list=None,
-                 replaced_parameters=None):
+                 replaced_parameters=None,
+                 owner=None,
+                 ):
         """
         :param group_name: Name used in parser's argument group. See :func:`CFMMParserArguments.set_parser`.
         :param owner: If the current instance is a subcomponent, owner stores the owner.
@@ -53,12 +54,15 @@ class ParameterGroup:
         else:
             self.flag_suffix = ''
 
-        self.owner = None
-        if owner:
-            owner.add_subcomponent(self)
-
         self.exclude_list = exclude_list if exclude_list is not None else []
         self._parameters = replaced_parameters if replaced_parameters is not None else {}
+        self.subgroups = {}
+        self.owner = None
+        # some groups must know the owner hierarchy before instantiation
+        # eg. NipypeWorkflowArguments references its owner in the help descriptions
+        # eg. AntsDefaultArguments gets its default arguments from upstream ants nodes
+        if owner:
+            self.set_owner(owner)
         self._add_parameters()
 
     @lru_cache(maxsize=1)
@@ -158,23 +162,19 @@ class ParameterGroup:
                                                                         )
 
     def _add_parameters(self):
-        """
-        To be implemented by subclass. Customize commandline arguments to add to the parser and store in
-        self._parameters. Use helper function `CFMMParserArguments.add_parser_argument`.
-        """
-        raise NotImplementedError('Subclass must define _add_parameters function.')
+        for subgroup in self.subgroups:
+            # how can you not be the subgroup owner if it's in your subgroup list?
+            if not subgroup.owner == self:
+                continue
+            subgroup._add_parameters()
 
     def populate_parser(self, parser):
-        """
-        Each ParameterGroup in the hierarchy uses this function to add its _parameters to the same parser.
-
-        :param parser:
-        :return:
-        """
         for parameter in self._parameters.values():
             parameter.add_to_parser(parser)
+        for subgroup in self.subgroups.values():
+            subgroup.populate_parser(parser)
 
-    def populate_parameters(self, parsed_args_dict):
+    def populate_user_value(self, parsed_args_dict):
         """
         Automatically populate each parameter's user_value.
         :param parsed_args_dict: Dictionary returned by :func:`ArgumentParser.parse_args`
@@ -183,12 +183,11 @@ class ParameterGroup:
             if parameter_name not in self.exclude_list:
                 parameter.populate_user_value(parsed_args_dict=parsed_args_dict)
 
-    def validate_parameters(self):
-        """
-        To be implemented by subclass. Give warning and errors to the user if commandline options are
-        mutually exclusive.
-        """
-        pass
+        for subgroup in self.subgroups.values():
+            # how can you not be the subgroup owner if it's in your subgroup list?
+            if not subgroup.owner == self:
+                continue
+            subgroup.populate_user_value(parsed_args_dict)
 
     def exclude_parameters(self, exclude_list):
         self.exclude_list.extend(exclude_list)
@@ -219,5 +218,41 @@ class ParameterGroup:
         """
         return self._parameters[parameter_name]
 
-    def add_subcomponent(self, subcomponent):
-        pass
+    def set_owner(self, owner):
+        owner.add_subgroup(self)
+
+    def add_subgroup(self, parameter_group):
+        """
+        Add a subgroup and assign self as owner.
+        :param parameter_group:
+        """
+        if parameter_group.group_name in self.subgroups:
+            raise ValueError(
+                f"Cannot add subgroup with group_name '{parameter_group.group_name}', a subgroup with that name already exists.")
+        self.subgroups[parameter_group.group_name] = parameter_group
+        parameter_group.owner = self
+
+    def add_subgroups(self, parameter_groups):
+        for parameter_group in parameter_groups:
+            self.add_subgroup(parameter_group)
+
+    def remove_subgroup(self, parameter_group):
+        del self.subgroups[parameter_group.group_name]
+
+    def get_subgroup(self, subgroup_names):
+        if type(subgroup_names) == str:
+            subgroup_names = subgroup_names.split(os.sep)
+        curr_subgroup = self
+        for group_name in subgroup_names:
+            curr_subgroup = curr_subgroup.subgroups[group_name]
+        return curr_subgroup
+
+    def validate_parameters(self):
+        """
+        Validate user inputs for arguments in all subcomponents. Eg. Give warning and errors to the user
+        if commandline options are mutually exclusive.
+        """
+        for subgroup in self.subgroups.values():
+            if not subgroup.owner == self:
+                continue
+            subgroup.validate_parameters()

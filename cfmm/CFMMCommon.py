@@ -1,18 +1,21 @@
-from cfmm.commandline.parameter_group import ParameterGroup
-from nipype import config
-import tempfile
 import os
+import tempfile
 from datetime import datetime
-from nipype.pipeline import engine as pe
-from nipype.interfaces.utility import Function
-import logging
+from inspect import signature
+from multiprocessing import cpu_count
+
+from nipype import config
 from nipype import logging as nipype_logging
+from nipype.interfaces.base import Undefined
+from nipype.interfaces.utility import Function
+from nipype.pipeline import engine as pe
+from nipype.pipeline.engine import Node
+
+import logging
+from cfmm.commandline.parameter_group import HierarchicalParameterGroup
 from cfmm.logging import NipypeLogger as logger
 from cfmm.mapnode import MapNode
-from nipype.pipeline.engine import Node
-from inspect import signature
-from nipype.interfaces.base import Undefined
-from multiprocessing import cpu_count
+
 
 def get_fn_interface(fn, output_names, imports=None):
     input_names = signature(fn).parameters.keys()
@@ -47,7 +50,8 @@ def get_fn_node(fn, output_names, *args, imports=None, mapnode=False, name=None,
 def listify(possible_list):
     return [possible_list] if type(possible_list) != list else possible_list
 
-def delistify(input_list, length_0_return = Undefined):
+
+def delistify(input_list, length_0_return=Undefined):
     if len(input_list) == 0:
         # maybe the user wants [] or None instead of Undefined
         return length_0_return
@@ -56,8 +60,10 @@ def delistify(input_list, length_0_return = Undefined):
     else:
         return input_list
 
+
 def get_node_delistify(name='delistify'):
-    return get_fn_node(delistify,['output'],name=name ,imports=['from nipype.interfaces.base import Undefined'])
+    return get_fn_node(delistify, ['output'], name=name, imports=['from nipype.interfaces.base import Undefined'])
+
 
 # if a connection is made on one of the inputs, but no upstream value is passed along, then the None value is still
 # included in the list. If list_length is not provided, can only guess the list length is equal to the the index
@@ -120,7 +126,7 @@ def zip_inputs_to_list(
 
     from cfmm.CFMMCommon import listify
     # locals dict keys are in reverse order, and might not be a list
-    parameters_reversed=[]
+    parameters_reversed = []
     for param in reversed(parameters):
         param = listify(param) if param is not None else param
         parameters_reversed.append(param)
@@ -138,15 +144,15 @@ def zip_inputs_to_list(
 
     # how many elements in a single input? (get number of iterations for mapnode)
 
-    input_length=0
+    input_length = 0
     for input in parameters[:list_length]:
-        if input is not None and len(input)>input_length:
+        if input is not None and len(input) > input_length:
             input_length = len(input)
 
     for index in range(list_length):
         if parameters[index] is None:
-            parameters[index] = [None]*input_length
-        assert len(parameters[index])==input_length
+            parameters[index] = [None] * input_length
+        assert len(parameters[index]) == input_length
 
     return_list = [x for x in zip(*parameters[:list_length])]
     return return_list
@@ -183,21 +189,21 @@ def get_node_inputs_to_list(name='inputs_to_list', mapnode=False):
         #                               "input10",
         #                               "list_length", ])
         node = pe.Node(Function(input_names=[
-        "input1",
-        "input2",
-        "input3",
-        "input4",
-        "input5",
-        "input6",
-        "input7",
-        "input8",
-        "input9",
-        "input10",
-        "list_length",
-    ],
-        output_names=["return_list"],
-        function=zip_inputs_to_list
-    ), name=name)
+            "input1",
+            "input2",
+            "input3",
+            "input4",
+            "input5",
+            "input6",
+            "input7",
+            "input8",
+            "input9",
+            "input10",
+            "list_length",
+        ],
+            output_names=["return_list"],
+            function=zip_inputs_to_list
+        ), name=name)
     else:
         node = pe.Node(interface, name=name)
     return node
@@ -264,10 +270,7 @@ def get_node_existing_inputs_to_list(name='existing_inputs_to_list'):
     return node
 
 
-
-
-
-class NipypeRunEngine(ParameterGroup):
+class NipypeRunEngine(HierarchicalParameterGroup):
     group_name = "Nipype Run Arguments"
 
     def _add_parameters(self):
@@ -295,8 +298,8 @@ class NipypeRunEngine(ParameterGroup):
                             action='store_true', default=False,
                             help="Keep all nipype node outputs, even if unused by downstream nodes.")
 
-    def populate_parameters(self, arg_dict):
-        super().populate_parameters(arg_dict)
+    def populate_user_value(self, arg_dict):
+        super().populate_user_value(arg_dict)
 
         # set nipype's stdout handler to ERROR to clean up commandline (leave module loggers' file handlers at
         # default level of INFO)
@@ -347,9 +350,11 @@ class NipypeRunEngine(ParameterGroup):
 
     def run_workflow(self, wf):
         if wf is None:
-            logger.error("The workflow does not exist. A common reason is that the programmer forgot the return statement in "
-                         "the pipeline's create_workflow() function.")
-        wf.config['execution']['remove_unnecessary_outputs'] = not self._parameters['keep_unnecessary_outputs'].user_value
+            logger.error(
+                "The workflow does not exist. A common reason is that the programmer forgot the return statement in "
+                "the pipeline's create_workflow() function.")
+        wf.config['execution']['remove_unnecessary_outputs'] = not self._parameters[
+            'keep_unnecessary_outputs'].user_value
         plugin = self._parameters['plugin'].user_value
         plugin_args = self._parameters['plugin_args'].user_value
 
@@ -365,7 +370,6 @@ class NipypeRunEngine(ParameterGroup):
         wf.write_graph(dotfilename=os.path.join(self.nipype_dir, f'{pipeline_name}_graph'), graph2use='flat')
 
         logger.info(f'Starting pipeline {wf.name} in {base_dir}')
-
 
         if plugin_args:
             execGraph = wf.run(plugin, plugin_args=plugin_args)
@@ -416,7 +420,7 @@ def int_neg_gives_max_cpu(value):
     return return_value
 
 
-class NipypeWorkflowArguments(ParameterGroup):
+class NipypeWorkflowArguments(HierarchicalParameterGroup):
     group_name = "Nipype Workflow Arguments"
     flag_prefix = "nipype_"
 
@@ -426,29 +430,34 @@ class NipypeWorkflowArguments(ParameterGroup):
                             type=int_neg_gives_max_cpu,
                             default=-1,
                             help=f"Number of threads required for a single node. When nipype is running nodes in "
-                                 f"parallel, any node in '{self.owner.group_name}' getting their resource estimation "
-                                 f"from this parameter will only be started if it can be supported by the currently "
-                                 f"available unused resources. The default, -1, is to start the node and use as many "
-                                 f"threads as available.")
+                                 f"parallel, any node in "
+                                 f"'{self.owner.group_name if self.owner is not None else 'the workfloww'}' "
+                                 f"getting their resource estimation from this parameter will only be started if it "
+                                 f"can be supported by the currently available unused resources. The default, -1, is "
+                                 f"to start the node and use as many threads as available.")
         self._add_parameter('nthreads_mapnode',
                             type=int_neg_gives_max_cpu,
                             default=-1,
                             help=f"Number of threads required in every node of a mapnode. When nipype is running nodes "
-                                 f"in parallel, any mapnode in '{self.owner.group_name}' getting their resource "
-                                 f"estimation from this parameter will only be able to start one of its child nodes if "
-                                 f"it can be supported by the currently available unused resources. The default, -1, "
-                                 f"is to run all child nodes and divide the available threads between them.")
+                                 f"in parallel, any mapnode in "
+                                 f"'{self.owner.group_name if self.owner is not None else 'the workfloww'}' "
+                                 f"getting their resource estimation from this parameter will only be able to start "
+                                 f"one of its child nodes if it can be supported by the currently available unused "
+                                 f"resources. The default, -1, is to run all child nodes and divide the available "
+                                 f"threads between them.")
         self._add_parameter('mem_gb_mapnode',
                             default=3,
                             type=float,
                             help=f"The amount of memory required by every node of a mapnode. When nipype is running "
-                                 f"nodes in parallel, any mapnode in '{self.owner.group_name}' getting their resource "
-                                 f"estimation from this parameter will only be able to start one of its child nodes "
-                                 f"if it can be supported by the currently available unused resources. The default "
-                                 f"is 10Gb.")
+                                 f"nodes in parallel, any mapnode in "
+                                 f"'{self.owner.group_name if self.owner is not None else 'the workfloww'}' "
+                                 f"getting their resource estimation from this parameter will only be able to start "
+                                 f"one of its child nodes if it can be supported by the currently available unused "
+                                 f"resources. The default is 10Gb.")
 
         self._add_parameter('gzip_large_images',
                             action='store_true',
-                            help=f"If true, any node in '{self.owner.group_name}' getting their extension from this "
-                                 f"parameter will gzip the output. Gzip saves space but I/O operations take longer.")
-
+                            help=f"If true, any node in "
+                                 f"'{self.owner.group_name if self.owner is not None else 'the workfloww'}' "
+                                 f"getting their extension from this parameter will gzip the output. Gzip saves space "
+                                 f"but I/O operations take longer.")

@@ -42,7 +42,7 @@ class MouseCorrelationMatrix(Workflow):
     def create_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
         if arg_dict is not None:
-            self.populate_parameters(arg_dict)
+            self.populate_user_value(arg_dict)
             self.validate_parameters()
 
         func2atlas_wf = self.func2atlas.create_workflow()
@@ -84,7 +84,7 @@ class MouseCorrelationMatrixBIDS(MouseCorrelationMatrix,BIDSWorkflowMixin):
         self.add_bids_parameter_group()
         self.bids._modify_parameter('analysis_level', 'choices', ['participant'])
 
-        self._remove_subcomponent('func2atlas')
+        self._remove_subcomponent_attribute('func2atlas')
         self.func2atlas = MouseFuncToAtlasBIDS(owner=self, exclude_list=['func', 'func_mask', 'anat', 'anat_mask'])
 
         self.func_bids = BIDSInputExternalSearch(self,

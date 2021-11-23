@@ -1,14 +1,23 @@
+"""
+Workflow Goals:
+workflows contain an input node and output node
+input node fields of an existing workflow can be easily converted to use bids
+input node fields can be made iterable to take advantage of nipype multiprocessing
+consider synchronized (eg. file and mask) interations vs permutations (best parameter search)
+input node fields can be easily connected into other workflows' outputnode
+workflows can be used stand alone or as a subworkflow in larger workflow
+"""
 import os
 from nipype.pipeline import engine as pe
 from nipype.interfaces import utility as niu
 from cfmm.logging import NipypeLogger as logger
 from cfmm.configfile import Config
 from cfmm.CFMMCommon import NipypeRunEngine
-from cfmm.commandline.parameter_group import ParameterGroup
+from cfmm.commandline.parameter_group import HierarchicalParameterGroup
 #from cfmm.parameter_group import ParserGroups
 from cfmm.commandline.argument_parser import ArgumentParser
 
-class inputnode_field():
+class InputnodeField():
     def __init__(self,field_name,default_value=None,iterable=False,default_value_from_commandline=False):
         # default_value only works if default_value_from_commandline is false
         # it can be used to set the default value of inputnode fields that are not directly from a command line parameter
@@ -21,19 +30,11 @@ class inputnode_field():
         self.iterable = iterable
         self.default_value_from_commandline = default_value_from_commandline
 
-class Workflow(ParameterGroup):
+class Workflow(HierarchicalParameterGroup):
     """
-    Class for managing a nipype workflow with commandline arguments. Manages a list self.subcomponents of
-    CFMMParserArguments subclasses (eg. a Interface or a Workflow used as a subworkflow) which will have their
+    Class for managing a nipype workflow with commandline arguments. Manages a list, self.subcomponents, of
+    ParameterGroup subclasses (eg. a Workflow used as a subworkflow or an Interface) which will have their
     commandline arguments displayed in this workflow's help.
-
-    :ivar pipeline_name: initial value:
-    :ivar _inputnode_params: initial value:
-    :ivar _param_subordinates: initial value:
-    :ivar inputnode: initial value:
-    :ivar outputnode: initial value:
-    :ivar workflow: initial value:
-    :ivar pipeline_version: initial value:
     """
 
     def __init__(self, *args, pipeline_name=None, pipeline_version=None, **kwargs):
@@ -45,19 +46,15 @@ class Workflow(ParameterGroup):
         :param kwargs:
         """
 
-        if pipeline_name is None:
-            pipeline_name = self.__class__.__name__
-        self.pipeline_name = pipeline_name
+        self.pipeline_name = self.__class__.__name__ if pipeline_name is None else pipeline_name
         self.pipeline_short_desc = ''
 
-        if not hasattr(self, 'subcomponents'):
-            self.subcomponents = []
         if not hasattr(self, 'extra_inputnode_fields'):
             self.extra_inputnode_fields = []
-        if not hasattr(self,'outputs'):
-            self.outputs=[]
+        if not hasattr(self, 'outputs'):
+            self.outputs = []
 
-        self._inputnode_field_info = []
+        self._inputnode_fields = {}
         self.inputnode = None
         self.outputnode = None
         self.workflow = None
@@ -67,22 +64,24 @@ class Workflow(ParameterGroup):
         self.pipeline_version = pipeline_version
         super().__init__(*args, **kwargs)
 
-    # def get_toplevel_owner(self):
-    #     """
-    #     Traverse the composition chain and return first instance without a owner.
-    #     :return: toplevel_owner
-    #     """
-    #
-    #     current_child = self
-    #     current_owner = current_child.owner
-    #     while current_owner is not None:
-    #         current_child = current_owner
-    #         current_owner = current_owner.owner
-    #     return current_child
+    # rename parameter subgroups to workflow subcomponents
+    @property
+    def subcomponents(self):
+        return self.subgroups.values()
+    def get_subcomponent(self, name):
+        return self.get_subgroup(name)
+    def remove_subcomponent(self, subcomponent):
+        return self.remove_subgroup(subcomponent)
+    def _remove_subcomponent_attribute(self, attribute_name):
+        if not hasattr(self,attribute_name):
+            logger.error(f"attribute '{attribute_name}' does not exist in any of the following classes: "
+                         f"{[c.__name__ for c in self.__class__.__bases__]}.")
+        self.remove_subcomponent(getattr(self, attribute_name))
+
 
     def _add_parameter(self, parameter_name, *args, add_to_inputnode=True, iterable=False,**kwargs):
         """
-        Helper function for :func:`CFMMParserArguments.add_parser_argument`. Allows a workflow parameter to hide
+        Helper function for :func:`ParameterGroup._add_parameter`. Allows a workflow parameter to hide
         and override parameters from its subcomponents.
         :param parameter_name: Name of parameter to be added to argument_group
         :param args:
@@ -97,158 +96,22 @@ class Workflow(ParameterGroup):
         # it from the commadline and disabling the iteration) and then hooking it's own value into the inputnode
         if add_to_inputnode:
             if parameter_name in self.exclude_list:
-                self._inputnode_field_info.append(inputnode_field(parameter_name))
+                self._inputnode_fields[parameter_name] = InputnodeField(parameter_name)
             else:
-                self._inputnode_field_info.append(inputnode_field(parameter_name,
-                                                              default_value_from_commandline=True,
-                                                              iterable=iterable))
-
-    def _add_parameters(self):
-        """
-        Adds parser arguments from all subcomponents. This function should be called from a user redefined
-        add_parser_arguments using super().add_parser_arguments().
-        """
-        for subcomponent in self.subcomponents:
-            if not subcomponent.owner == self:
-                continue
-            subcomponent._add_parameters()
-
-    def add_subcomponent(self, subcomponent):
-        """
-        Add a subcomponent to this workflow and assign self as owner.
-        :param subcomponent:
-        """
-        if not hasattr(self, 'subcomponents'):
-            self.subcomponents = []
-        # maybe should still use a dictionary _subcomponents for unique keys
-        # no need for item to be unique if we don't use get_subcomponent and use class attributes instead
-        proposed_subcomponents_name = subcomponent.group_name
-        for existing_subcomponent in self.subcomponents:
-            if proposed_subcomponents_name == existing_subcomponent.group_name:
-                raise ValueError(
-                    f"Cannot add subcomponent with group_name '{proposed_subcomponents_name}', a subcomponent with that name already exists. Subcomponent group_name must be unique.")
-        subcomponent.owner = self
-        # # disable all bids derivatives for subcomponents
-        # since this function is called during superclass init, and super().__init__ is always called before the rest
-        # of the subclass init,
-        # the subclass outputs attribute will not be set yet when this function is being called!
-        # # toplevel workflow can connect the two workflows outputnodes together to put a result in their own folder
-        # # or give a desc name to subworkflow.output[key] which will make the subworkflow save it is a subdirectory
-        # # of the owner's derivatives folder
-        # if hasattr(subcomponent, 'outputs') and type(subcomponent.outputs) == dict:
-        #     for k in subcomponent.outputs: subcomponent.outputs[k] = None
-        self.subcomponents.append(subcomponent)
-
-    def _remove_subcomponent(self, attribute_name):
-        if not hasattr(self,attribute_name):
-            logger.error(f'Trying to replace attribute {attribute_name}, but it does not exist in the superclass.')
-        self.subcomponents.remove(getattr(self,attribute_name))
-        delattr(self,attribute_name)
-
-    def get_subcomponent(self, groupnames):
-        """
-        Get a nested subcomponent using the nested group names.
-        :param groupnames: Either list of nested group names or the string returned by
-        :func:`CFMMParserArguments.get_group_name_chain`
-        :return: The desired subcomponent instance
-        """
-        if type(groupnames) == str:
-            groupnames = groupnames.split(os.sep)
-        current_subcomponent = self
-        # go down the chain to get desired subcomponent
-        for group_name in groupnames:
-            # maybe should still use a dictionary _subcomponents for its hash table
-            for subcomponent in current_subcomponent.subcomponents:
-                if subcomponent.group_name == group_name:
-                    current_subcomponent = subcomponent
-                    break
-            else:
-                return None
-        return current_subcomponent
-
-    def get_parameter(self, parameter_name, subcomponent_chain=None):
-        """
-        Return a parameter from this workflow or a subcomponent's parameter.
-        :param parameter_name:
-        :param subcomponent_chain: Either list of nested group names or the string returned by
-        :func:`CFMMParserArguments.get_group_name_chain`
-        :return: CFMMFlagValuePair object stored in _parameters
-        """
-        if subcomponent_chain is None:
-            return super().get_parameter(parameter_name)
-        else:
-            subcomponent = self.get_subcomponent(subcomponent_chain)
-        return subcomponent.get_parameter(parameter_name)
-
-    def populate_parser(self, parser):
-        super().populate_parser(parser)
-        for subcomponent in self.subcomponents:
-            subcomponent.populate_parser(parser)
-
-    def populate_parameters(self, parsed_args_dict):
-        """
-        Automatically populate the parameters from all subcomponents.
-        :param parsed_args_dict: Dictionary returned by :func:`ArgumentParser.parse_args`
-        """
-        super().populate_parameters(parsed_args_dict)
-        for subcomponent in self.subcomponents:
-            if not subcomponent.owner == self:
-                continue
-            subcomponent.populate_parameters(parsed_args_dict)
-        #super().populate_parameters(parsed_args_dict) #ak. oct 16, 2020
+                self._inputnode_fields[parameter_name] = InputnodeField(parameter_name,
+                                                             default_value_from_commandline=True,
+                                                             iterable=iterable)
 
 
-    # ----------------------------------------------------
-    # add_parameters saves information about how the commandline parameter will appear on the inputnode
-    # what's the name, what's the default value, should it be iterable\
-    # class vs list vs dictionary for storing info?????
-
-    # inputnode_field is a class to store information about the field that will be added to inputnode
-    # the field can come from a commandline parameter, or can be a userdefined field that is not directly from cmdline param
-    # get_inputnode uses a list of these objects to build the inputnode
-
-    # add_ipnutnode_field_info saves the custom objects to a list
-    # get_inputnode_field_info_index gets the list index for a given field name
-    # get inputnode_field gets the list value for the given fieldname using the list and get_inputnode_field_info_index
-    # would this be better as a dictionary??
-
-    # note that inputnode iterables are meant to be set by get_inputnode.
-    # get_inputnode sets the iterable using the commandline value or the given default value
-    # this means that all the iterable information should be figured out before you get_inputnode
-    # a bids search could set its search result in populate_parameters.
-    # the inputnode_field object's default value, or it could populate the cmdline_param.user_value
-    # or during add_bids_to_workflow you could overwrite the existing iterable using set_inputnode_iterable
-
-    # in a nested workflow scenario with iterables - it's important to note that the iterables override connections
-    # from upstream. This means that ALL iterables must be put in the exclude list to avoid overriding.
-    # if you only override one iterable - then you'll get some weird permutations. if you only override func but not
-    # func_mask, for every subject you'll get a result paired with every possible subject mask.
-
-    # if a workflow has iterables, all iterables must be overriden by uptsream users
-
-    # this is the requirement of adding iterables.
-
-    # we are removing iteration from the code.
-
-    def add_inputnode_field_info(self, field_name, default_value = None, iterable = False):
-        # check to see if inpunode has already been instatiated
-        #this function should only be used before self.get_inputnode()
-        self._inputnode_field_info.append(inputnode_field(field_name,default_value=default_value,iterable=iterable))
-
-    #is this function actually required?
-    def get_inputnode_field_info_index(self, field_name):
-        for index in range(len(self._inputnode_field_info)):
-            if self._inputnode_field_info[index].field_name == field_name:
-                return index
-        return None
+    def add_inputnode_field(self, field_name, default_value = None, iterable = False):
+        #this function should be used before self.get_inputnode()
+        self._inputnode_fields[field_name]=(InputnodeField(field_name,
+                                                           default_value=default_value,
+                                                           iterable=iterable))
 
     def get_inputnode_field(self,field_name):
-        index = self.get_inputnode_field_info_index(field_name)
-        if index is None:
-            return None
-        else:
-            return self._inputnode_field_info[index]
-    # ----------------------------------------------------
+        return self._inputnode_fields[field_name]
+
 
     def get_inputnode_iterables_index(self, inputnode, field_name):
         for index in range(len(inputnode.iterables)):
@@ -287,7 +150,7 @@ class Workflow(ParameterGroup):
         if self.inputnode is not None:
             return self.inputnode
 
-        inputnode_fieldnames = [x.field_name for x in self._inputnode_field_info]
+        inputnode_fieldnames = [x.field_name for x in self._inputnode_fields.values()]
         inputnode = pe.Node(niu.IdentityInterface(fields=inputnode_fieldnames), name='inputnode')
 
         # if inputnode isn't connected to an upstream parent workflow, the node should be set by command line parameters
@@ -295,7 +158,7 @@ class Workflow(ParameterGroup):
         # command line parameters to set its own inputnode or to hide this object's command line parameters from
         # the parser. If the parent hides any of the the object's parameters from the parser, it becomes responsible
         # for performing relevant validate_parameters() checks.
-        for field in self._inputnode_field_info:
+        for field in self._inputnode_fields.values():
             if field.default_value_from_commandline:
                 parameter_name = field.field_name
                 parameter = self.get_parameter(parameter_name)
@@ -438,20 +301,6 @@ class Workflow(ParameterGroup):
                     return True
         return False
 
-
-
-
-
-
-    def validate_parameters(self):
-        """
-        Validate user inputs for arguments in all subcomponents.
-        """
-        for subcomponent in self.subcomponents:
-            if not subcomponent.owner == self:
-                continue
-            subcomponent.validate_parameters()
-
     def run_setup(self, dbg_args=None):
         parser = ArgumentParser()
 
@@ -466,8 +315,8 @@ class Workflow(ParameterGroup):
         parsed_namespace = config_file_obj.parse_args(parser, dbg_args)
         parsed_dict = vars(parsed_namespace)
 
-        nipype_run_engine.populate_parameters(parsed_dict)
-        self.populate_parameters(parsed_dict)
+        nipype_run_engine.populate_user_value(parsed_dict)
+        self.populate_user_value(parsed_dict)
         self.validate_parameters()
 
         wf = self.create_workflow()

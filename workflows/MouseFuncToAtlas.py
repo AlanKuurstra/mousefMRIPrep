@@ -68,7 +68,7 @@ class MouseFuncToAtlas(Workflow):
     def create_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
         if arg_dict is not None:
-            self.populate_parameters(arg_dict)
+            self.populate_user_value(arg_dict)
             self.validate_parameters()
 
         func2anat_wf = self.func2anat.create_workflow()
@@ -183,7 +183,7 @@ class MouseFuncToAtlasBIDS(MouseFuncToAtlas, BIDSWorkflowMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._remove_subcomponent('func2anat')
+        self._remove_subcomponent_attribute('func2anat')
         self.func2anat = MouseFuncToAnatBIDS(owner=self, exclude_list=['in_file', 'in_file_mask', 'anat', 'anat_mask'])
 
         self.add_bids_parameter_group()

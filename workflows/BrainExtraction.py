@@ -45,7 +45,7 @@ class BrainSuiteBrainExtraction(Workflow):
     def create_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
         if arg_dict is not None:
-            self.populate_parameters(arg_dict)
+            self.populate_user_value(arg_dict)
             self.validate_parameters()
 
         # bse segfaults on some orientations - however it doesn't happen if the image is in std orientation
@@ -123,7 +123,7 @@ class AntsBrainExtraction(Workflow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.nipype = NipypeWorkflowArguments(owner=self, exclude_list=['nthreads_mapnode', 'mem_gb_mapnode'])
+        self.nipype = NipypeWorkflowArguments(owner=self,exclude_list=['nthreads_mapnode', 'mem_gb_mapnode'])
         self.ants_args = AntsDefaultArguments(owner=self)
         self.ants_reg = CFMMAntsRegistration(owner=self)
         self.apply_transform = CFMMApplyTransforms(owner=self)
@@ -153,7 +153,7 @@ class AntsBrainExtraction(Workflow):
     def create_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
         if arg_dict is not None:
-            self.populate_parameters(arg_dict)
+            self.populate_user_value(arg_dict)
             self.validate_parameters()
 
         omp_nthreads = self.nipype.get_parameter('nthreads_node').user_value
@@ -233,13 +233,8 @@ class BrainExtraction(Workflow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.n4 = CFMMN4BiasFieldCorrection(owner=self)
-
         # what if in_file is disabled?
-        self.bse = BrainSuiteBrainExtraction(
-            owner=self,
-            exclude_list=['in_file']
-        )
-
+        self.bse = BrainSuiteBrainExtraction(owner=self, exclude_list=['in_file'])
         self.ants = AntsBrainExtraction(
             owner=self,
             exclude_list=['in_file', 'in_file_mask'],
@@ -255,8 +250,8 @@ class BrainExtraction(Workflow):
     def create_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
         if arg_dict is not None:
-            self.populate_parameters(arg_dict)
-            self.validate_parameters()
+            self.populate_user_value(arg_dict)
+        self.validate_parameters()
 
 
         n4 = self.n4.get_node(name='n4', mapnode=True, iterfield=['input_image'])
@@ -353,7 +348,7 @@ class BrainExtraction4D(BrainExtraction):
     def create_workflow(self, arg_dict=None):
         # shortcut so populate_parameters() doesn't need to explicitly be called before get_workflow()
         if arg_dict is not None:
-            self.populate_parameters(arg_dict)
+            self.populate_user_value(arg_dict)
             self.validate_parameters()
         wf = super().create_workflow()
 
